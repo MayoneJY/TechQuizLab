@@ -46,18 +46,18 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[color:var(--background)] text-[color:var(--foreground)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 space-y-3">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Swords className="w-12 h-12 text-blue-500" />
-            <h1 className="text-4xl text-white">포트폴리오 전투력</h1>
+            <Swords className="w-12 h-12 text-[color:var(--primary)]" />
+            <h1 className="text-4xl font-semibold tracking-tight">포트폴리오 전투력</h1>
           </div>
-          <p className="text-gray-400">나의 개발 포트폴리오는 얼마나 강할까?</p>
+          <p className="text-sm text-muted-foreground">나의 개발 포트폴리오는 얼마나 강할까?</p>
         </div>
 
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 rounded-lg border border-[color:var(--border)]/60 bg-[color:var(--accent)]/60">
             <TabsTrigger value="login">로그인</TabsTrigger>
             <TabsTrigger value="signup">회원가입</TabsTrigger>
           </TabsList>

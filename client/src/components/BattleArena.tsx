@@ -85,6 +85,8 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const resultStageInfo = battleResult ? STAGE_INFO[battleResult.stage] : null;
+
   if (isBattling && selectedOpponent) {
     return (
       <BattleGame
@@ -100,13 +102,13 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl text-white mb-2 flex items-center gap-3">
-            <Swords className="w-8 h-8" />
+          <h1 className="mb-2 flex items-center gap-3 text-3xl font-semibold text-[color:var(--foreground)]">
+            <Swords className="h-8 w-8 text-[color:var(--primary)]" />
             전투 아레나
           </h1>
-          <p className="text-gray-400">상대를 선택하고 면접 질문으로 전투하세요</p>
+          <p className="text-sm text-muted-foreground">상대를 선택하고 면접 질문으로 전투하세요</p>
         </div>
         <Button onClick={() => onNavigate('dashboard')} variant="outline">
           대시보드로
@@ -133,7 +135,7 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <PowerMeter score={myScore?.totalScore || 0} size="md" />
-            <div className="mt-4 text-center text-sm text-gray-400">
+            <div className="mt-4 text-center text-sm text-muted-foreground">
               <p>💡 면접 질문에 잘 답변할수록</p>
               <p>더 큰 데미지를 줄 수 있습니다!</p>
             </div>
@@ -149,7 +151,7 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
                 <Input
                   placeholder="닉네임 또는 이메일 검색..."
                   value={searchQuery}
@@ -158,28 +160,31 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
                 />
               </div>
 
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="max-h-96 space-y-2 overflow-y-auto overflow-x-hidden">
                 {filteredUsers.map((user) => (
                   <motion.div
                     key={user.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="w-full"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                   >
                     <div
-                      className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                      className={`cursor-pointer rounded-lg border p-4 transition-colors ${
                         selectedOpponent?.id === user.id
-                          ? 'bg-blue-950 border-blue-600'
-                          : 'bg-gray-800 border-gray-700 hover:bg-gray-750'
+                          ? 'border-[color:var(--primary)]/60 bg-[color:var(--primary)]/10'
+                          : 'border-[color:var(--border)]/60 bg-[color:var(--accent)]/70 hover:border-[color:var(--border)]'
                       }`}
                       onClick={() => setSelectedOpponent(user)}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-white">{user.nickname}</div>
-                          <div className="text-sm text-gray-400">{user.email}</div>
+                          <div className="font-medium text-[color:var(--foreground)]">{user.nickname}</div>
+                          <div className="text-sm text-muted-foreground">{user.email}</div>
                         </div>
                         {selectedOpponent?.id === user.id && (
-                          <Badge className="bg-blue-600">선택됨</Badge>
+                          <Badge className="border-[color:var(--primary)]/60 bg-[color:var(--primary)]/20 text-[color:var(--primary-foreground)]">
+                            선택됨
+                          </Badge>
                         )}
                       </div>
                     </div>
@@ -190,7 +195,7 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
               <Button
                 onClick={handleStartBattle}
                 disabled={!selectedOpponent}
-                className="w-full bg-red-600 hover:bg-red-700"
+                className="w-full"
               >
                 <Swords className="w-4 h-4 mr-2" />
                 전투 시작
@@ -201,13 +206,13 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
       </div>
 
       {/* Battle Rules */}
-      <Card className="bg-gradient-to-r from-purple-950 to-blue-950 border-purple-700">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             📖 전투 규칙
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-gray-300">
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>• 턴제 전투: 플레이어와 상대가 번갈아가며 공격합니다</p>
           <p>• 각 턴마다 포트폴리오 기반 면접 질문이 출제됩니다</p>
           <p>• 답변의 품질(0-100점)에 따라 공격력이 결정됩니다</p>
@@ -220,11 +225,11 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
       <Dialog open={!!battleResult} onOpenChange={(open) => !open && setBattleResult(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl">
+            <DialogTitle className="text-center text-2xl font-semibold text-[color:var(--foreground)]">
               {battleResult?.winner === 'user-1' ? (
-                <span className="text-green-400">🎉 승리!</span>
+                <span className="text-[color:var(--primary)]">🎉 승리!</span>
               ) : (
-                <span className="text-red-400">💔 패배</span>
+                <span className="text-destructive">💔 패배</span>
               )}
             </DialogTitle>
           </DialogHeader>
@@ -232,15 +237,15 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
           {battleResult && (
             <div className="space-y-6">
               {/* Battle Scene */}
-              <div className="relative h-48 bg-gradient-to-r from-blue-900 via-purple-900 to-red-900 rounded-lg overflow-hidden">
+              <div className="relative h-48 overflow-hidden rounded-lg border border-[color:var(--border)]/60 bg-[color:var(--accent)]/60">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1613626318906-68be0aef3334?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaWdodGluZyUyMGdhbWUlMjBiYXR0bGV8ZW58MXx8fHwxNzYyNDc5MDg3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
                   alt="Battle"
-                  className="w-full h-full object-cover opacity-30"
+                  className="h-full w-full object-cover opacity-20"
                 />
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <Trophy className="w-20 h-20 text-yellow-400 mb-4" />
-                  <div className="text-2xl text-white">{battleResult.winnerName} 승리!</div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <Trophy className="h-16 w-16 text-[color:var(--primary)]" />
+                  <div className="text-2xl font-medium text-[color:var(--foreground)]">{battleResult.winnerName} 승리!</div>
                 </div>
               </div>
 
@@ -250,15 +255,15 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
                   <CardTitle>전투 요약</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">무대</span>
-                    <Badge className={STAGE_INFO[battleResult.stage].color}>
-                      {STAGE_INFO[battleResult.stage].emoji} {STAGE_INFO[battleResult.stage].name}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">무대</span>
+                    <Badge className="border-[color:var(--border)]/60 bg-[color:var(--accent)]/70 text-[color:var(--foreground)]">
+                      {resultStageInfo?.emoji} {resultStageInfo?.name}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400">총 라운드</span>
-                    <span className="text-white">{battleResult.rounds?.length || 0}</span>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">총 라운드</span>
+                    <span className="text-[color:var(--foreground)]">{battleResult.rounds?.length || 0}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -270,19 +275,24 @@ export function BattleArena({ onNavigate }: BattleArenaProps) {
                     <CardTitle>라운드별 기록</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                    <div className="max-h-64 space-y-2 overflow-y-auto">
                       {battleResult.rounds.map((round: BattleRound, index: number) => (
-                        <div key={index} className="p-3 bg-gray-800 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm text-gray-400">라운드 {round.roundNumber}</span>
+                        <div
+                          key={index}
+                          className="rounded-lg border border-[color:var(--border)]/50 bg-[color:var(--accent)]/60 p-3"
+                        >
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">라운드 {round.roundNumber}</span>
                             <div className="flex items-center gap-2">
                               <Badge variant="secondary">{round.answerScore}점</Badge>
-                              <span className="text-red-400">-{round.damage} 데미지</span>
+                              <span className="text-sm text-destructive">-{round.damage} 데미지</span>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-300">{round.attackerName} → {round.defenderName}</p>
+                          <p className="text-sm text-[color:var(--foreground)]">
+                            {round.attackerName} → {round.defenderName}
+                          </p>
                           {round.feedback && (
-                            <p className="text-xs text-gray-400 mt-2">{round.feedback}</p>
+                            <p className="mt-2 text-xs text-muted-foreground">{round.feedback}</p>
                           )}
                         </div>
                       ))}

@@ -39,37 +39,41 @@ export function Ranking({ onNavigate }: RankingProps) {
       case 1:
         return <Trophy className="w-6 h-6 text-yellow-400" />;
       case 2:
-        return <Medal className="w-6 h-6 text-gray-400" />;
+        return <Medal className="h-6 w-6 text-muted-foreground" />;
       case 3:
         return <Award className="w-6 h-6 text-orange-600" />;
       default:
-        return <div className="w-6 h-6 flex items-center justify-center text-gray-400">#{rank}</div>;
+        return (
+          <div className="flex h-6 w-6 items-center justify-center text-muted-foreground">
+            #{rank}
+          </div>
+        );
     }
   };
 
   const getRankBgColor = (rank: number) => {
     switch (rank) {
       case 1:
-        return 'bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border-yellow-600';
+        return 'border-[color:var(--primary)]/60 bg-[color:var(--primary)]/12';
       case 2:
-        return 'bg-gradient-to-r from-gray-800/50 to-gray-700/50 border-gray-500';
+        return 'border-[color:var(--border)]/70 bg-[color:var(--accent)]/70';
       case 3:
-        return 'bg-gradient-to-r from-orange-900/50 to-orange-800/50 border-orange-600';
+        return 'border-destructive/50 bg-destructive/10';
       default:
-        return 'bg-gray-800 border-gray-700';
+        return 'border-[color:var(--border)]/60 bg-[color:var(--accent)]/50';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl text-white mb-2 flex items-center gap-3">
-            <Trophy className="w-8 h-8 text-yellow-400" />
+          <h1 className="mb-2 flex items-center gap-3 text-3xl font-semibold text-[color:var(--foreground)]">
+            <Trophy className="h-8 w-8 text-[color:var(--primary)]" />
             랭킹
           </h1>
-          <p className="text-gray-400">무대별 최강자를 확인하세요</p>
+          <p className="text-sm text-muted-foreground">무대별 최강자를 확인하세요</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => onNavigate('battle')} variant="outline">
@@ -94,15 +98,15 @@ export function Ranking({ onNavigate }: RankingProps) {
 
       {/* Podium - Top 3 */}
       {!isLoading && rankings.length >= 3 && (
-        <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
+        <Card>
           <CardContent className="pt-6">
             <div className="relative h-64">
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1659277319138-bc5ea0b3377f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cm9waHklMjB3aW5uZXIlMjBwb2RpdW18ZW58MXx8fHwxNzYyNDc5MDg3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
                 alt="Podium"
-                className="absolute inset-0 w-full h-full object-cover opacity-20 rounded-lg"
+                className="absolute inset-0 h-full w-full rounded-lg object-cover opacity-10"
               />
-              <div className="relative flex items-end justify-center h-full gap-4 pb-8">
+              <div className="relative flex h-full items-end justify-center gap-4 pb-8">
                 {/* 2nd Place */}
                 <motion.div
                   initial={{ y: 50, opacity: 0 }}
@@ -110,15 +114,15 @@ export function Ranking({ onNavigate }: RankingProps) {
                   transition={{ delay: 0.2 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="text-center mb-2">
-                    <Medal className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                    <div className="text-white">{rankings[1].nickname}</div>
-                    <div className="text-sm text-gray-400">
+                  <div className="mb-2 text-center">
+                    <Medal className="mx-auto mb-2 h-10 w-10 text-muted-foreground" />
+                    <div className="text-[color:var(--foreground)]">{rankings[1].nickname}</div>
+                    <div className="text-sm text-muted-foreground">
                       {rankings[1].totalScore.toLocaleString()}
                     </div>
                   </div>
-                  <div className="w-24 h-20 bg-gradient-to-t from-gray-600 to-gray-500 rounded-t-lg flex items-center justify-center">
-                    <span className="text-2xl">2</span>
+                  <div className="flex h-20 w-24 items-center justify-center rounded-t-lg border border-[color:var(--border)]/60 bg-[color:var(--accent)]/60">
+                    <span className="text-2xl font-semibold text-[color:var(--foreground)]">2</span>
                   </div>
                 </motion.div>
 
@@ -129,15 +133,15 @@ export function Ranking({ onNavigate }: RankingProps) {
                   transition={{ delay: 0.1 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="text-center mb-2">
-                    <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-2" />
-                    <div className="text-white text-lg">{rankings[0].nickname}</div>
-                    <div className="text-yellow-400">
+                  <div className="mb-2 text-center">
+                    <Trophy className="mx-auto mb-2 h-12 w-12 text-[color:var(--primary)]" />
+                    <div className="text-lg font-semibold text-[color:var(--foreground)]">{rankings[0].nickname}</div>
+                    <div className="text-[color:var(--primary)]">
                       {rankings[0].totalScore.toLocaleString()}
                     </div>
                   </div>
-                  <div className="w-28 h-32 bg-gradient-to-t from-yellow-600 to-yellow-500 rounded-t-lg flex items-center justify-center">
-                    <span className="text-3xl">1</span>
+                  <div className="flex h-32 w-28 items-center justify-center rounded-t-lg border border-[color:var(--primary)]/60 bg-[color:var(--primary)]/15">
+                    <span className="text-3xl font-semibold text-[color:var(--primary)]">1</span>
                   </div>
                 </motion.div>
 
@@ -148,15 +152,15 @@ export function Ranking({ onNavigate }: RankingProps) {
                   transition={{ delay: 0.3 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="text-center mb-2">
-                    <Award className="w-10 h-10 text-orange-600 mx-auto mb-2" />
-                    <div className="text-white">{rankings[2].nickname}</div>
-                    <div className="text-sm text-gray-400">
+                  <div className="mb-2 text-center">
+                    <Award className="mx-auto mb-2 h-10 w-10 text-destructive" />
+                    <div className="text-[color:var(--foreground)]">{rankings[2].nickname}</div>
+                    <div className="text-sm text-muted-foreground">
                       {rankings[2].totalScore.toLocaleString()}
                     </div>
                   </div>
-                  <div className="w-24 h-16 bg-gradient-to-t from-orange-700 to-orange-600 rounded-t-lg flex items-center justify-center">
-                    <span className="text-2xl">3</span>
+                  <div className="flex h-16 w-24 items-center justify-center rounded-t-lg border border-destructive/40 bg-destructive/10">
+                    <span className="text-2xl font-semibold text-destructive">3</span>
                   </div>
                 </motion.div>
               </div>
@@ -168,8 +172,8 @@ export function Ranking({ onNavigate }: RankingProps) {
       {/* Full Rankings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 text-[color:var(--foreground)]">
+            <TrendingUp className="h-5 w-5 text-[color:var(--primary)]" />
             전체 랭킹
           </CardTitle>
           <CardDescription>
@@ -178,8 +182,8 @@ export function Ranking({ onNavigate }: RankingProps) {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <Loader2 className="w-8 h-8 animate-spin mb-3" />
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="mb-3 h-8 w-8 animate-spin text-[color:var(--primary)]" />
               랭킹 데이터를 불러오는 중입니다...
             </div>
           ) : (
@@ -192,30 +196,35 @@ export function Ranking({ onNavigate }: RankingProps) {
                   transition={{ delay: index * 0.05 }}
                 >
                   <div
-                    className={`flex items-center justify-between p-4 rounded-lg border ${getRankBgColor(
+                    className={`flex items-center justify-between rounded-lg border p-4 transition-colors ${getRankBgColor(
                       entry.rank
-                    )} ${entry.userId === 'user-1' ? 'ring-2 ring-blue-500' : ''}`}
+                    )} ${entry.userId === 'user-1' ? 'ring-2 ring-[color:var(--primary)]/60' : ''}`}
                   >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="flex items-center justify-center w-12">
+                    <div className="flex flex-1 items-center gap-4">
+                      <div className="flex w-12 items-center justify-center">
                         {getRankIcon(entry.rank)}
                       </div>
                       
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-white">{entry.nickname}</span>
+                        <div className="flex items-center gap-2 text-[color:var(--foreground)]">
+                          <span className="font-medium">{entry.nickname}</span>
                           {entry.userId === 'user-1' && (
-                            <Badge variant="outline" className="border-blue-500 text-blue-500">
+                            <Badge
+                              variant="outline"
+                              className="border-[color:var(--primary)]/60 text-[color:var(--primary)]"
+                            >
                               나
                             </Badge>
                           )}
                         </div>
-                        <div className="text-sm text-gray-400 mt-1">
+                        <div className="mt-1 text-sm text-muted-foreground">
                           총점 {entry.totalScore.toLocaleString()} · 승 {entry.wins} · 패 {entry.losses}
                         </div>
                       </div>
                     </div>
-                    <Badge className={STAGE_INFO[selectedStage].color}>{entry.rank} 위</Badge>
+                    <Badge className="border-[color:var(--border)]/60 bg-[color:var(--accent)]/60 text-[color:var(--foreground)]">
+                      {entry.rank} 위
+                    </Badge>
                   </div>
                 </motion.div>
               ))}
@@ -225,19 +234,23 @@ export function Ranking({ onNavigate }: RankingProps) {
       </Card>
 
       {/* Stage Info Card */}
-      <Card className={`${STAGE_INFO[selectedStage].color} bg-opacity-20 border-opacity-50`}>
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-[color:var(--foreground)]">
             {STAGE_INFO[selectedStage].emoji} {STAGE_INFO[selectedStage].name} 무대 특징
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-300">{STAGE_INFO[selectedStage].description}</p>
+          <p className="text-sm text-muted-foreground">{STAGE_INFO[selectedStage].description}</p>
           {!isLoading && rankings.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Badge variant="outline">총 {rankings.length}명 참여</Badge>
-              <Badge variant="outline">최고 점수: {rankings[0]?.totalScore.toLocaleString()}</Badge>
-              <Badge variant="outline">
+            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              <Badge variant="outline" className="border-[color:var(--border)]/60">
+                총 {rankings.length}명 참여
+              </Badge>
+              <Badge variant="outline" className="border-[color:var(--border)]/60">
+                최고 점수: {rankings[0]?.totalScore.toLocaleString()}
+              </Badge>
+              <Badge variant="outline" className="border-[color:var(--border)]/60">
                 평균 점수:{' '}
                 {Math.round(
                   rankings.reduce((sum, r) => sum + r.totalScore, 0) / rankings.length

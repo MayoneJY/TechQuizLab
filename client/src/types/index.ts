@@ -77,30 +77,25 @@ export const STAGE_INFO: Record<Stage, {
   name: string;
   description: string;
   emoji: string;
-  color: string;
 }> = {
   BANK: {
     name: '은행사',
     description: '안정성과 문서화 중심',
     emoji: '🏦',
-    color: 'bg-blue-500'
   },
   SME: {
     name: '중소기업',
     description: '실무형·멀티태스킹 중심',
     emoji: '🏢',
-    color: 'bg-green-500'
   },
   MID: {
     name: '중견기업',
     description: '프로세스 + 실무 균형형',
     emoji: '🏭',
-    color: 'bg-purple-500'
   },
   STARTUP: {
     name: '스타트업',
     description: '속도, 주도성, 메이킹 중심',
     emoji: '🚀',
-    color: 'bg-orange-500'
   }
 };

@@ -180,42 +180,56 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
   return (
     <div className="space-y-6">
       {/* HP Bars */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         {/* Player HP */}
-        <Card className="relative overflow-hidden">
-          <div className={`absolute inset-0 bg-gradient-to-r from-blue-900/20 to-transparent ${isMyTurn ? 'animate-pulse' : ''}`} />
-          <CardContent className="pt-6 relative z-10">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
+        <Card
+          className={`border border-[color:var(--border)]/60 bg-[color:var(--card)] transition-all ${
+            isMyTurn ? 'ring-1 ring-[color:var(--primary)]/60' : ''
+          }`}
+        >
+          <CardContent className="relative z-10 pt-6">
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 text-[color:var(--foreground)]">
                 <span className="text-2xl">👊</span>
-                <span className="text-white">나</span>
-                {isMyTurn && <Badge className="bg-blue-600">내 턴</Badge>}
+                <span className="text-base font-medium">나</span>
+                {isMyTurn && (
+                  <Badge className="border-[color:var(--primary)]/60 bg-[color:var(--primary)]/15 text-[color:var(--primary-foreground)]">
+                    내 턴
+                  </Badge>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                <span className="text-white">{myHP} / 1000</span>
+              <div className="flex items-center gap-2 text-[color:var(--foreground)]">
+                <Heart className="h-5 w-5 text-destructive" />
+                <span className="font-mono text-sm">{myHP} / 1000</span>
               </div>
             </div>
-            <Progress value={(myHP / 1000) * 100} className="h-4" />
+            <Progress value={(myHP / 1000) * 100} className="h-3" />
           </CardContent>
         </Card>
 
         {/* Opponent HP */}
-        <Card className="relative overflow-hidden">
-          <div className={`absolute inset-0 bg-gradient-to-l from-red-900/20 to-transparent ${!isMyTurn ? 'animate-pulse' : ''}`} />
-          <CardContent className="pt-6 relative z-10">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
+        <Card
+          className={`border border-[color:var(--border)]/60 bg-[color:var(--card)] transition-all ${
+            !isMyTurn ? 'ring-1 ring-destructive/60' : ''
+          }`}
+        >
+          <CardContent className="relative z-10 pt-6">
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 text-[color:var(--foreground)]">
                 <span className="text-2xl">🛡️</span>
-                <span className="text-white">{opponentName}</span>
-                {!isMyTurn && <Badge className="bg-red-600">상대 턴</Badge>}
+                <span className="text-base font-medium">{opponentName}</span>
+                {!isMyTurn && (
+                  <Badge className="border-destructive/60 bg-destructive/15 text-destructive">
+                    상대 턴
+                  </Badge>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                <span className="text-white">{opponentHP} / 1000</span>
+              <div className="flex items-center gap-2 text-[color:var(--foreground)]">
+                <Heart className="h-5 w-5 text-destructive" />
+                <span className="font-mono text-sm">{opponentHP} / 1000</span>
               </div>
             </div>
-            <Progress value={(opponentHP / 1000) * 100} className="h-4" />
+            <Progress value={(opponentHP / 1000) * 100} className="h-3" />
           </CardContent>
         </Card>
       </div>
@@ -225,22 +239,30 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
+          className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2"
         >
-          <div className={`text-6xl ${lastDamage.attacker === 'player' ? 'text-blue-500' : 'text-red-500'}`}>
-            <Zap className="w-24 h-24 mb-2 mx-auto" />
+          <div
+            className={`text-6xl font-semibold ${
+              lastDamage.attacker === 'player'
+                ? 'text-[color:var(--primary)]'
+                : 'text-destructive'
+            }`}
+          >
+            <Zap className="mx-auto mb-2 h-20 w-20" />
             <div className="text-center">-{lastDamage.damage}</div>
           </div>
         </motion.div>
       )}
 
       {/* Battle Stage */}
-      <Card className={`${STAGE_INFO[stage].color} bg-opacity-10 border-opacity-50`}>
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <Swords className="w-5 h-5" />
-              {STAGE_INFO[stage].emoji} {STAGE_INFO[stage].name} 면접전
+              <Swords className="h-5 w-5 text-[color:var(--primary)]" />
+              <span className="text-[color:var(--foreground)]">
+                {STAGE_INFO[stage].emoji} {STAGE_INFO[stage].name} 면접전
+              </span>
             </span>
             <Button onClick={onCancel} variant="ghost" size="sm">
               <X className="w-4 h-4" />
@@ -255,23 +277,23 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="bg-gradient-to-br from-blue-950 to-purple-950 border-blue-700">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
+                <MessageSquare className="h-5 w-5 text-[color:var(--primary)]" />
                 면접 질문
               </CardTitle>
-              <Badge variant="outline" className="w-fit">
+              <Badge className="w-fit border-[color:var(--border)]/60 bg-[color:var(--accent)]/60 text-[color:var(--foreground)]">
                 질문 맥락: {currentQuestion.context}
               </Badge>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-gray-900 rounded-lg">
-                <p className="text-white text-lg">{currentQuestion.question}</p>
+              <div className="rounded-lg border border-[color:var(--border)]/60 bg-[color:var(--accent)]/60 p-4">
+                <p className="text-lg text-[color:var(--foreground)]">{currentQuestion.question}</p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-gray-300">답변 작성</label>
+                <label className="text-sm text-muted-foreground">답변 작성</label>
                 <Textarea
                   value={myAnswer}
                   onChange={(e) => setMyAnswer(e.target.value)}
@@ -279,7 +301,7 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
                   className="min-h-[150px]"
                   disabled={!isMyTurn || isSubmitting}
                 />
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-muted-foreground">
                   💡 팁: 구체적인 수치, 기술 스택, 문제 해결 과정을 포함하면 높은 점수를 받을 수 있습니다.
                 </div>
               </div>
@@ -287,16 +309,16 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
               <Button
                 onClick={handleSubmitAnswer}
                 disabled={!myAnswer.trim() || isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700"
+                className="w-full"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     답변 평가 중...
                   </>
                 ) : (
                   <>
-                    <Zap className="w-4 h-4 mr-2" />
+                    <Zap className="mr-2 h-4 w-4" />
                     공격하기!
                   </>
                 )}
@@ -308,15 +330,12 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
 
       {/* Opponent Turn Indicator */}
       {!isMyTurn && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <Card className="bg-gradient-to-br from-red-950 to-orange-950 border-red-700">
-            <CardContent className="py-12 text-center">
-              <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-red-400" />
-              <p className="text-xl text-white">상대가 답변 중입니다...</p>
-              <p className="text-gray-400 mt-2">잠시만 기다려주세요</p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card>
+            <CardContent className="space-y-3 py-12 text-center">
+              <Loader2 className="mx-auto h-12 w-12 animate-spin text-[color:var(--primary)]" />
+              <p className="text-xl font-medium text-[color:var(--foreground)]">상대가 답변 중입니다...</p>
+              <p className="text-sm text-muted-foreground">잠시만 기다려주세요</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -326,37 +345,36 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
       <Dialog open={showRoundResult} onOpenChange={() => {}}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center">라운드 결과</DialogTitle>
+            <DialogTitle className="text-center font-semibold text-[color:var(--foreground)]">
+              라운드 결과
+            </DialogTitle>
           </DialogHeader>
           {lastRoundResult && (
             <div className="space-y-4">
               <div className="text-center">
-                <div className="text-5xl mb-4">
+                <div className="mb-4 text-5xl">
                   {lastRoundResult.attacker === '나' ? '👊' : '🛡️'}
                 </div>
-                <p className="text-xl text-white mb-2">
+                <p className="mb-2 text-xl font-medium text-[color:var(--foreground)]">
                   {lastRoundResult.attacker}의 공격!
                 </p>
-                <div className="text-3xl text-red-500">
+                <div className="text-3xl text-destructive">
                   -{lastRoundResult.damage} 데미지
                 </div>
               </div>
 
-              <Card className="bg-gray-900">
+              <Card>
                 <CardContent className="pt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-400">답변 점수</span>
-                    <Badge className={
-                      lastRoundResult.score >= 80 ? 'bg-green-600' :
-                      lastRoundResult.score >= 60 ? 'bg-blue-600' :
-                      lastRoundResult.score >= 40 ? 'bg-orange-600' :
-                      'bg-red-600'
-                    }>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">답변 점수</span>
+                    <Badge className="border-[color:var(--border)]/60 bg-[color:var(--accent)]/60 text-[color:var(--foreground)]">
                       {lastRoundResult.score}점
                     </Badge>
                   </div>
                   <Progress value={lastRoundResult.score} className="mb-4" />
-                  <p className="text-sm text-gray-300">{lastRoundResult.feedback}</p>
+                  <p className="text-sm text-[color:var(--foreground)]">
+                    {lastRoundResult.feedback}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -371,15 +389,18 @@ export function BattleGame({ opponentId, opponentName, stage, onBattleEnd, onCan
             <CardTitle>전투 기록</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="max-h-48 space-y-2 overflow-y-auto">
               {roundHistory.map((round, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-gray-800 rounded text-sm">
-                  <span className="text-gray-300">
+                <div
+                  key={index}
+                  className="flex items-center justify-between rounded-lg border border-[color:var(--border)]/50 bg-[color:var(--accent)]/60 p-2 text-sm"
+                >
+                  <span className="text-[color:var(--foreground)]">
                     R{round.roundNumber}: {round.attackerName} → {round.defenderName}
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm">
                     <Badge variant="secondary">{round.answerScore}점</Badge>
-                    <span className="text-red-400">-{round.damage}</span>
+                    <span className="text-destructive">-{round.damage}</span>
                   </div>
                 </div>
               ))}

@@ -57,16 +57,16 @@ export function Dashboard({ onNavigate }: DashboardProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl text-white mb-2">전투력 대시보드</h1>
-          <p className="text-gray-400">무대를 선택하여 전투력을 확인하세요</p>
+          <h1 className="mb-2 text-3xl font-semibold text-[color:var(--foreground)]">전투력 대시보드</h1>
+          <p className="text-sm text-muted-foreground">무대를 선택하여 전투력을 확인하세요</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => onNavigate('portfolio')} variant="outline">
             포트폴리오 수정
           </Button>
-          <Button onClick={() => onNavigate('battle')} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => onNavigate('battle')}>
             전투 시작
           </Button>
         </div>
@@ -84,9 +84,11 @@ export function Dashboard({ onNavigate }: DashboardProps) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Card 
-                className={`cursor-pointer transition-all ${
-                  isSelected ? 'ring-2 ring-blue-500 bg-gray-800' : 'hover:bg-gray-800'
+              <Card
+                className={`cursor-pointer border border-[color:var(--border)]/60 transition-all ${
+                  isSelected
+                    ? 'bg-[color:var(--primary)]/15 ring-1 ring-[color:var(--primary)]/70'
+                    : 'bg-[color:var(--accent)]/60 hover:bg-[color:var(--accent)]/80'
                 }`}
                 onClick={() => setSelectedStage(stage)}
               >
@@ -94,8 +96,10 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                   <div className="flex items-center gap-3">
                     <span className="text-3xl">{info.emoji}</span>
                     <div className="flex-1">
-                      <div className="text-white">{info.name}</div>
-                      <div className="text-sm text-gray-400">{scores?.[stage]?.totalScore.toLocaleString()}</div>
+                      <div className="font-medium text-[color:var(--foreground)]">{info.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {scores?.[stage]?.totalScore.toLocaleString()}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -110,8 +114,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         {/* Power Meter & Stats */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[color:var(--foreground)]">
+              <Target className="h-5 w-5 text-[color:var(--primary)]" />
               {STAGE_INFO[selectedStage].emoji} {STAGE_INFO[selectedStage].name} 전투력
             </CardTitle>
             <CardDescription>{STAGE_INFO[selectedStage].description}</CardDescription>
@@ -122,23 +126,23 @@ export function Dashboard({ onNavigate }: DashboardProps) {
               
               <div className="w-full space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">기술력</span>
+                  <span className="text-sm text-muted-foreground">기술력</span>
                   <Badge variant="secondary">{currentScore?.techDepth}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">서비스 영향</span>
+                  <span className="text-sm text-muted-foreground">서비스 영향</span>
                   <Badge variant="secondary">{currentScore?.serviceImpact}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">확장성</span>
+                  <span className="text-sm text-muted-foreground">확장성</span>
                   <Badge variant="secondary">{currentScore?.scalability}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">협업</span>
+                  <span className="text-sm text-muted-foreground">협업</span>
                   <Badge variant="secondary">{currentScore?.collaboration}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">주도성</span>
+                  <span className="text-sm text-muted-foreground">주도성</span>
                   <Badge variant="secondary">{currentScore?.originality}</Badge>
                 </div>
               </div>
@@ -149,8 +153,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         {/* Radar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[color:var(--foreground)]">
+              <TrendingUp className="h-5 w-5 text-[color:var(--primary)]" />
               능력치 분석
             </CardTitle>
           </CardHeader>
@@ -168,38 +172,38 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* Highlights & Risks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-green-950 border-green-800">
+        <Card className="border-[color:var(--border)]/60 bg-[color:var(--accent)]/60">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-400">
-              <Trophy className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[color:var(--foreground)]">
+              <Trophy className="h-5 w-5 text-[color:var(--primary)]" />
               강점
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
               {currentScore?.highlights.map((highlight: string, index: number) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-green-400 mt-1">✓</span>
-                  <span className="text-gray-300">{highlight}</span>
+                <li key={index} className="flex items-start gap-2 text-sm text-[color:var(--foreground)]">
+                  <span className="mt-1 text-[color:var(--primary)]">✓</span>
+                  <span>{highlight}</span>
                 </li>
               ))}
             </ul>
           </CardContent>
         </Card>
 
-        <Card className="bg-orange-950 border-orange-800">
+        <Card className="border-[color:var(--border)]/60 bg-[color:var(--accent)]/60">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-400">
-              <AlertCircle className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-[color:var(--foreground)]">
+              <AlertCircle className="h-5 w-5 text-destructive" />
               보완점
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
               {currentScore?.risks.map((risk: string, index: number) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="text-orange-400 mt-1">!</span>
-                  <span className="text-gray-300">{risk}</span>
+                <li key={index} className="flex items-start gap-2 text-sm text-[color:var(--foreground)]">
+                  <span className="mt-1 text-destructive">!</span>
+                  <span>{risk}</span>
                 </li>
               ))}
             </ul>
@@ -214,24 +218,27 @@ export function Dashboard({ onNavigate }: DashboardProps) {
         </CardHeader>
         <CardContent>
           {recentBattles.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">아직 전투 기록이 없습니다</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">아직 전투 기록이 없습니다</p>
           ) : (
             <div className="space-y-3">
               {recentBattles.map((battle) => (
-                <div key={battle.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                <div
+                  key={battle.id}
+                  className="flex items-center justify-between gap-4 rounded-lg border border-[color:var(--border)]/60 bg-[color:var(--accent)]/60 p-3"
+                >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{STAGE_INFO[battle.stage].emoji}</span>
                     <div>
-                      <div className="text-sm">
+                      <div className="text-sm text-[color:var(--foreground)]">
                         {battle.challengerName} vs {battle.opponentName}
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-muted-foreground">
                         {new Date(battle.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm">
+                    <div className="text-sm text-[color:var(--foreground)]">
                       {battle.challengerScore} : {battle.opponentScore}
                     </div>
                     <Badge variant={battle.winnerUserId === 'user-1' ? 'default' : 'secondary'}>

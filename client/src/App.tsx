@@ -33,14 +33,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+    <div className="min-h-screen bg-[color:var(--background)] text-[color:var(--foreground)]">
       {/* Navigation */}
-      <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+      <nav className="sticky top-0 z-50 border-b border-[color:var(--border)]/60 bg-[color:var(--background)]/85 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="text-2xl">🥊</span>
-              <span className="text-xl text-white">포트폴리오 전투력</span>
+              <span className="text-xl font-medium text-[color:var(--foreground)]">포트폴리오 전투력</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -104,9 +104,9 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 border-t border-gray-800 mt-20">
+      <footer className="mt-20 border-t border-[color:var(--border)]/60 bg-[color:var(--background)]/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-gray-400 text-sm">
+          <div className="text-center text-sm text-muted-foreground">
             <p>포트폴리오 전투력 측정 프로젝트</p>
             <p className="mt-2">나의 개발 포트폴리오는 얼마나 강할까? 🥊</p>
           </div>

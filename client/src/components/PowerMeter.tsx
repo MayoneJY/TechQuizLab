@@ -38,7 +38,7 @@ export function PowerMeter({ score, maxScore = 10000, label, size = 'md' }: Powe
             cy={outer / 2}
             r={radius}
             fill="none"
-            stroke="#1F2937"
+            stroke="rgba(148, 163, 184, 0.2)"
             strokeWidth={strokeWidth}
           />
           <motion.circle
@@ -68,14 +68,14 @@ export function PowerMeter({ score, maxScore = 10000, label, size = 'md' }: Powe
               {score.toLocaleString()}
             </div>
             {size === 'lg' && (
-              <div className="text-xs text-gray-400">전투력</div>
+              <div className="text-xs text-muted-foreground">전투력</div>
             )}
           </motion.div>
         </div>
       </div>
       
       {label && (
-        <div className="text-sm text-gray-400 text-center">{label}</div>
+        <div className="text-center text-sm text-muted-foreground">{label}</div>
       )}
     </div>
   );
