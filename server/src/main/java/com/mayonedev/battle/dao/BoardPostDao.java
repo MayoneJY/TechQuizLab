@@ -17,7 +17,7 @@ public interface BoardPostDao {
     /*
      * 사용자 ID로 게시글 조회
      */
-    Board findByUserId(@Param("userId") long userId);
+    List<Board> findByUserId(@Param("userId") long userId);
 
     /*
      * 게시글 ID로 게시글 조회
@@ -32,17 +32,17 @@ public interface BoardPostDao {
     /*
      * 게시글 등록
      */
-    int insert(Board board);
+    Board insert(Board board);
 
     /*
      * 게시글 수정
      */
-    int update(Board board);
+    Board update(Board board);
     /*
      * 게시글고유 아이디를 통한 게시글 삭제
      */
 
-    int deletePostByPostId(@param("postId") long postId);
+    int deletePostByPostId(@Param("postId") long postId);
     /*
      * 총 게시글 방문 수 조회
      */

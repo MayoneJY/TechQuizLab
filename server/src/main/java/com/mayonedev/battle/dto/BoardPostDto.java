@@ -22,6 +22,7 @@ public class BoardPostDto {
     private String nickname;
     private Long viewCount;
     private LocalDateTime createAt;
+    private LocalDateTime updatedAt;
 
     //포스트맨
 }

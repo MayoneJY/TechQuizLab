@@ -3,12 +3,14 @@ package com.mayonedev.battle.entity;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class Board {
     private long userId;     //작성자 id
     private long postId;    //게시글 id
