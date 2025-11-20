@@ -1,13 +1,71 @@
+# 잡몬스터 (Job Monster) - 취준 레이드 게임
 
-  # Portfolio Battle System
+기업 공고를 몬스터로, CS/면접 질문 답변을 공격 스킬로 만드는 취준 레이드 게임 서비스의 프론트엔드입니다.
 
-  This is a code bundle for Portfolio Battle System. The original project is available at https://www.figma.com/design/R7JVrwfvYg29zthEWRhZlw/Portfolio-Battle-System.
+## 기술 스택
 
-  ## Running the code
+- Vue 3
+- Vue Router
+- Pinia (상태 관리)
+- Axios (HTTP 클라이언트)
+- Vite (빌드 도구)
 
-Run `npm install` to install dependencies.
+## 프로젝트 구조
 
-Run `npm start` to launch the development server.
+```
+client/
+├── src/
+│   ├── api/          # API 호출 모듈 (목업 데이터 포함)
+│   ├── components/   # 공통 컴포넌트
+│   ├── mock/         # 목업 데이터
+│   ├── router/       # 라우터 설정
+│   ├── stores/       # Pinia 스토어
+│   └── views/        # 페이지 컴포넌트
+```
 
-Run `npm run build` to create a production build in `build/`.
-  
+## 주요 기능
+
+- **인증**: 회원가입, 로그인
+- **대시보드**: 능력치 레벨, 레이드 기록, 추천 몬스터
+- **몬스터**: 기업/공고 목록 및 상세 정보
+- **개인전**: 혼자서 몬스터와 전투하며 연습
+- **레이드**: 여러 명이 함께 몬스터를 물리치는 협동 전투
+- **프로필**: 능력치 및 전투 이력 조회
+- **게시판**: 자유 게시판, 공고 후기, 레이드 모집 등
+
+## 설치 및 실행
+
+```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+
+# 빌드
+npm run build
+
+# 빌드 결과 미리보기
+npm run preview
+```
+
+## 목업 데이터
+
+현재 모든 API 호출은 목업 데이터로 동작합니다. 실제 백엔드 API를 연결하려면 각 API 파일의 `USE_MOCK` 변수를 `false`로 변경하세요.
+
+목업 데이터는 `src/mock/data.js`에 정의되어 있으며, 다음 데이터가 포함되어 있습니다:
+
+- 능력치 데이터 (10개)
+- 전투 이력 (6개)
+- 몬스터 목록 (10개)
+- 질문 목록 (10개)
+- 게시판 게시글 (8개)
+- 레이드 상태 데이터
+
+## 환경 변수
+
+백엔드 API URL을 변경하려면 `src/api/index.js`의 `baseURL`을 수정하세요.
+
+## 라이선스
+
+MIT

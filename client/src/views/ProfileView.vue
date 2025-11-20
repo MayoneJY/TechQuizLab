@@ -1,0 +1,275 @@
+<template>
+  <div class="page-container">
+    <PageHeader title="프로필" :icon="IconTrophy" />
+
+    <div class="profile-content">
+      <GamificationCard variant="primary">
+        <CardHeader title="사용자 정보" :icon="IconStar" icon-color="#f59e0b" />
+        <div class="info-item">
+          <span class="label">닉네임</span>
+          <span class="value">{{ authStore.user?.nickname || '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">이메일</span>
+          <span class="value">{{ authStore.user?.email || '-' }}</span>
+        </div>
+      </GamificationCard>
+
+      <GamificationCard variant="success">
+        <CardHeader title="능력치" :icon="IconGem" icon-color="#4ecdc4" />
+        <LoadingSpinner v-if="statsLoading" />
+        <EmptyState
+          v-else-if="stats.length === 0"
+          message="능력치가 없습니다."
+          :icon="IconMonster"
+        />
+        <div v-else class="stats-grid">
+          <GamificationCard v-for="stat in stats" :key="stat.statCode" class="stat-card">
+            <div class="stat-card-icon">
+              <IconStar :size="32" color="#f59e0b" />
+            </div>
+            <div class="stat-name">{{ stat.statName || stat.statCode }}</div>
+            <div class="level-badge">
+              Lv.{{ stat.level || 1 }}
+            </div>
+            <div class="stat-xp">
+              <IconGem :size="16" color="#4ecdc4" />
+              {{ stat.xp || 0 }} XP
+            </div>
+          </div>
+        </div>
+      </GamificationCard>
+
+      <GamificationCard variant="warning">
+        <CardHeader title="전투 이력" :icon="IconTrophy" icon-color="#ffd700" />
+        <LoadingSpinner v-if="historyLoading" />
+        <EmptyState
+          v-else-if="history.length === 0"
+          message="전투 이력이 없습니다."
+          :icon="IconSword"
+        />
+        <div v-else class="history-list">
+          <GamificationCard v-for="item in history" :key="item.id" class="history-item">
+            <div class="history-icon">
+              <IconMonster
+                :size="40"
+                :color="item.mode === 'RAID' ? '#ec4899' : '#4ecdc4'"
+              />
+            </div>
+            <div class="history-content">
+              <div class="history-title">{{ item.monsterName || '알 수 없음' }}</div>
+              <div class="history-mode" :class="item.mode.toLowerCase()">
+                {{ item.mode === 'SOLO' ? '개인전' : '레이드' }}
+              </div>
+              <div class="history-stats">
+                <span class="stat-badge">
+                  <IconGem :size="14" color="#f59e0b" />
+                  {{ item.xpTotal || 0 }} XP
+                </span>
+                <span class="stat-badge">
+                  <IconSword :size="14" color="#ef4444" />
+                  {{ item.damage || 0 }} 데미지
+                </span>
+              </div>
+              <div class="history-date">{{ formatDate(item.createdAt) }}</div>
+            </div>
+          </div>
+        </div>
+      </GamificationCard>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useStatsStore } from '@/stores/stats'
+import IconTrophy from '@/components/icons/IconTrophy.vue'
+import IconStar from '@/components/icons/IconStar.vue'
+import IconGem from '@/components/icons/IconGem.vue'
+import IconMonster from '@/components/icons/IconMonster.vue'
+import IconSword from '@/components/icons/IconSword.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import GamificationCard from '@/components/GamificationCard.vue'
+import CardHeader from '@/components/common/CardHeader.vue'
+
+const authStore = useAuthStore()
+const statsStore = useStatsStore()
+
+const stats = ref([])
+const history = ref([])
+const statsLoading = ref(false)
+const historyLoading = ref(false)
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ko-KR') + ' ' + date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+}
+
+onMounted(async () => {
+  statsLoading.value = true
+  const statsResult = await statsStore.fetchMyStats()
+  if (statsResult.success) {
+    stats.value = statsStore.stats
+  }
+  statsLoading.value = false
+
+  historyLoading.value = true
+  const historyResult = await statsStore.fetchMyHistory()
+  if (historyResult.success) {
+    history.value = statsStore.history
+  }
+  historyLoading.value = false
+})
+</script>
+
+<style scoped>
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item .label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.info-item .value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-card-icon {
+  margin-bottom: 1rem;
+}
+
+.stat-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+}
+
+.stat-xp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 0.75rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.history-item {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.history-icon {
+  flex-shrink: 0;
+}
+
+.history-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.history-mode {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.history-mode.raid {
+  background: rgba(236, 72, 153, 0.2);
+  color: #ec4899;
+}
+
+.history-mode.solo {
+  background: rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+}
+
+.history-stats {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.history-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .history-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .history-icon {
+    margin: 0 auto;
+  }
+}
+</style>

@@ -1,0 +1,115 @@
+<template>
+  <div class="hp-bar">
+    <div class="hp-bar-label">
+      <IconMonster :size="20" color="#ff6b6b" />
+      <span>{{ label }}</span>
+      <span class="hp-value">{{ current }} / {{ max }}</span>
+    </div>
+    <div class="hp-bar-container">
+      <div
+        class="hp-bar-fill"
+        :style="{ width: `${percentage}%` }"
+        :class="hpClass"
+      >
+        <span v-if="percentage > 15" class="hp-text">{{ percentage }}%</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import IconMonster from './icons/IconMonster.vue'
+
+const props = defineProps({
+  current: { type: Number, default: 0 },
+  max: { type: Number, default: 100 },
+  label: { type: String, default: 'HP' },
+})
+
+const percentage = computed(() => {
+  if (props.max === 0) return 0
+  return Math.min(100, Math.round((props.current / props.max) * 100))
+})
+
+const hpClass = computed(() => {
+  if (percentage.value > 60) return 'hp-high'
+  if (percentage.value > 30) return 'hp-medium'
+  return 'hp-low'
+})
+</script>
+
+<style scoped>
+.hp-bar {
+  width: 100%;
+}
+
+.hp-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.hp-value {
+  margin-left: auto;
+  color: #666;
+  font-weight: 600;
+}
+
+.hp-bar-container {
+  width: 100%;
+  height: 32px;
+  background: #e0e0e0;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #ddd;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  border-radius: 14px;
+  transition: width 0.5s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hp-high {
+  background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+}
+
+.hp-medium {
+  background: linear-gradient(90deg, #ffa726 0%, #ffb74d 100%);
+}
+
+.hp-low {
+  background: linear-gradient(90deg, #ef5350 0%, #e57373 100%);
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+.hp-text {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+</style>
+
