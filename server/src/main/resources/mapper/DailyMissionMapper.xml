@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.DailyMissionDao">
+
+    <resultMap id="dailyMissionResultMap" type="com.mayonedev.battle.entity.DailyMission">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="missionType" column="mission_type"/>
+        <result property="targetValue" column="target_value"/>
+        <result property="rewardExp" column="reward_exp"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="dailyMissionResultMap">
+        SELECT * FROM daily_mission
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="dailyMissionResultMap">
+        SELECT * FROM daily_mission WHERE id = #{id}
+    </select>
+
+</mapper>
