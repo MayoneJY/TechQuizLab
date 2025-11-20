@@ -58,7 +58,7 @@ const authStore = useAuthStore()
   width: 100%;
   max-width: 100%;
   padding: 4rem 2rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-primary);
 }
 
 .hero {
@@ -83,15 +83,15 @@ const authStore = useAuthStore()
 }
 
 .hero-title {
-  font-size: 4.5rem;
+  font-size: 3rem;
   margin-bottom: 1.5rem;
-  font-weight: 900;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  animation: float 3s ease-in-out infinite;
 }
 
 .subtitle {
@@ -115,20 +115,39 @@ const authStore = useAuthStore()
   align-items: center;
   gap: 1rem;
   color: var(--text-primary);
-  font-weight: 600;
-  font-size: 1.05rem;
-  padding: 1.5rem;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  padding: 2rem;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--gradient-card);
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
 }
 
 .feature-item:hover {
-  transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary);
+}
+
+.feature-item:hover::before {
+  left: 100%;
 }
 
 .actions {

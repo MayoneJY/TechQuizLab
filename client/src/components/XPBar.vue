@@ -40,46 +40,51 @@ const percentage = computed(() => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 500;
-  color: #333;
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-primary);
 }
 
 .xp-value {
-  color: #666;
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .xp-bar-container {
   width: 100%;
   height: 24px;
-  background: #e0e0e0;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   position: relative;
+  box-shadow: var(--shadow-inset);
 }
 
 .xp-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%);
+  background: linear-gradient(90deg, var(--info) 0%, var(--secondary) 100%);
   border-radius: 12px;
-  transition: width 0.5s ease;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .xp-bar-fill.xp-full {
-  background: linear-gradient(90deg, #ffd93d 0%, #f6c23e 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--warning) 100%);
   animation: pulse 1s ease-in-out infinite;
 }
 
 .xp-text {
-  color: #fff;
-  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-size: 12px;
   font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  font-family: 'DungGeunMo', sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes pulse {

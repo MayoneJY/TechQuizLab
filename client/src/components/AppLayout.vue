@@ -16,6 +16,10 @@
               <IconMonster :size="20" color="currentColor" />
               <span>몬스터</span>
             </router-link>
+            <router-link to="/raids" class="nav-link">
+              <IconRaid :size="20" color="currentColor" />
+              <span>레이드</span>
+            </router-link>
             <router-link to="/board" class="nav-link">
               <IconStar :size="20" color="currentColor" />
               <span>게시판</span>
@@ -49,6 +53,10 @@
           <router-link to="/monsters" @click="toggleMobileMenu" class="mobile-nav-link">
             <IconMonster :size="20" color="currentColor" />
             <span>몬스터</span>
+          </router-link>
+          <router-link to="/raids" @click="toggleMobileMenu" class="mobile-nav-link">
+            <IconRaid :size="20" color="currentColor" />
+            <span>레이드</span>
           </router-link>
           <router-link to="/board" @click="toggleMobileMenu" class="mobile-nav-link">
             <IconStar :size="20" color="currentColor" />
@@ -87,6 +95,7 @@ import IconMonster from './icons/IconMonster.vue'
 import IconChart from './icons/IconChart.vue'
 import IconStar from './icons/IconStar.vue'
 import IconTrophy from './icons/IconTrophy.vue'
+import IconRaid from './icons/IconRaid.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -108,22 +117,24 @@ const toggleMobileMenu = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-primary);
   width: 100%;
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--bg-card);
   padding: 1.25rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: var(--shadow-sm);
-  border-bottom: 3px solid transparent;
-  background-image: linear-gradient(white, white), var(--gradient-primary);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+  box-shadow: var(--shadow-md);
+  border-bottom: 2px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.header:hover {
+  box-shadow: var(--shadow-lg);
+  border-bottom-color: var(--primary);
 }
 
 .header-content {
@@ -138,7 +149,7 @@ const toggleMobileMenu = () => {
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  color: #333;
+  color: var(--text-primary);
   transition: transform 0.3s ease;
 }
 
@@ -148,13 +159,18 @@ const toggleMobileMenu = () => {
 
 .logo h1 {
   margin: 0;
-  font-size: 1.875rem;
-  font-weight: 900;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+}
+
+.logo:hover h1 {
+  filter: brightness(1.1);
+  transform: scale(1.05);
 }
 
 .nav {
@@ -168,24 +184,49 @@ const toggleMobileMenu = () => {
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
-  color: #666;
-  font-size: 0.95rem;
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DungGeunMo', sans-serif;
   padding: 0.625rem 1rem;
   border-radius: 10px;
-  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  background: transparent;
+  letter-spacing: 0.02em;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #6c5ce7;
-  background: rgba(108, 92, 231, 0.1);
+  color: var(--primary);
+  background: rgba(255, 107, 157, 0.1);
   transform: translateY(-2px);
 }
 
+.nav-link:hover::before {
+  width: 80%;
+}
+
 .nav-link.router-link-active {
-  color: #6c5ce7;
-  background: rgba(108, 92, 231, 0.15);
+  color: var(--primary);
+  background: rgba(255, 107, 157, 0.15);
+  border-color: var(--primary);
+}
+
+.nav-link.router-link-active::before {
+  width: 80%;
 }
 
 .mobile-menu-btn {
@@ -225,7 +266,7 @@ const toggleMobileMenu = () => {
   gap: 0.5rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 2px solid rgba(108, 92, 231, 0.2);
+  border-top: 2px solid var(--border);
 }
 
 .mobile-nav-link {

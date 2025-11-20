@@ -145,7 +145,7 @@ onMounted(async () => {
 
 .info-item:hover {
   padding-left: 0.5rem;
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.1) 0%, transparent 100%);
   border-radius: 8px;
 }
 
@@ -176,11 +176,16 @@ onMounted(async () => {
 .stat-card {
   text-align: center;
   padding: 1.5rem 1rem !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 12px !important;
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px) scale(1.03);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl) !important;
+  border-color: var(--primary) !important;
 }
 
 .stat-card-icon {
@@ -217,14 +222,18 @@ onMounted(async () => {
 .history-item {
   display: flex;
   gap: 1.5rem;
-  padding: 1.25rem !important;
+  padding: 1rem !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 12px !important;
   transition: all 0.3s ease;
   cursor: pointer;
+  box-shadow: var(--shadow-md) !important;
 }
 
 .history-item:hover {
-  transform: translateX(4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl) !important;
+  border-color: var(--primary) !important;
 }
 
 .history-icon {
@@ -245,21 +254,26 @@ onMounted(async () => {
 
 .history-mode {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.375rem 0.875rem;
   border-radius: 12px;
-  font-size: 0.85rem;
+  border: 2px solid;
+  font-size: 12px;
   font-weight: 600;
+  font-family: 'DungGeunMo', sans-serif;
   margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .history-mode.raid {
-  background: rgba(236, 72, 153, 0.2);
-  color: #ec4899;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
 }
 
 .history-mode.solo {
-  background: rgba(78, 205, 196, 0.2);
-  color: #4ecdc4;
+  background: var(--success);
+  color: var(--bg-primary);
+  border-color: var(--success);
 }
 
 .history-stats {
@@ -273,12 +287,15 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  background: var(--bg-secondary);
+  padding: 0.375rem 0.875rem;
+  background: var(--bg-card);
   border-radius: 12px;
-  font-size: 0.85rem;
+  border: 2px solid var(--border);
+  font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-inset);
 }
 
 .history-date {

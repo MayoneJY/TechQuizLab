@@ -36,41 +36,42 @@ defineEmits(['update:modelValue'])
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   font-size: 0.95rem;
 }
 
 .form-input {
   width: 100%;
   padding: 0.875rem 1.25rem;
-  background: #f8f9fa;
-  border: 2px solid #e0e0e0;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
   border-radius: 12px;
-  font-size: 1rem;
-  color: #333;
-  transition: all 0.3s ease;
-  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  box-shadow: var(--shadow-inset);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  background: #fff;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  background: var(--bg-card-hover);
 }
 
 .form-input::placeholder {
-  color: #999;
+  color: var(--text-muted);
 }
 
 .form-input-error {
-  border-color: #ef4444;
+  border-color: var(--danger);
 }
 
 .form-error-text {
   display: block;
   margin-top: 0.5rem;
-  color: #ef4444;
+  color: var(--danger-light);
   font-size: 0.85rem;
 }
 </style>

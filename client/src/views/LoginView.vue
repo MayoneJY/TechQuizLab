@@ -66,19 +66,19 @@ const handleLogin = async () => {
 .auth-link {
   margin-top: 1.5rem;
   text-align: center;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
 .auth-link a {
-  color: #667eea;
+  color: var(--primary-light);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .auth-link a:hover {
-  color: #764ba2;
+  color: var(--primary);
   text-decoration: underline;
 }
 </style>

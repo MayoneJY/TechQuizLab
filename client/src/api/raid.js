@@ -1,31 +1,61 @@
 import api from './index'
-import { mockRaidState, mockQuestions } from '@/mock/data'
+import { mockRaidState, mockQuestions, mockMonsters, mockRaids } from '@/mock/data'
 
 const USE_MOCK = true
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 export const raidApi = {
+  getRaids: async (filters = {}) => {
+    if (USE_MOCK) {
+      await delay(300)
+      return { data: mockRaids }
+    }
+    return api.get('/raids', { params: filters })
+  },
+  getRaid: async (id) => {
+    if (USE_MOCK) {
+      await delay(300)
+      const raid = mockRaids.find(r => r.id === parseInt(id)) || mockRaids[0]
+      return { data: raid }
+    }
+    return api.get(`/raids/${id}`)
+  },
   createRaid: async (data) => {
     if (USE_MOCK) {
       await delay(500)
       const question = mockQuestions.find(q => q.monsterId === data.monsterId) || mockQuestions[0]
-      return {
-        data: {
-          id: 1,
-          monsterId: data.monsterId,
-          status: 'OPEN',
-          currentHp: 1000,
-          participants: [],
-          currentQuestion: question,
-        },
+      const monster = mockMonsters.find(m => m.id === data.monsterId) || mockMonsters[0]
+      const newRaid = {
+        id: mockRaids.length + 1,
+        monsterId: data.monsterId,
+        monsterName: monster.name,
+        status: 'OPEN',
+        currentHp: monster.hp,
+        maxHp: monster.hp,
+        participants: [],
+        currentQuestion: question,
+        createdAt: new Date().toISOString(),
+        createdBy: { userId: 1, nickname: '현재사용자' },
       }
+      mockRaids.unshift(newRaid)
+      return { data: newRaid }
     }
     return api.post('/raids', data)
   },
   joinRaid: async (id) => {
     if (USE_MOCK) {
       await delay(300)
+      const raid = mockRaids.find(r => r.id === parseInt(id))
+      if (raid && raid.status === 'OPEN') {
+        const currentUser = { userId: 1, nickname: '현재사용자' }
+        if (!raid.participants.find(p => p.userId === currentUser.userId)) {
+          raid.participants.push(currentUser)
+          if (raid.participants.length >= 3) {
+            raid.status = 'IN_PROGRESS'
+          }
+        }
+      }
       return { data: { success: true } }
     }
     return api.post(`/raids/${id}/join`)

@@ -105,25 +105,29 @@ onMounted(() => {
 }
 
 .filter-select {
-  padding: 0.75rem 1.25rem;
-  border: 2px solid #e0e0e0;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border);
   border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  background: #fff;
-  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DungGeunMo', sans-serif;
+  background: var(--bg-card);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
 }
 
 .filter-select:hover {
-  border-color: #6c5ce7;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #6c5ce7;
-  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
 }
 
 
@@ -132,11 +136,11 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .monster-card:hover {
-  transform: translateY(-8px) scale(1.02);
+  transform: translateY(-4px) scale(1.02);
 }
 
 .monster-card-header {
@@ -152,8 +156,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border-radius: 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
   animation: float 3s ease-in-out infinite;
 }
 
@@ -168,23 +174,26 @@ onMounted(() => {
 
 .status {
   padding: 0.375rem 0.875rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  border-radius: 12px;
+  border: 2px solid;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DungGeunMo', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
+  box-shadow: var(--shadow-sm);
 }
 
 .status.active {
-  background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(81, 207, 102, 0.4);
+  background: var(--success);
+  color: var(--bg-primary);
+  border-color: var(--success-dark);
 }
 
 .status.closed {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+  background: var(--danger);
+  color: var(--text-primary);
+  border-color: var(--danger-dark);
 }
 
 .monster-content {
@@ -192,17 +201,20 @@ onMounted(() => {
 }
 
 .monster-name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
   margin: 0 0 0.5rem 0;
+  letter-spacing: 0.02em;
 }
 
 .monster-title {
-  font-size: 1rem;
-  color: #666;
+  font-size: 0.875rem;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .monster-info {
@@ -214,11 +226,14 @@ onMounted(() => {
 
 .info-badge {
   padding: 0.375rem 0.75rem;
-  background: #f5f5f5;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  color: #666;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 12px;
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-primary);
   font-weight: 500;
+  box-shadow: var(--shadow-inset);
 }
 
 .monster-hp-section {
@@ -237,20 +252,22 @@ onMounted(() => {
 
 .hp-bar-container {
   height: 24px;
-  background: #e0e0e0;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 0.5rem;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-inset);
 }
 
 .hp-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #51cf66 0%, #40c057 100%);
+  background: var(--gradient-success);
   border-radius: 12px;
-  transition: width 0.5s ease;
+  transition: width 0.3s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hp-bar-fill::after {

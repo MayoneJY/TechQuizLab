@@ -18,16 +18,18 @@ defineProps({
   align-items: center;
   gap: 1rem;
   padding: 3rem 0;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e0e0e0;
-  border-top-color: #6c5ce7;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-right-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  box-shadow: var(--shadow-sm);
 }
 
 @keyframes spin {
@@ -38,7 +40,8 @@ defineProps({
 
 .loading-message {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 14px;
+  font-family: 'DungGeunMo', sans-serif;
 }
 </style>
 

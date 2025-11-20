@@ -120,33 +120,40 @@ onMounted(() => {
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #999;
+  color: var(--text-muted);
+  font-family: 'Pixelify Sans', monospace;
 }
 
 .post-content {
-  background: #fff;
+  background: var(--bg-card);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 0;
+  border: 4px solid var(--border-bright);
+  box-shadow: var(--pixel-shadow);
+  image-rendering: pixelated;
 }
 
 .post-header {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 4px solid var(--border);
 }
 
 .post-meta {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 8px;
+  font-family: 'Pixelify Sans', monospace;
+  color: var(--text-secondary);
 }
 
 .post-category {
   padding: 0.25rem 0.75rem;
-  background: #f0f0f0;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 0;
+  box-shadow: var(--pixel-shadow-sm);
   font-weight: 500;
 }
 
@@ -183,17 +190,22 @@ onMounted(() => {
 .comment-form textarea {
   width: 100%;
   padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
+  border: 4px solid var(--border-bright);
+  border-radius: 0;
+  font-size: 12px;
+  font-family: 'Pixelify Sans', monospace;
   margin-bottom: 0.75rem;
   resize: vertical;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--pixel-shadow-inset);
+  image-rendering: pixelated;
 }
 
 .comment-form textarea:focus {
   outline: none;
-  border-color: #333;
+  border-color: var(--primary);
+  box-shadow: var(--pixel-shadow);
 }
 
 .comments-list {
@@ -204,12 +216,18 @@ onMounted(() => {
 
 .comment-item {
   padding: 1.5rem;
-  background: #f9f9f9;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 4px solid var(--border-bright);
+  border-radius: 0;
+  box-shadow: var(--pixel-shadow);
+  image-rendering: pixelated;
 }
 
 .comment-author {
-  font-weight: 600;
+  font-weight: normal;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 

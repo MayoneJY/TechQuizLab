@@ -231,19 +231,20 @@ const restartBattle = () => {
 }
 
 .start-screen h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.5rem;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
   margin-bottom: 1rem;
+  letter-spacing: 0.02em;
 }
 
 .start-screen p {
   color: var(--text-secondary);
   margin-bottom: 2rem;
-  font-size: 1.1rem;
+  font-size: 14px;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
 }
 
 .btn-large {
@@ -267,10 +268,12 @@ const restartBattle = () => {
 }
 
 .monster-battle-header h2 {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
   color: var(--text-primary);
   margin: 0;
+  letter-spacing: 0.02em;
 }
 
 .hp-bar-container {
@@ -283,8 +286,9 @@ const restartBattle = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', sans-serif;
+  font-size: 14px;
   color: var(--text-primary);
   min-width: 80px;
 }
@@ -293,43 +297,21 @@ const restartBattle = () => {
   flex: 1;
   position: relative;
   height: 40px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-card);
+  border: 2px solid var(--border);
   border-radius: 20px;
   overflow: hidden;
-  border: 3px solid var(--border);
+  box-shadow: var(--shadow-inset);
 }
 
 .hp-bar-fill {
   height: 100%;
   background: var(--gradient-success);
-  transition: width 0.5s ease;
+  border-radius: 20px;
+  transition: width 0.3s ease;
   position: relative;
   overflow: hidden;
-}
-
-.hp-bar-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hp-bar-text {
@@ -337,11 +319,12 @@ const restartBattle = () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-weight: 800;
-  font-size: 1.1rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  font-family: 'DungGeunMo', sans-serif;
+  font-size: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   z-index: 1;
-  color: white;
+  color: var(--text-primary);
 }
 
 .question-section {
@@ -351,9 +334,10 @@ const restartBattle = () => {
 .question-card {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
   border: 2px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .question-header {
@@ -365,14 +349,17 @@ const restartBattle = () => {
 
 .question-header h3 {
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
   color: var(--text-primary);
+  letter-spacing: 0.02em;
 }
 
 .question-text {
-  font-size: 1.15rem;
-  line-height: 1.8;
+  font-size: 16px;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  line-height: 1.7;
   color: var(--text-primary);
   margin: 0;
 }
@@ -380,31 +367,33 @@ const restartBattle = () => {
 .answer-section label {
   display: block;
   margin-bottom: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
+  font-family: 'DungGeunMo', sans-serif;
+  font-size: 14px;
   color: var(--text-primary);
-  font-size: 1.05rem;
 }
 
 .answer-input {
   width: 100%;
-  padding: 1.25rem;
-  background: var(--bg-secondary);
+  padding: 1rem;
+  background: var(--bg-card);
   border: 2px solid var(--border);
   border-radius: 12px;
-  font-size: 1rem;
-  font-family: inherit;
+  font-size: 14px;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
   color: var(--text-primary);
   margin-bottom: 1.5rem;
   resize: vertical;
   min-height: 200px;
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-inset);
 }
 
 .answer-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+  background: var(--bg-card-hover);
 }
 
 .answer-input::placeholder {
@@ -435,17 +424,23 @@ const restartBattle = () => {
 }
 
 .result-header h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: white;
+  font-size: 1.5rem;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
   margin: 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  letter-spacing: 0.02em;
 }
 
 .result-card {
   padding: 2.5rem;
   margin-bottom: 2rem;
   text-align: left;
+  border: 4px solid var(--border-bright);
+  border-radius: 0;
+  box-shadow: var(--pixel-shadow);
+  image-rendering: pixelated;
 }
 
 .result-stats {
@@ -460,9 +455,10 @@ const restartBattle = () => {
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
   border: 2px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .result-content {
@@ -472,39 +468,42 @@ const restartBattle = () => {
 }
 
 .result-label {
-  font-size: 0.9rem;
-  color: var(--text-muted);
+  font-size: 12px;
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .result-value {
-  font-weight: 800;
-  font-size: 1.8rem;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 600;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  font-size: 1.25rem;
+  color: var(--primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
 }
 
 .feedback {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid var(--border);
+  border-top: 4px solid var(--border);
 }
 
 .feedback h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
   color: var(--text-primary);
   margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
 }
 
 .feedback-section {
   margin-bottom: 1.5rem;
   padding: 1.5rem;
-  background: var(--bg-secondary);
+  background: var(--bg-card);
   border-radius: 12px;
   border: 2px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .feedback-section.good {

@@ -46,6 +46,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/raids',
+      name: 'raids',
+      component: () => import('@/views/RaidsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/raids/:id',
       name: 'raid-battle',
       component: () => import('@/views/RaidBattleView.vue'),

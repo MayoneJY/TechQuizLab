@@ -21,14 +21,16 @@ defineProps({
   gap: 0.75rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(108, 92, 231, 0.2);
+  border-bottom: 2px solid var(--border);
 }
 
 .card-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #333;
+  font-size: 1.25rem;
+  font-weight: normal;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 768px) {

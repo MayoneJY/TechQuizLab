@@ -23,13 +23,14 @@ defineProps({
   gap: 1rem;
   padding: 3rem 0;
   text-align: center;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .empty-message {
   margin: 0;
   line-height: 1.6;
-  font-size: 1rem;
+  font-size: 16px;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
 }
 </style>
 

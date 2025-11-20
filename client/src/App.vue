@@ -130,10 +130,10 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #2d3436;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  color: var(--text-primary);
   line-height: 1.6;
-  background: #f8f9fa;
+  background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

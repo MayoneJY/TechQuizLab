@@ -54,17 +54,18 @@ const iconColor = computed(() => {
 
 <style scoped>
 .stat-card {
-  background: #fff;
+  background: var(--bg-card);
   padding: 1.5rem;
-  border-radius: 16px;
-  border: 2px solid #f0f0f0;
-  transition: all 0.3s ease;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  border-color: #667eea;
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-xl);
 }
 
 .stat-header {
@@ -87,25 +88,31 @@ const iconColor = computed(() => {
 
 .stat-name {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
 }
 
 .stat-progress {
   display: flex;
   justify-content: space-between;
   margin-top: 0.75rem;
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 
 .stat-xp-text {
   font-weight: 600;
-  color: #667eea;
+  font-family: 'DungGeunMo', sans-serif;
+  font-size: 14px;
+  color: var(--primary);
 }
 
 .stat-next-level {
-  color: #999;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 @media (max-width: 768px) {

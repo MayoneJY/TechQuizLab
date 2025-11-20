@@ -431,3 +431,74 @@ export const mockRaidState = {
   },
 }
 
+export const mockRaids = [
+  {
+    id: 1,
+    monsterId: 1,
+    monsterName: '토스 백엔드 신입',
+    status: 'IN_PROGRESS',
+    currentHp: 750,
+    maxHp: 1000,
+    participants: [
+      { userId: 1, nickname: '개발자123' },
+      { userId: 2, nickname: '백엔드러버' },
+      { userId: 3, nickname: '면접준비생' },
+    ],
+    createdAt: '2024-11-19T10:00:00',
+    createdBy: { userId: 1, nickname: '개발자123' },
+  },
+  {
+    id: 2,
+    monsterId: 2,
+    monsterName: '카카오 서버 엔지니어',
+    status: 'OPEN',
+    currentHp: 1200,
+    maxHp: 1200,
+    participants: [
+      { userId: 4, nickname: '서버마스터' },
+    ],
+    createdAt: '2024-11-19T11:30:00',
+    createdBy: { userId: 4, nickname: '서버마스터' },
+  },
+  {
+    id: 3,
+    monsterId: 3,
+    monsterName: '네이버 백엔드 개발자',
+    status: 'OPEN',
+    currentHp: 1500,
+    maxHp: 1500,
+    participants: [
+      { userId: 5, nickname: '네이버러버' },
+      { userId: 6, nickname: '백엔드킹' },
+    ],
+    createdAt: '2024-11-19T12:00:00',
+    createdBy: { userId: 5, nickname: '네이버러버' },
+  },
+  {
+    id: 4,
+    monsterId: 4,
+    monsterName: '당근마켓 백엔드',
+    status: 'CLOSED',
+    currentHp: 0,
+    maxHp: 800,
+    participants: [
+      { userId: 7, nickname: '당근러버' },
+      { userId: 8, nickname: '스타트업러버' },
+      { userId: 9, nickname: '면접왕' },
+    ],
+    createdAt: '2024-11-18T14:00:00',
+    createdBy: { userId: 7, nickname: '당근러버' },
+  },
+  {
+    id: 5,
+    monsterId: 5,
+    monsterName: '라인 플랫폼 개발자',
+    status: 'OPEN',
+    currentHp: 2000,
+    maxHp: 2000,
+    participants: [],
+    createdAt: '2024-11-19T13:00:00',
+    createdBy: { userId: 10, nickname: '라인러버' },
+  },
+]
+

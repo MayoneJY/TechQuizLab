@@ -96,7 +96,7 @@ const createRaid = async () => {
 }
 
 const joinRaid = async () => {
-  alert('레이드 참가 기능은 준비 중입니다.')
+  router.push('/raids')
 }
 </script>
 
@@ -113,8 +113,10 @@ const joinRaid = async () => {
   gap: 2rem;
   padding: 2rem;
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
+  background: var(--bg-card);
+  border: 4px solid var(--primary);
+  border-radius: 0;
+  box-shadow: var(--shadow-md);
 }
 
 .monster-header::before {
@@ -127,10 +129,12 @@ const joinRaid = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-card);
+  border: 4px solid var(--border-bright);
+  border-radius: 0;
+  box-shadow: var(--pixel-shadow);
   animation: float 3s ease-in-out infinite;
+  image-rendering: pixelated;
 }
 
 @keyframes float {
@@ -147,33 +151,38 @@ const joinRaid = async () => {
 }
 
 .monster-header-content h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: white;
+  font-size: 1.5rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
   margin: 0 0 1rem 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  letter-spacing: 0.02em;
 }
 
 .status {
   padding: 0.5rem 1.25rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 700;
+  border-radius: 12px;
+  border: 2px solid;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DungGeunMo', sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
   display: inline-block;
+  box-shadow: var(--shadow-sm);
 }
 
 .status.active {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: var(--success);
+  color: var(--bg-primary);
+  border-color: var(--success-dark);
 }
 
 .status.closed {
-  background: rgba(0, 0, 0, 0.2);
-  color: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border-color: var(--border);
 }
 
 .monster-info {
@@ -182,10 +191,12 @@ const joinRaid = async () => {
 }
 
 .monster-info h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
 }
 
 .info-row {
@@ -200,21 +211,24 @@ const joinRaid = async () => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem;
-  background: #f5f5f5;
+  background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .info-label {
-  font-size: 0.85rem;
-  color: #999;
+  font-size: 12px;
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .info-value {
-  font-size: 1.1rem;
-  color: #333;
-  font-weight: 600;
+  font-size: 1rem;
+  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  color: var(--text-primary);
+  font-weight: 500;
 }
 
 .hp-section {
@@ -229,9 +243,11 @@ const joinRaid = async () => {
 }
 
 .hp-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
 }
 
 .hp-bar-text {
@@ -239,11 +255,12 @@ const joinRaid = async () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-weight: 800;
-  font-size: 1rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  font-family: 'DungGeunMo', sans-serif;
+  font-size: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   z-index: 1;
-  color: white;
+  color: var(--text-primary);
 }
 
 .actions {

@@ -155,8 +155,12 @@ onMounted(() => {
 }
 
 .board-header h1 {
-  font-size: 2rem;
+  font-size: 1.5rem;
+  font-family: 'Press Start 2P', monospace;
   margin: 0;
+  color: var(--primary);
+  text-shadow: 2px 2px 0px var(--primary-dark), 4px 4px 0px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.1em;
 }
 
 .board-filters {
@@ -165,16 +169,22 @@ onMounted(() => {
 
 .board-filters select {
   padding: 0.5rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.95rem;
+  border: 4px solid var(--border-bright);
+  border-radius: 0;
+  font-size: 10px;
+  font-family: 'Press Start 2P', monospace;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--pixel-shadow);
+  image-rendering: pixelated;
 }
 
 .loading,
 .empty {
   text-align: center;
   padding: 3rem;
-  color: #999;
+  color: var(--text-muted);
+  font-family: 'Pixelify Sans', monospace;
 }
 
 .posts-list {
@@ -184,15 +194,20 @@ onMounted(() => {
 }
 
 .post-item {
-  background: #fff;
+  background: var(--bg-card);
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 0;
+  border: 4px solid var(--border-bright);
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.1s;
+  box-shadow: var(--pixel-shadow);
+  image-rendering: pixelated;
 }
 
 .post-item:hover {
-  transform: translateX(4px);
+  transform: translate(4px, -2px);
+  box-shadow: var(--pixel-shadow-lg);
+  border-color: var(--primary);
 }
 
 .post-header {
@@ -204,26 +219,36 @@ onMounted(() => {
 
 .post-category {
   padding: 0.25rem 0.75rem;
-  background: #f0f0f0;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 0;
+  font-size: 8px;
+  font-weight: normal;
+  font-family: 'Press Start 2P', monospace;
+  color: var(--text-secondary);
+  box-shadow: var(--pixel-shadow-sm);
+  image-rendering: pixelated;
 }
 
 .post-date {
-  font-size: 0.85rem;
-  color: #999;
+  font-size: 8px;
+  font-family: 'Pixelify Sans', monospace;
+  color: var(--text-muted);
 }
 
 .post-title {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: normal;
+  font-family: 'Press Start 2P', monospace;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
 }
 
 .post-author {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.75rem;
+  font-family: 'Pixelify Sans', monospace;
+  color: var(--text-secondary);
 }
 
 .modal-overlay {
@@ -232,25 +257,33 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  image-rendering: pixelated;
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--bg-card);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 0;
+  border: 4px solid var(--border-bright);
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: var(--pixel-shadow-lg);
+  image-rendering: pixelated;
 }
 
 .modal-content h2 {
   margin-bottom: 1.5rem;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1rem;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
 }
 
 .form-group {
@@ -260,7 +293,10 @@ onMounted(() => {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-weight: normal;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--text-primary);
 }
 
 .form-group select,
@@ -268,10 +304,14 @@ onMounted(() => {
 .form-group textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
+  border: 4px solid var(--border-bright);
+  border-radius: 0;
+  font-size: 12px;
+  font-family: 'Pixelify Sans', monospace;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--pixel-shadow-inset);
+  image-rendering: pixelated;
 }
 
 .form-group textarea {

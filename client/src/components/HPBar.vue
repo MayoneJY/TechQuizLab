@@ -49,55 +49,59 @@ const hpClass = computed(() => {
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DungGeunMo', sans-serif;
+  color: var(--text-primary);
 }
 
 .hp-value {
   margin-left: auto;
-  color: #666;
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .hp-bar-container {
   width: 100%;
   height: 32px;
-  background: #e0e0e0;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-  border: 2px solid #ddd;
+  box-shadow: var(--shadow-inset);
 }
 
 .hp-bar-fill {
   height: 100%;
-  border-radius: 14px;
-  transition: width 0.5s ease;
+  border-radius: 16px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hp-high {
-  background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+  background: var(--gradient-success);
 }
 
 .hp-medium {
-  background: linear-gradient(90deg, #ffa726 0%, #ffb74d 100%);
+  background: var(--gradient-warning);
 }
 
 .hp-low {
-  background: linear-gradient(90deg, #ef5350 0%, #e57373 100%);
+  background: var(--gradient-danger);
   animation: shake 0.5s ease-in-out infinite;
 }
 
 .hp-text {
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'DungGeunMo', sans-serif;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes shake {
