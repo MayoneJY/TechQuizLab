@@ -36,7 +36,7 @@
               <IconGem :size="16" color="#4ecdc4" />
               {{ stat.xp || 0 }} XP
             </div>
-          </div>
+          </GamificationCard>
         </div>
       </GamificationCard>
 
@@ -73,7 +73,7 @@
               </div>
               <div class="history-date">{{ formatDate(item.createdAt) }}</div>
             </div>
-          </div>
+          </GamificationCard>
         </div>
       </GamificationCard>
     </div>
@@ -137,8 +137,16 @@ onMounted(async () => {
 .info-item {
   display: flex;
   justify-content: space-between;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  padding-left: 0.5rem;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.05) 0%, transparent 100%);
+  border-radius: 8px;
 }
 
 .info-item:last-child {
@@ -148,11 +156,13 @@ onMounted(async () => {
 .info-item .label {
   font-weight: 600;
   color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 .info-item .value {
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.05rem;
 }
 
 
@@ -165,17 +175,27 @@ onMounted(async () => {
 
 .stat-card {
   text-align: center;
+  padding: 1.5rem 1rem !important;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.03);
 }
 
 .stat-card-icon {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .stat-name {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  font-size: 1.05rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
 }
 
 .stat-xp {
@@ -197,6 +217,14 @@ onMounted(async () => {
 .history-item {
   display: flex;
   gap: 1.5rem;
+  padding: 1.25rem !important;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.history-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-lg);
 }
 
 .history-icon {

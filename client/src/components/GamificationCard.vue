@@ -13,16 +13,17 @@ defineProps({
 
 <style scoped>
 .gamification-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
+  background: var(--bg-card);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   width: 100%;
   max-width: 100%;
+  backdrop-filter: blur(10px);
 }
 
 .gamification-card::before {
@@ -31,10 +32,11 @@ defineProps({
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  height: 5px;
+  background: var(--gradient-primary);
   transform: scaleX(0);
-  transition: transform 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px 24px 0 0;
 }
 
 .gamification-card.card-hover:hover::before {
@@ -42,40 +44,45 @@ defineProps({
 }
 
 .card-primary {
-  border-color: rgba(102, 126, 234, 0.2);
+  border-color: rgba(99, 102, 241, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
 }
 
 .card-primary::before {
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
 }
 
 .card-success {
-  border-color: rgba(78, 205, 196, 0.2);
+  border-color: rgba(16, 185, 129, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 250, 0.98) 100%);
 }
 
 .card-success::before {
-  background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%);
+  background: var(--gradient-success);
 }
 
 .card-warning {
-  border-color: rgba(255, 217, 61, 0.2);
+  border-color: rgba(245, 158, 11, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 251, 235, 0.98) 100%);
 }
 
 .card-warning::before {
-  background: linear-gradient(90deg, #ffd93d 0%, #f6c23e 100%);
+  background: var(--gradient-warning);
 }
 
 .card-danger {
-  border-color: rgba(255, 107, 107, 0.2);
+  border-color: rgba(239, 68, 68, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(254, 242, 242, 0.98) 100%);
 }
 
 .card-danger::before {
-  background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+  background: var(--gradient-danger);
 }
 
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--border);
 }
 
 @media (max-width: 768px) {

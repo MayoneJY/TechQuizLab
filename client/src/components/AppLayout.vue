@@ -113,14 +113,17 @@ const toggleMobileMenu = () => {
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom: 3px solid #6c5ce7;
-  padding: 1rem 0;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 1.25rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--shadow-sm);
+  border-bottom: 3px solid transparent;
+  background-image: linear-gradient(white, white), var(--gradient-primary);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .header-content {
@@ -145,12 +148,13 @@ const toggleMobileMenu = () => {
 
 .logo h1 {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 1.875rem;
+  font-weight: 900;
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .nav {

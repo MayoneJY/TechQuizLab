@@ -83,14 +83,15 @@ const authStore = useAuthStore()
 }
 
 .hero-title {
-  font-size: 4rem;
+  font-size: 4.5rem;
   margin-bottom: 1.5rem;
-  font-weight: 800;
+  font-weight: 900;
   background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .subtitle {
@@ -112,9 +113,22 @@ const authStore = useAuthStore()
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 500;
+  gap: 1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.feature-item:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-lg);
 }
 
 .actions {
