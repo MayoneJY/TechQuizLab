@@ -1,49 +1,32 @@
 package com.mayonedev.battle.service;
 
-import com.mayonedev.battle.dto.BoardPostDto;
 import com.mayonedev.battle.entity.Board;
 import java.util.*;
 
-public interface BoardService {
+public interface BoardService { //매퍼가 서비스랑 어떻게 연결될까?
 
-     /**
-     * 모든 게시글 목록 조회 (최신순)
-     */
-    List<Board> getAllPosts();
+    //게시글 목록 조회
+    List<Board> selectPostAll() throws Exception;
 
-     /**
-     * 유저 id 조회를 통한 특정 유저 게시글 보기
-     */
-    List<Board> getPostByUserId(long userId);
+    //사용자 ID로 게시글 조회
+    List<Board> selectpostbyuserid(int userId)throws Exception; 
 
-    /*
-     * 게시글 id 조회를 통한 게시글 상세 확인
-     */
-    Board getPost(long postId);
+    //게시글 ID로 게시글 조회
+    Board selectByPostId(int id)throws Exception; 
 
-     /*
-     * 게시글 작성 유저 id로 조회해서 붙이기
-     */
+    // TODO 닉네임으로 게시글 조회
+    List<Board> selectPostByNickName(String nickname)throws Exception;
 
-    Board createPost(long id, BoardPostDto dto); //BoardCreateRequestDto dto
+    //게시글 등록
+    void insertPost(Board board)throws Exception;
 
-     /**
-     * 게시글 수정- 작성자 본인인지 확인 필요, 게시글 id로 수정
-     */
+    //게시글 수정 - 본인확인 필요 : 이것도 오늘 배운 인증 으로 하게 되는지??
+    void updatePost(Board board)throws Exception;
 
-    Board updatePost(long userId, long postId, BoardPostDto dto);
+    //게시글 삭제
+    void deletePost(int id) throws Exception;
 
-     /**
-     * 게시글 삭제
-     */
-
-    int deletePost(long userId, long postId);
-
-     /**
-     * 게시글 조회수 증가
-     */
-
-    void increaseViewCount();
-
+    // TODO 총 게시글 방문 수 조회 - 미구현
+    int increaseViewCount() throws Exception;
 } 
 
