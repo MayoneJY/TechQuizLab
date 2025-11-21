@@ -24,10 +24,14 @@ export interface UserDailyMission {
   id: number
   userId: number
   dailyMissionId: number
+  missionName?: string
+  description?: string
   progress: number
   isCompleted: boolean
   isClaimed: boolean
   assignedDate: string
+  targetValue?: number
+  currentValue?: number
 }
 
 export const useGamificationStore = defineStore('gamification', () => {

@@ -3,7 +3,7 @@
     <ParticleBackground />
     
     <div class="login-screen">
-      <h1 class="pixel-text game-title">잡몬스터</h1>
+      <h1 class="pixel-text game-title">잡스페이스</h1>
       
       <div class="login-form">
         <div v-if="isLogin" class="form-section">

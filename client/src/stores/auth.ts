@@ -57,10 +57,10 @@ export const useAuthStore = defineStore('auth', () => {
       }
       
       if (user.value) {
-        localStorage.setItem('user', JSON.stringify(user.value))
+      localStorage.setItem('user', JSON.stringify(user.value))
       }
       if (token.value) {
-        localStorage.setItem('authToken', token.value)
+      localStorage.setItem('authToken', token.value)
       }
       return user.value
     } catch (err: any) {
@@ -94,17 +94,17 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         user.value = responseData
         if (user.value && user.value.id) {
-          token.value = `token_${user.value.id}`
+      token.value = `token_${user.value.id}`
         } else {
           token.value = 'token_temp'
         }
       }
       
       if (user.value) {
-        localStorage.setItem('user', JSON.stringify(user.value))
+      localStorage.setItem('user', JSON.stringify(user.value))
       }
       if (token.value) {
-        localStorage.setItem('authToken', token.value)
+      localStorage.setItem('authToken', token.value)
       }
       return user.value
     } catch (err: any) {

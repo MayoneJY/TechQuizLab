@@ -1,75 +1,101 @@
 <template>
-  <div class="game-container">
-    <!-- Particle Background -->
+  <div class="gamification-screen">
     <ParticleBackground />
+    <div class="stars-container"></div>
     
-    <!-- Stars background -->
-    <div class="stars-container">
-      <div 
-        v-for="i in 100" 
-        :key="i" 
-        class="star"
-        :style="getStarStyle(i)"
-      ></div>
-    </div>
-    
-    <!-- Title Screen -->
-    <div class="title-screen">
-      <h1 class="game-title pixel-text">
-        <span class="title-main">잡스페이스</span>
-        <span class="title-sub">JOB SPACE</span>
-      </h1>
-      
-      <div class="hearts-display">
-        <PixelHeart 
-          v-for="_ in 8" 
-          :key="`heart-${_}`"
-        />
+    <div class="gamification-container">
+      <div class="header">
+        <h1 class="pixel-text title">게이미피케이션</h1>
+        <button class="pixel-button back-button" @click="goHome">
+          ← 홈으로
+        </button>
       </div>
-      
-      <div class="menu-buttons">
+
+      <div class="tabs">
         <button 
-          class="pixel-button primary" 
-          @click="goToTopicSelection"
+          class="pixel-button tab-button" 
+          :class="{ active: activeTab === 'achievements' }"
+          @click="activeTab = 'achievements'"
         >
-          START
+          업적
         </button>
         <button 
-          class="pixel-button" 
-          @click="goToAbout"
+          class="pixel-button tab-button" 
+          :class="{ active: activeTab === 'missions' }"
+          @click="activeTab = 'missions'"
         >
-          ABOUT
+          일일 미션
         </button>
       </div>
-      
-      <!-- User Info -->
-      <div v-if="authStore.isAuthenticated" class="user-info">
-        <div class="user-profile">
-          <p class="pixel-text user-name">{{ authStore.user?.nickname }}</p>
-          <p v-if="authStore.user?.level" class="pixel-text user-level">
-            Lv.{{ authStore.user.level }} | EXP: {{ authStore.user.exp || 0 }}
-          </p>
+
+      <!-- Achievements Tab -->
+      <div v-if="activeTab === 'achievements'" class="tab-content">
+        <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">로딩 중...</div>
+        <div v-else-if="gamificationStore.achievements.length === 0" class="empty-message pixel-text">
+          업적이 없습니다.
         </div>
-        <div class="user-buttons">
-          <button class="pixel-button link-button" @click="goToGamification">
-            업적 & 미션
-          </button>
-          <button class="pixel-button link-button" @click="goToBoard">
-            게시판
-          </button>
-          <button class="pixel-button link-button" @click="handleLogout">
-            로그아웃
-          </button>
+        <div v-else class="achievements-list">
+          <div
+            v-for="achievement in gamificationStore.achievements"
+            :key="achievement.id"
+            class="achievement-item"
+            :class="{ unlocked: gamificationStore.isAchievementUnlocked(achievement.id) }"
+          >
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-info">
+              <p class="pixel-text achievement-name">{{ achievement.name || '업적' }}</p>
+              <p class="achievement-desc">{{ achievement.description || '업적 설명이 없습니다.' }}</p>
+              <p class="pixel-text achievement-reward">보상: EXP +{{ achievement.rewardExp || 0 }}</p>
+            </div>
+            <div v-if="gamificationStore.isAchievementUnlocked(achievement.id)" class="achievement-badge">
+              ✓
+            </div>
+          </div>
         </div>
       </div>
-      <div v-else class="user-info">
-        <button class="pixel-button" @click="goToLogin">
-          로그인
-        </button>
+
+      <!-- Missions Tab -->
+      <div v-if="activeTab === 'missions'" class="tab-content">
+        <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">로딩 중...</div>
+        <div v-else-if="gamificationStore.dailyMissions.length === 0" class="empty-message pixel-text">
+          오늘의 미션이 없습니다.
+        </div>
+        <div v-else class="missions-list">
+          <div
+            v-for="mission in gamificationStore.dailyMissions"
+            :key="mission.id"
+            class="mission-item"
+            :class="{ completed: mission.isCompleted, claimed: mission.isClaimed }"
+          >
+            <div class="mission-header">
+              <div class="mission-icon">📋</div>
+              <div class="mission-info">
+                <p class="pixel-text mission-name">{{ mission.missionName || '일일 미션' }}</p>
+                <p class="mission-desc">{{ mission.description || '미션을 완료하세요!' }}</p>
+              </div>
+            </div>
+            <div class="mission-progress-container">
+              <div class="mission-progress">
+                <div class="progress-bar" :style="{ width: `${Math.min(mission.progress || 0, 100)}%` }"></div>
+                <p class="pixel-text progress-text">{{ Math.min(mission.progress || 0, 100) }}%</p>
+              </div>
+            </div>
+            <div class="mission-actions">
+              <button
+                v-if="mission.isCompleted && !mission.isClaimed"
+                class="pixel-button success"
+                @click="claimMission(mission.id)"
+              >
+                보상 받기
+              </button>
+              <p v-else-if="mission.isClaimed" class="pixel-text claimed-text">✓ 완료</p>
+              <p v-else class="pixel-text progress-status">진행 중...</p>
+            </div>
+          </div>
+        </div>
       </div>
-      
     </div>
-    
+
     <!-- Spaceship decoration -->
     <div class="spaceship">
       <PixelSpaceship direction="up" />
@@ -88,230 +114,123 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useGamificationStore } from '../stores/gamification'
 import { useAuthStore } from '../stores/auth'
 import ParticleBackground from '../components/ParticleBackground.vue'
-import PixelHeart from '../components/PixelHeart.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
+const gamificationStore = useGamificationStore()
 const authStore = useAuthStore()
 
+const activeTab = ref<'achievements' | 'missions'>('achievements')
 
-onMounted(() => {
-  // 주제 목록은 TopicSelection 화면에서 로드
+onMounted(async () => {
+  // 로그인 확인
+  if (!authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
+
+  // 업적 및 미션 데이터 로드
+  try {
+    await Promise.all([
+      gamificationStore.fetchAllAchievements(),
+      gamificationStore.fetchUserAchievements(),
+      gamificationStore.fetchDailyMissions()
+    ])
+  } catch (error) {
+    console.error('Failed to load gamification data:', error)
+  }
 })
 
-function getStarStyle(index: number) {
-  return {
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    animationDelay: `${Math.random() * 2}s`,
-    animationDuration: `${1 + Math.random() * 2}s`
+function goHome() {
+  router.push('/')
+}
+
+async function claimMission(missionId: number) {
+  try {
+    await gamificationStore.claimMissionReward(missionId)
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error || 
+                        error.message ||
+                        '보상 수령에 실패했습니다.'
+    alert(errorMessage)
   }
-}
-
-function goToTopicSelection() {
-  router.push('/topics')
-}
-
-function goToAbout() {
-  router.push('/about')
-}
-
-
-function handleLogout() {
-  authStore.logout()
-}
-
-function goToLogin() {
-  router.push('/login')
-}
-
-function goToGamification() {
-  router.push('/gamification')
-}
-
-function goToBoard() {
-  router.push('/board')
 }
 </script>
 
 <style scoped>
-.title-screen {
+.gamification-screen {
+  min-height: 100vh;
+  position: relative;
+  padding: 40px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 30px;
+  animation: screen-enter 0.8s ease-out;
+}
+
+.gamification-container {
+  width: 100%;
+  max-width: 900px;
   z-index: 10;
   position: relative;
-  animation: screen-enter 0.8s ease-out;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  padding-bottom: 80px;
-  box-sizing: border-box;
-  min-height: calc(100vh - 40px);
 }
 
-@keyframes screen-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.game-title {
-  font-size: 48px;
-  text-align: center;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 30px;
-  animation: titlePulse 2s ease-in-out infinite;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.title-main {
-  display: block;
+.title {
+  font-size: 32px;
+  font-weight: 700;
   color: #ffd43b;
-  font-size: 64px;
-  margin-bottom: 15px;
-  font-weight: 900;
   text-shadow: 
     4px 4px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 20px rgba(255, 212, 59, 0.5);
-  letter-spacing: -1px;
-  word-break: keep-all;
-}
-
-.title-sub {
-  display: block;
-  color: #ff6b6b;
-  font-size: 28px;
-  font-weight: 700;
-  text-shadow: 
-    3px 3px 0 #000,
     -1px -1px 0 #000,
     1px -1px 0 #000,
     -1px 1px 0 #000;
-  letter-spacing: 2px;
+  margin: 0;
 }
 
-@media (max-width: 768px) {
-  .title-main {
-    font-size: 40px;
-  }
-  
-  .title-sub {
-    font-size: 18px;
-  }
+.back-button {
+  font-size: 14px;
+  padding: 12px 24px;
 }
 
-@keyframes titlePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.hearts-display {
+.tabs {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 400px;
-}
-
-.hearts-display {
-  gap: 8px;
-}
-
-.menu-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-
-
-.user-info {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.user-profile {
-  margin-bottom: 15px;
-}
-
-.user-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ffd43b;
-  margin-bottom: 5px;
-}
-
-.user-level {
-  font-size: 12px;
-  font-weight: 600;
-  color: #4a9eff;
-}
-
-.user-buttons {
-  display: flex;
-  gap: 10px;
+  gap: 15px;
+  margin-bottom: 30px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.tab-button {
+  font-size: 16px;
+  padding: 15px 30px;
+  min-width: 150px;
+  transition: all 0.3s;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+  box-shadow: 
+    0 0 20px rgba(74, 158, 255, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.tab-content {
   width: 100%;
-  max-width: 500px;
-}
-
-@media (max-width: 768px) {
-  .user-buttons {
-    gap: 8px;
-  }
-  
-  .user-buttons .pixel-button {
-    flex: 1;
-    min-width: 100px;
-    font-size: 11px;
-    padding: 10px 15px;
-  }
-}
-
-.achievements-screen,
-.missions-screen {
-  margin-top: 30px;
-  margin-bottom: 50px;
-  padding: 25px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 4px solid #fff;
-  border-radius: 8px;
-  max-width: 700px;
-  width: 100%;
-  min-height: 200px;
-  box-sizing: border-box;
-  box-shadow: 0 0 30px rgba(74, 158, 255, 0.3);
-}
-
-.achievements-screen h3,
-.missions-screen h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #ffd43b;
-  text-shadow: 
-    3px 3px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000;
-  padding-bottom: 15px;
-  border-bottom: 3px solid rgba(255, 255, 255, 0.3);
 }
 
 .achievements-list,
@@ -324,16 +243,24 @@ function goToBoard() {
 
 .empty-message {
   text-align: center;
-  padding: 40px 20px;
+  padding: 60px 20px;
   color: #888;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
+}
+
+.loading-text {
+  text-align: center;
+  color: #4a9eff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 40px;
 }
 
 .achievement-item {
   display: flex;
   gap: 15px;
-  padding: 18px;
+  padding: 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 3px solid #666;
   border-radius: 8px;
@@ -378,7 +305,7 @@ function goToBoard() {
 }
 
 .achievement-icon {
-  font-size: 36px;
+  font-size: 40px;
   filter: drop-shadow(2px 2px 0 #000);
   flex-shrink: 0;
   line-height: 1;
@@ -390,15 +317,20 @@ function goToBoard() {
 }
 
 .achievement-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 8px;
   word-break: keep-all;
+  line-height: 1.4;
+}
+
+.achievement-item.unlocked .achievement-name {
+  color: #ffd43b;
 }
 
 .achievement-desc {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   color: #ccc;
   margin-bottom: 8px;
@@ -406,14 +338,19 @@ function goToBoard() {
   word-break: keep-all;
 }
 
+.achievement-item.unlocked .achievement-desc {
+  color: #fff;
+}
+
 .achievement-reward {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #51cf66;
+  margin-top: 4px;
 }
 
 .achievement-badge {
-  font-size: 24px;
+  font-size: 28px;
   color: #ffd43b;
   flex-shrink: 0;
   filter: drop-shadow(2px 2px 0 #000);
@@ -423,7 +360,7 @@ function goToBoard() {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  padding: 18px;
+  padding: 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 3px solid #666;
   border-radius: 8px;
@@ -473,7 +410,7 @@ function goToBoard() {
 }
 
 .mission-icon {
-  font-size: 28px;
+  font-size: 32px;
   filter: drop-shadow(2px 2px 0 #000);
   flex-shrink: 0;
   line-height: 1;
@@ -485,7 +422,7 @@ function goToBoard() {
 }
 
 .mission-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 6px;
@@ -494,7 +431,7 @@ function goToBoard() {
 }
 
 .mission-desc {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   color: #ccc;
   line-height: 1.6;
@@ -589,34 +526,6 @@ function goToBoard() {
   padding: 8px;
 }
 
-.loading-text {
-  text-align: center;
-  color: #4a9eff;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 20px;
-}
-
-.user-info {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-name {
-  font-size: 12px;
-  color: #4a9eff;
-}
-
-.loading-text {
-  font-size: 10px;
-  color: #ffd43b;
-  text-align: center;
-  padding: 20px;
-}
-
 .stars-container {
   position: fixed;
   top: 0;
@@ -628,7 +537,7 @@ function goToBoard() {
 }
 
 .spaceship {
-  position: absolute;
+  position: fixed;
   bottom: 50px;
   right: 50px;
   animation: float 3s ease-in-out infinite;
@@ -636,7 +545,7 @@ function goToBoard() {
 }
 
 .monster {
-  position: absolute;
+  position: fixed;
   z-index: 3;
   animation: float 2s ease-in-out infinite;
 }
@@ -653,9 +562,41 @@ function goToBoard() {
   animation-delay: 1s;
 }
 
+@keyframes screen-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 24px;
+  }
+  
+  .tabs {
+    gap: 10px;
+  }
+  
+  .tab-button {
+    min-width: 120px;
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+  
+  .achievement-item,
+  .mission-item {
+    padding: 15px;
+  }
 }
 </style>
 

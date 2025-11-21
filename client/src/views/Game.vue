@@ -146,13 +146,14 @@
       </div>
       
       <!-- Bookmark Button -->
-      <button
-        v-if="gameStore.selectedAnswer !== null && !isAnswerCorrect"
-        class="pixel-button warning bookmark-button"
-        @click="bookmarkQuestion"
-      >
-        오답 노트에 추가
-      </button>
+      <div v-if="gameStore.selectedAnswer !== null && !isAnswerCorrect" class="bookmark-button-container">
+        <button
+          class="pixel-button warning bookmark-button"
+          @click="bookmarkQuestion"
+        >
+          오답 노트에 추가
+        </button>
+      </div>
       
       <!-- Explanation -->
       <div 
@@ -411,7 +412,7 @@ onMounted(async () => {
 }
 
 .auto-submit-message {
-  margin-top: 20px;
+  margin: 20px auto 0;
   font-size: 18px;
   font-weight: 700;
   text-align: center;
@@ -420,6 +421,9 @@ onMounted(async () => {
   border: 4px solid #fff;
   border-radius: 8px;
   animation: messagePulse 0.5s ease-in-out;
+  width: 100%;
+  max-width: 700px;
+  box-sizing: border-box;
 }
 
 @keyframes messagePulse {
@@ -431,7 +435,10 @@ onMounted(async () => {
   background: rgba(255, 255, 255, 0.1);
   border: 4px solid #ffd43b;
   padding: 20px;
-  margin-top: 20px;
+  margin: 20px auto 0;
+  width: 100%;
+  max-width: 700px;
+  box-sizing: border-box;
 }
 
 .explanation-text {
@@ -624,9 +631,11 @@ onMounted(async () => {
   flex-direction: column;
   gap: 15px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
+  margin: 0 auto;
   animation: input-enter 0.5s ease-out 0.2s both;
   box-sizing: border-box;
+  align-items: stretch;
 }
 
 @keyframes input-enter {
@@ -647,12 +656,27 @@ onMounted(async () => {
   font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 500;
   border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.submit-button {
+  width: 100%;
+  font-size: 16px;
+  padding: 15px 30px;
+  min-height: 50px;
+}
+
+.bookmark-button-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 20px auto 0;
+  box-sizing: border-box;
 }
 
 .bookmark-button {
-  margin-top: 10px;
-  font-size: 10px;
-  padding: 10px 20px;
+  width: 100%;
+  font-size: 14px;
+  padding: 12px 20px;
 }
 
 .correct-answer {
