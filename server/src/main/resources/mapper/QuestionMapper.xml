@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.QuestionDao">
+
+    <resultMap id="questionResultMap" type="com.mayonedev.battle.entity.Question">
+        <id property="id" column="id"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="content" column="content"/>
+        <result property="answer" column="answer"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findByTopicId" parameterType="long" resultMap="questionResultMap">
+        SELECT id, topic_id, content, answer, difficulty, created_at
+        FROM question
+        WHERE topic_id = #{topicId}
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="questionResultMap">
+        SELECT id, topic_id, content, answer, difficulty, created_at
+        FROM question
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByTopicIdAndDifficulty" resultMap="questionResultMap">
+        SELECT id, topic_id, content, answer, difficulty, created_at
+        FROM question
+        WHERE topic_id = #{topicId} AND difficulty = #{difficulty}
+    </select>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.Question" 
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO question (topic_id, content, answer, difficulty, created_at)
+        VALUES (#{topicId}, #{content}, #{answer}, #{difficulty}, #{createdAt})
+    </insert>
+
+</mapper>

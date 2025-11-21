@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.UserTopicLevelDao">
+
+    <resultMap id="userTopicLevelResultMap" type="com.mayonedev.battle.entity.UserTopicLevel">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="topicId" column="topic_id"/>
+        <result property="level" column="level"/>
+        <result property="exp" column="exp"/>
+    </resultMap>
+
+    <select id="findByUserId" parameterType="long" resultMap="userTopicLevelResultMap">
+        SELECT id, user_id, topic_id, level, exp
+        FROM user_topic_level
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByUserIdAndTopicId" resultMap="userTopicLevelResultMap">
+        SELECT id, user_id, topic_id, level, exp
+        FROM user_topic_level
+        WHERE user_id = #{userId} AND topic_id = #{topicId}
+    </select>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.UserTopicLevel" 
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_topic_level (user_id, topic_id, level, exp)
+        VALUES (#{userId}, #{topicId}, #{level}, #{exp})
+    </insert>
+
+    <update id="update" parameterType="com.mayonedev.battle.entity.UserTopicLevel">
+        UPDATE user_topic_level
+        SET level = #{level},
+            exp = #{exp}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

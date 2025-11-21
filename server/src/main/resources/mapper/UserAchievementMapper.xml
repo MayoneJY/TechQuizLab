@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.UserAchievementDao">
+
+    <resultMap id="userAchievementResultMap" type="com.mayonedev.battle.entity.UserAchievement">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="achievementId" column="achievement_id"/>
+        <result property="achievedAt" column="achieved_at"/>
+    </resultMap>
+
+    <select id="findByUserId" parameterType="long" resultMap="userAchievementResultMap">
+        SELECT id, user_id, achievement_id, achieved_at
+        FROM user_achievement
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.UserAchievement" 
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_achievement (user_id, achievement_id, achieved_at)
+        VALUES (#{userId}, #{achievementId}, #{achievedAt})
+    </insert>
+
+    <select id="existsByUserIdAndAchievementId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user_achievement
+        WHERE user_id = #{userId} AND achievement_id = #{achievementId}
+    </select>
+
+</mapper>
