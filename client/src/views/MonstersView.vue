@@ -105,42 +105,42 @@ onMounted(() => {
 }
 
 .filter-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.875rem;
   font-weight: 500;
-  font-family: 'DungGeunMo', sans-serif;
   background: var(--bg-card);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-select:hover {
-  border-color: var(--primary);
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
 }
 
 .filter-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 
 
 .monster-card {
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .monster-card:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
 }
 
 .monster-card-header {
@@ -156,11 +156,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-card);
-  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.monster-card:hover .monster-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
   box-shadow: var(--shadow-md);
-  animation: float 3s ease-in-out infinite;
+  border-color: var(--primary);
 }
 
 @keyframes float {
@@ -201,12 +207,16 @@ onMounted(() => {
 }
 
 .monster-name {
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
-  letter-spacing: 0.02em;
+  margin: 0 0 var(--spacing-sm) 0;
+  letter-spacing: -0.025em;
+  transition: color 0.3s ease;
+}
+
+.monster-card:hover .monster-name {
+  color: var(--primary);
 }
 
 .monster-title {
@@ -226,14 +236,18 @@ onMounted(() => {
 
 .info-badge {
   padding: 0.375rem 0.75rem;
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  font-size: 12px;
-  font-family: 'DungGeunMo', sans-serif;
-  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.75rem;
   font-weight: 500;
-  box-shadow: var(--shadow-inset);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.info-badge:hover {
+  background: var(--bg-card);
+  border-color: var(--border-light);
 }
 
 .monster-hp-section {
@@ -304,16 +318,17 @@ onMounted(() => {
 
 .monster-arrow {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
   font-size: 1.5rem;
-  color: #6c5ce7;
+  color: var(--text-muted);
   font-weight: 700;
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .monster-card:hover .monster-arrow {
-  transform: translateX(4px);
+  transform: translateX(6px);
+  color: var(--primary);
 }
 
 @media (max-width: 768px) {

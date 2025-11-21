@@ -18,18 +18,30 @@ defineProps({
 .page-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: 2px;
 }
 
 .page-header h1 {
-  font-size: 2rem;
-  font-weight: normal;
-  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
   color: var(--text-primary);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
   margin: 0;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.05em;
 }
 
 @media (max-width: 768px) {

@@ -1,19 +1,22 @@
 <template>
   <div class="board">
-    <div class="board-header">
-      <h1>게시판</h1>
-      <button @click="showCreateModal = true" class="btn btn-primary">글 작성</button>
-    </div>
-
-    <div class="board-filters">
-      <select v-model="filters.category" @change="fetchPosts">
-        <option value="">전체</option>
-        <option value="FREE">자유</option>
-        <option value="REVIEW">공고 후기</option>
-        <option value="RECRUIT">레이드 모집</option>
-        <option value="SHARE">질문 공유</option>
-        <option value="INTERVIEW">면접 후기</option>
-      </select>
+    <PageHeader title="게시판" :icon="IconStar" />
+    
+    <div class="board-actions">
+      <div class="board-filters">
+        <select v-model="filters.category" @change="fetchPosts" class="filter-select">
+          <option value="">전체 카테고리</option>
+          <option value="FREE">자유</option>
+          <option value="REVIEW">공고 후기</option>
+          <option value="RECRUIT">레이드 모집</option>
+          <option value="SHARE">질문 공유</option>
+          <option value="INTERVIEW">면접 후기</option>
+        </select>
+      </div>
+      <button @click="showCreateModal = true" class="btn btn-primary">
+        <IconZap :size="20" color="white" />
+        글 작성
+      </button>
     </div>
 
     <LoadingSpinner v-if="loading" />
@@ -74,8 +77,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { boardApi } from '@/api/board'
+import PageHeader from '@/components/common/PageHeader.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import IconStar from '@/components/icons/IconStar.vue'
+import IconZap from '@/components/icons/IconZap.vue'
 
 const posts = ref([])
 const loading = ref(false)
@@ -142,41 +148,9 @@ onMounted(() => {
 <style scoped>
 .board {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
-}
-
-.board-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.board-header h1 {
-  font-size: 1.5rem;
-  font-family: 'Press Start 2P', monospace;
-  margin: 0;
-  color: var(--primary);
-  text-shadow: 2px 2px 0px var(--primary-dark), 4px 4px 0px rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.1em;
-}
-
-.board-filters {
-  margin-bottom: 2rem;
-}
-
-.board-filters select {
-  padding: 0.5rem 1rem;
-  border: 4px solid var(--border-bright);
-  border-radius: 0;
-  font-size: 10px;
-  font-family: 'Press Start 2P', monospace;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  box-shadow: var(--pixel-shadow);
-  image-rendering: pixelated;
+  padding: var(--spacing-2xl);
 }
 
 .loading,
@@ -190,24 +164,42 @@ onMounted(() => {
 .posts-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .post-item {
   background: var(--bg-card);
-  padding: 1.5rem;
-  border-radius: 0;
-  border: 4px solid var(--border-bright);
+  padding: var(--spacing-xl);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   cursor: pointer;
-  transition: transform 0.1s;
-  box-shadow: var(--pixel-shadow);
-  image-rendering: pixelated;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.post-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .post-item:hover {
-  transform: translate(4px, -2px);
-  box-shadow: var(--pixel-shadow-lg);
-  border-color: var(--primary);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-light);
+}
+
+.post-item:hover::before {
+  transform: scaleX(1);
 }
 
 .post-header {
@@ -218,16 +210,20 @@ onMounted(() => {
 }
 
 .post-category {
-  padding: 0.25rem 0.75rem;
-  background: var(--bg-card);
-  border: 2px solid var(--border);
-  border-radius: 0;
-  font-size: 8px;
-  font-weight: normal;
-  font-family: 'Press Start 2P', monospace;
-  color: var(--text-secondary);
-  box-shadow: var(--pixel-shadow-sm);
-  image-rendering: pixelated;
+  padding: 0.375rem 0.875rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.post-item:hover .post-category {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
+  color: var(--primary);
 }
 
 .post-date {
@@ -237,17 +233,21 @@ onMounted(() => {
 }
 
 .post-title {
-  font-size: 0.9rem;
-  font-weight: normal;
-  font-family: 'Press Start 2P', monospace;
+  font-size: 1.125rem;
+  font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.025em;
+  transition: color 0.3s ease;
+}
+
+.post-item:hover .post-title {
+  color: var(--primary);
 }
 
 .post-author {
-  font-size: 0.75rem;
-  font-family: 'Pixelify Sans', monospace;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
@@ -257,45 +257,65 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  image-rendering: pixelated;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
   background: var(--bg-card);
-  padding: 2rem;
-  border-radius: 0;
-  border: 4px solid var(--border-bright);
+  padding: var(--spacing-3xl);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--pixel-shadow-lg);
-  image-rendering: pixelated;
+  box-shadow: var(--shadow-2xl);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-content h2 {
-  margin-bottom: 1.5rem;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 1rem;
+  margin-bottom: var(--spacing-2xl);
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: 0.05em;
+  letter-spacing: -0.025em;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: normal;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
   color: var(--text-primary);
 }
 
@@ -303,58 +323,41 @@ onMounted(() => {
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 4px solid var(--border-bright);
-  border-radius: 0;
-  font-size: 12px;
-  font-family: 'Pixelify Sans', monospace;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
   background: var(--bg-card);
   color: var(--text-primary);
-  box-shadow: var(--pixel-shadow-inset);
-  image-rendering: pixelated;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
+  min-height: 200px;
+  font-family: inherit;
+  line-height: 1.6;
 }
 
 .modal-actions {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-md);
   justify-content: flex-end;
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid var(--border);
 }
 
-.btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background: #333;
-  color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #555;
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: #fff;
-  color: #333;
-  border: 1px solid #ddd;
-}
-
-.btn-secondary:hover {
-  background: #f5f5f5;
-}
+/* BoardView의 버튼은 common.css의 .btn 스타일 사용 */
 </style>
 

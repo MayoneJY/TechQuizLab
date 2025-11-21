@@ -175,17 +175,36 @@ onMounted(async () => {
 
 .stat-card {
   text-align: center;
-  padding: 1.5rem 1rem !important;
-  border: 2px solid var(--border) !important;
-  border-radius: 12px !important;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-md) !important;
+  padding: var(--spacing-xl) var(--spacing-lg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-xl) !important;
-  border-color: var(--primary) !important;
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg) !important;
+  border-color: var(--border-light) !important;
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
 }
 
 .stat-card-icon {
@@ -221,19 +240,38 @@ onMounted(async () => {
 
 .history-item {
   display: flex;
-  gap: 1.5rem;
-  padding: 1rem !important;
-  border: 2px solid var(--border) !important;
-  border-radius: 12px !important;
-  transition: all 0.3s ease;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  box-shadow: var(--shadow-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.history-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .history-item:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-xl) !important;
-  border-color: var(--primary) !important;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg) !important;
+  border-color: var(--border-light) !important;
+}
+
+.history-item:hover::before {
+  transform: scaleX(1);
 }
 
 .history-icon {
@@ -255,25 +293,24 @@ onMounted(async () => {
 .history-mode {
   display: inline-block;
   padding: 0.375rem 0.875rem;
-  border-radius: 12px;
-  border: 2px solid;
-  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 0.75rem;
   font-weight: 600;
-  font-family: 'DungGeunMo', sans-serif;
-  margin-bottom: 0.75rem;
-  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-md);
+  transition: all 0.2s ease;
 }
 
 .history-mode.raid {
-  background: var(--accent);
-  color: var(--bg-primary);
-  border-color: var(--accent);
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--secondary);
+  border-color: rgba(139, 92, 246, 0.2);
 }
 
 .history-mode.solo {
-  background: var(--success);
-  color: var(--bg-primary);
-  border-color: var(--success);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  border-color: rgba(99, 102, 241, 0.2);
 }
 
 .history-stats {
@@ -286,16 +323,21 @@ onMounted(async () => {
 .stat-badge {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.375rem 0.875rem;
-  background: var(--bg-card);
-  border-radius: 12px;
-  border: 2px solid var(--border);
-  font-size: 12px;
+  gap: var(--spacing-xs);
+  padding: 0.375rem 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
   font-weight: 500;
-  font-family: 'DungGeunMo', sans-serif;
   color: var(--text-primary);
-  box-shadow: var(--shadow-inset);
+  transition: all 0.2s ease;
+}
+
+.stat-badge:hover {
+  background: var(--bg-card);
+  border-color: var(--border-light);
+  transform: translateY(-1px);
 }
 
 .history-date {

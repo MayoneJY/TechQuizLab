@@ -245,13 +245,32 @@ onMounted(async () => {
   border-radius: 16px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-box:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
   border-color: var(--border-light);
+}
+
+.stat-box:hover::before {
+  transform: scaleX(1);
 }
 
 .stat-icon {
@@ -299,14 +318,39 @@ onMounted(async () => {
   border-radius: 12px;
   border: 1px solid var(--border);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .action-button:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-light);
+  transform: translateX(6px);
+  box-shadow: var(--shadow-md);
+}
+
+.action-button:hover::before {
+  transform: scaleY(1);
+}
+
+.action-button:hover .action-arrow {
   transform: translateX(4px);
+  color: var(--primary);
 }
 
 .action-title {
@@ -326,6 +370,7 @@ onMounted(async () => {
   font-size: 1.25rem;
   color: var(--text-muted);
   font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 활동 목록 */
@@ -342,12 +387,34 @@ onMounted(async () => {
   padding: var(--spacing-md);
   background: var(--bg-secondary);
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.activity-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .activity-item:hover {
   background: var(--bg-card-hover);
-  transform: translateX(4px);
+  transform: translateX(6px);
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.activity-item:hover::before {
+  transform: scaleY(1);
 }
 
 .activity-icon {
@@ -550,7 +617,7 @@ onMounted(async () => {
   background: var(--bg-card);
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   position: relative;
@@ -561,22 +628,45 @@ onMounted(async () => {
   content: '';
   position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.monster-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 230, 109, 0.2), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.05), transparent);
+  transition: left 0.6s ease;
 }
 
 .monster-item:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: var(--border-light);
   background: var(--bg-card-hover);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .monster-item:hover::before {
+  transform: scaleX(1);
+}
+
+.monster-item:hover::after {
   left: 100%;
+}
+
+.monster-item:hover .monster-arrow {
+  transform: translateX(4px);
+  color: var(--primary);
 }
 
 .monster-icon {
@@ -611,8 +701,9 @@ onMounted(async () => {
 
 .monster-arrow {
   font-size: 1.5rem;
-  color: var(--primary-light);
+  color: var(--text-muted);
   font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 768px) {

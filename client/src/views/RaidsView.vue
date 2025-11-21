@@ -219,37 +219,46 @@ onMounted(() => {
 <style scoped>
 .raids-filters {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .filter-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  font-size: 14px;
-  font-family: 'DungGeunMo', sans-serif;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
   background: var(--bg-card);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-select:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .filter-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .raids-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: var(--spacing-2xl);
 }
 
 .raid-card {
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .raid-header {
@@ -264,41 +273,42 @@ onMounted(() => {
 }
 
 .raid-name {
-  font-size: 1.25rem;
-  font-weight: normal;
-  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
-  letter-spacing: 0.02em;
+  margin: 0 0 var(--spacing-md) 0;
+  letter-spacing: -0.025em;
+  transition: color 0.3s ease;
+}
+
+.raid-card:hover .raid-name {
+  color: var(--primary);
 }
 
 .raid-status {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: 'DungGeunMo', sans-serif;
-  border: 2px solid;
-  box-shadow: var(--shadow-sm);
+  padding: 0.375rem 0.875rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  transition: all 0.3s ease;
 }
 
 .status-open {
-  background: var(--secondary);
-  color: var(--bg-primary);
-  border-color: var(--secondary);
-  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .status-in_progress {
-  background: var(--warning);
-  color: var(--bg-primary);
-  border-color: var(--warning);
-  font-weight: 600;
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.2);
 }
 
 .status-closed {
-  background: var(--bg-card);
+  background: var(--bg-secondary);
   color: var(--text-muted);
   border-color: var(--border);
 }
@@ -308,18 +318,23 @@ onMounted(() => {
 }
 
 .raid-info {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 14px;
-  font-family: 'DungGeunMo', sans-serif;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
 }
 
 .info-row:last-child {
@@ -353,14 +368,20 @@ onMounted(() => {
 }
 
 .participant-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.375rem 0.75rem;
   background: var(--bg-card);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  font-size: 12px;
-  font-family: 'DungGeunMo', sans-serif;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.participant-badge:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+  transform: translateY(-1px);
 }
 
 .no-participants {

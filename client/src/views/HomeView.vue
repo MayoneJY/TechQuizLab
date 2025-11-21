@@ -124,7 +124,7 @@ const authStore = useAuthStore()
   background: var(--bg-card);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -133,20 +133,38 @@ const authStore = useAuthStore()
   content: '';
   position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.feature-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.05), transparent);
+  transition: left 0.6s ease;
 }
 
 .feature-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
   border-color: var(--border-light);
 }
 
 .feature-item:hover::before {
+  transform: scaleX(1);
+}
+
+.feature-item:hover::after {
   left: 100%;
 }
 

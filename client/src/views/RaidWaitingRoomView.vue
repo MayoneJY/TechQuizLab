@@ -281,14 +281,33 @@ onUnmounted(() => {
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.participant-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .participant-card:hover:not(.empty) {
   background: var(--bg-card-hover);
   border-color: var(--border-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.participant-card:hover:not(.empty)::before {
+  transform: scaleY(1);
 }
 
 .participant-card.empty {
