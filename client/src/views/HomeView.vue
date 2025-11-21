@@ -83,22 +83,24 @@ const authStore = useAuthStore()
 }
 
 .hero-title {
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
-  font-weight: normal;
-  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  font-size: 3.5rem;
+  margin-bottom: var(--spacing-xl);
+  font-weight: 800;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
   color: var(--text-primary);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-  letter-spacing: 0.02em;
-  line-height: 1.3;
-  animation: float 3s ease-in-out infinite;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
 }
 
 .subtitle {
   font-size: 1.25rem;
   color: var(--text-secondary);
-  margin-bottom: 3rem;
-  line-height: 1.8;
+  margin-bottom: var(--spacing-3xl);
+  line-height: 1.7;
+  font-weight: 400;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .features {
@@ -113,18 +115,16 @@ const authStore = useAuthStore()
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
   color: var(--text-primary);
-  font-weight: normal;
-  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  font-weight: 500;
   font-size: 1rem;
-  padding: 2rem;
+  padding: var(--spacing-2xl);
   border-radius: 16px;
-  background: var(--gradient-card);
-  backdrop-filter: blur(10px);
+  background: var(--bg-card);
   box-shadow: var(--shadow-md);
-  border: 2px solid var(--border);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -141,9 +141,9 @@ const authStore = useAuthStore()
 }
 
 .feature-item:hover {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--primary);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-light);
 }
 
 .feature-item:hover::before {

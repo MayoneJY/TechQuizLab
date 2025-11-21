@@ -147,7 +147,8 @@ const joinRaid = async (raidId) => {
   try {
     await raidApi.joinRaid(raidId)
     await fetchRaids()
-    alert('레이드에 참가했습니다!')
+    // 참가 후 대기방으로 이동
+    router.push(`/raids/${raidId}/waiting`)
   } catch (error) {
     alert('레이드 참가에 실패했습니다.')
   } finally {
@@ -156,7 +157,13 @@ const joinRaid = async (raidId) => {
 }
 
 const goToRaid = (raidId) => {
-  router.push(`/raids/${raidId}`)
+  // 레이드 상태에 따라 대기방 또는 전투로 이동
+  const raid = raids.value.find(r => r.id === raidId)
+  if (raid && raid.status === 'IN_PROGRESS') {
+    router.push(`/raids/${raidId}/battle`)
+  } else {
+    router.push(`/raids/${raidId}/waiting`)
+  }
 }
 
 const handleRaidClick = (raid) => {

@@ -16,11 +16,11 @@
       </GamificationCard>
 
       <GamificationCard variant="success">
-        <CardHeader title="능력치" :icon="IconGem" icon-color="#4ecdc4" />
+        <CardHeader title="전체 능력치" :icon="IconGem" icon-color="#10b981" />
         <LoadingSpinner v-if="statsLoading" />
         <EmptyState
           v-else-if="stats.length === 0"
-          message="능력치가 없습니다."
+          message="능력치가 없습니다. 몬스터와 전투를 시작해보세요!"
           :icon="IconMonster"
         />
         <div v-else class="stats-grid">
@@ -33,7 +33,7 @@
               Lv.{{ stat.level || 1 }}
             </div>
             <div class="stat-xp">
-              <IconGem :size="16" color="#4ecdc4" />
+              <IconGem :size="16" color="#10b981" />
               {{ stat.xp || 0 }} XP
             </div>
           </GamificationCard>
@@ -41,7 +41,7 @@
       </GamificationCard>
 
       <GamificationCard variant="warning">
-        <CardHeader title="전투 이력" :icon="IconTrophy" icon-color="#ffd700" />
+        <CardHeader title="전체 전투 이력" :icon="IconTrophy" icon-color="#f59e0b" />
         <LoadingSpinner v-if="historyLoading" />
         <EmptyState
           v-else-if="history.length === 0"
@@ -53,7 +53,7 @@
             <div class="history-icon">
               <IconMonster
                 :size="40"
-                :color="item.mode === 'RAID' ? '#ec4899' : '#4ecdc4'"
+                :color="item.mode === 'RAID' ? '#8b5cf6' : '#6366f1'"
               />
             </div>
             <div class="history-content">

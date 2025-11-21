@@ -1,46 +1,56 @@
 /* 부드러운 레트로 게임 스타일 */
 
 :root {
-  /* 레트로 게임 색상 팔레트 - 더 어둡고 선명하게 */
-  --primary: #ff6b9d;
-  --primary-dark: #d4557f;
-  --primary-light: #ff8fb3;
-  --secondary: #4ecdc4;
-  --accent: #ffe66d;
-  --success: #95e1d3;
-  --success-dark: #6bc4b8;
-  --warning: #feca57;
-  --warning-dark: #fdb827;
-  --danger: #ff6b6b;
-  --danger-dark: #ee5a6f;
-  --info: #74b9ff;
+  /* 세련된 상업용 색상 팔레트 */
+  --primary: #6366f1; /* 인디고 블루 - 전문적이고 신뢰감 있는 */
+  --primary-dark: #4f46e5;
+  --primary-light: #818cf8;
+  --secondary: #8b5cf6; /* 퍼플 */
+  --accent: #f59e0b; /* 앰버 */
+  --success: #10b981; /* 에메랄드 그린 */
+  --success-dark: #059669;
+  --warning: #f59e0b; /* 앰버 */
+  --warning-dark: #d97706;
+  --danger: #ef4444; /* 레드 */
+  --danger-dark: #dc2626;
+  --info: #3b82f6; /* 블루 */
   
-  /* 더 어두운 다크 배경 */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #0f0f1a;
-  --bg-card: #151520;
-  --bg-card-hover: #1a1a2a;
-  --bg-card-light: #1f1f2f;
-  --text-primary: #ffffff;
-  --text-secondary: #d0d0d0;
-  --text-muted: #999999;
-  --border: #2a2a3a;
-  --border-light: #3a3a4a;
-  --border-bright: #4a4a5a;
+  /* 깔끔한 밝은 배경 */
+  --bg-primary: #f8fafc; /* 슬레이트 50 */
+  --bg-secondary: #f1f5f9; /* 슬레이트 100 */
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-card-light: #f1f5f9;
+  --text-primary: #1e293b; /* 슬레이트 800 */
+  --text-secondary: #475569; /* 슬레이트 600 */
+  --text-muted: #94a3b8; /* 슬레이트 400 */
+  --border: #e2e8f0; /* 슬레이트 200 */
+  --border-light: #cbd5e1; /* 슬레이트 300 */
+  --border-bright: #94a3b8; /* 슬레이트 400 */
   
-  /* 단순한 그림자 */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 6px 18px rgba(0, 0, 0, 0.6);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  /* 자연스러운 그림자 - 깊이감 있게 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   
-  /* 레트로 그라데이션 (가독성을 위해 단순화) */
-  --gradient-primary: linear-gradient(135deg, #ff6b9d 0%, #d4557f 100%);
-  --gradient-success: linear-gradient(135deg, #95e1d3 0%, #6bc4b8 100%);
-  --gradient-warning: linear-gradient(135deg, #feca57 0%, #fdb827 100%);
-  --gradient-danger: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  --gradient-card: linear-gradient(135deg, rgba(21, 21, 32, 0.95) 0%, rgba(26, 26, 42, 0.95) 100%);
+  /* 간격 시스템 */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+  --spacing-3xl: 4rem; /* 64px */
+  
+  /* 단색 위주 - 그라데이션 최소화 */
+  --gradient-primary: var(--primary);
+  --gradient-success: var(--success);
+  --gradient-warning: var(--warning);
+  --gradient-danger: var(--danger);
+  --gradient-card: var(--bg-card);
 }
 
 * {
@@ -57,32 +67,44 @@
 }
 
 body {
-  font-family: 'DungGeunMo', 'Noto Sans KR', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   color: var(--text-primary);
-  line-height: 1.7;
+  line-height: 1.6;
   background: var(--bg-primary);
-  background-image: 
-    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 107, 157, 0.03) 2px, rgba(255, 107, 157, 0.03) 4px),
-    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(78, 205, 196, 0.03) 2px, rgba(78, 205, 196, 0.03) 4px);
-  background-size: 16px 16px;
+  /* 깔끔한 단색 배경 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
-  font-weight: normal;
-  letter-spacing: 0.02em;
-  line-height: 1.3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+h1 { font-size: 2.5rem; font-weight: 800; }
+h2 { font-size: 2rem; font-weight: 700; }
+h3 { font-size: 1.5rem; font-weight: 600; }
+h4 { font-size: 1.25rem; font-weight: 600; }
+h5 { font-size: 1.125rem; font-weight: 600; }
+h6 { font-size: 1rem; font-weight: 600; }
+
 button, .btn {
-  font-family: 'DungGeunMo', sans-serif;
-  font-size: 14px;
-  letter-spacing: 0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
@@ -91,10 +113,17 @@ button, .btn {
 
 /* 버튼과 카드는 common.css로 이동됨 */
 
-/* 레트로 스타일 텍스트 - 가독성 향상 */
+/* 세련된 텍스트 스타일 */
 .gradient-text {
   color: var(--text-primary);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 이미지 렌더링 최적화 */
+img, svg, canvas {
+  image-rendering: auto;
 }
 
 /* 애니메이션 */
@@ -178,3 +207,40 @@ button, .btn {
 /* 배지는 common.css로 이동됨 */
 
 /* 반응형은 common.css에 통합됨 */
+
+/* 도트 매트릭스 스캔라인 효과 */
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* 도트 느낌을 위한 추가 효과 */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  text-rendering: optimizeSpeed;
+}
+
+/* 도트 패턴 배경 유틸리티 - 밝은 색상 */
+.dot-pattern {
+  background-image: 
+    radial-gradient(circle, rgba(255, 105, 180, 0.15) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 215, 0, 0.1) 1px, transparent 1px);
+  background-size: 8px 8px, 12px 12px;
+  background-position: 0 0, 4px 4px;
+}
+
+.dot-pattern-small {
+  background-image: 
+    radial-gradient(circle, rgba(255, 105, 180, 0.12) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 215, 0, 0.08) 1px, transparent 1px);
+  background-size: 4px 4px, 6px 6px;
+  background-position: 0 0, 2px 2px;
+}

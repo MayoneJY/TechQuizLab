@@ -51,7 +51,7 @@ export const raidApi = {
         const currentUser = { userId: 1, nickname: '현재사용자' }
         if (!raid.participants.find(p => p.userId === currentUser.userId)) {
           raid.participants.push(currentUser)
-          if (raid.participants.length >= 3) {
+          if (raid.participants.length >= 2) {
             raid.status = 'IN_PROGRESS'
           }
         }
@@ -66,6 +66,21 @@ export const raidApi = {
       const state = { ...mockRaidState }
       // 랜덤하게 HP 감소 시뮬레이션
       state.currentHp = Math.max(0, state.currentHp - Math.floor(Math.random() * 50))
+      
+      // 턴 정보 추가
+      state.currentTurn = {
+        turnNumber: 1,
+        status: 'WAITING',
+        question: state.currentQuestion,
+        answers: state.answers || [],
+        results: state.results || [],
+      }
+      
+      // 턴 히스토리
+      state.turnHistory = [
+        { turnNumber: 1, status: 'WAITING' },
+      ]
+      
       return { data: state }
     }
     return api.get(`/raids/${id}/state`)

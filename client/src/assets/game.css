@@ -47,13 +47,13 @@ body {
   padding: 0;
 }
 
-/* 카드 스타일 */
+/* 카드 스타일 - 세련된 디자인 */
 .game-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
+  border-radius: 12px;
+  padding: var(--spacing-xl);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -65,49 +65,66 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
 }
 
 .game-card:hover {
   transform: translateY(-4px);
-  border-color: var(--primary);
+  border-color: var(--border-light);
   box-shadow: var(--shadow-lg);
 }
 
 .game-card:hover::before {
-  opacity: 1;
+  transform: scaleX(1);
 }
 
 .game-card-primary {
-  background: var(--gradient-primary);
+  background: var(--primary);
+  color: #ffffff;
   border: none;
+}
+
+.game-card-primary::before {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .game-card-success {
-  background: var(--gradient-success);
+  background: var(--success);
+  color: #ffffff;
   border: none;
+}
+
+.game-card-success::before {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .game-card-danger {
-  background: var(--gradient-danger);
+  background: var(--danger);
+  color: #ffffff;
   border: none;
 }
 
-/* 버튼 스타일 */
+.game-card-danger::before {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 버튼 스타일 - 세련된 디자인 */
 .btn-game {
   padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-game::before {
@@ -129,13 +146,16 @@ body {
 }
 
 .btn-game-primary {
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
 }
 
 .btn-game-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-game-secondary {
@@ -151,12 +171,14 @@ body {
 
 .btn-game-success {
   background: var(--gradient-success);
-  color: white;
+  color: #2c3e50;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .btn-game-danger {
   background: var(--gradient-danger);
-  color: white;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* 애니메이션 */
@@ -201,15 +223,16 @@ body {
   animation: glow 2s ease-in-out infinite;
 }
 
-/* HP 바 스타일 */
+/* HP 바 스타일 - 세련된 디자인 */
 .hp-bar-container {
   position: relative;
   width: 100%;
   height: 32px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
   overflow: hidden;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-inset);
 }
 
 .hp-bar-fill {
@@ -256,20 +279,21 @@ body {
   z-index: 1;
 }
 
-/* 레벨 배지 */
+/* 레벨 배지 - 세련된 디자인 */
 .level-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background: var(--gradient-primary);
+  border-radius: 12px;
+  background: var(--primary);
   color: white;
   font-weight: 700;
   font-size: 1.2rem;
   box-shadow: var(--shadow-md);
   position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .level-badge::after {
@@ -282,15 +306,16 @@ body {
   animation: pulse 2s infinite;
 }
 
-/* 스탯 카드 */
+/* 스탯 카드 - 세련된 디자인 */
 .stat-card {
   background: var(--bg-card);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: var(--spacing-xl);
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-card:hover {

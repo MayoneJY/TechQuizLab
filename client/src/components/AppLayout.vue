@@ -123,18 +123,19 @@ const toggleMobileMenu = () => {
 
 .header {
   background: var(--bg-card);
-  padding: 1.25rem 0;
+  padding: var(--spacing-lg) 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: var(--shadow-md);
-  border-bottom: 2px solid var(--border);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--border);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .header:hover {
-  box-shadow: var(--shadow-lg);
-  border-bottom-color: var(--primary);
+  box-shadow: var(--shadow-md);
 }
 
 .header-content {
@@ -160,12 +161,11 @@ const toggleMobileMenu = () => {
 .logo h1 {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: normal;
-  font-family: 'DungGeunMo', 'Black Han Sans', sans-serif;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
   color: var(--text-primary);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-  letter-spacing: 0.02em;
-  transition: all 0.3s ease;
+  letter-spacing: -0.025em;
+  transition: all 0.2s ease;
 }
 
 .logo:hover h1 {
@@ -182,19 +182,17 @@ const toggleMobileMenu = () => {
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
-  font-family: 'DungGeunMo', sans-serif;
-  padding: 0.625rem 1rem;
-  border-radius: 10px;
-  border: 2px solid transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   background: transparent;
-  letter-spacing: 0.02em;
 }
 
 .nav-link::before {
@@ -211,22 +209,13 @@ const toggleMobileMenu = () => {
 
 .nav-link:hover {
   color: var(--primary);
-  background: rgba(255, 107, 157, 0.1);
-  transform: translateY(-2px);
-}
-
-.nav-link:hover::before {
-  width: 80%;
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .nav-link.router-link-active {
   color: var(--primary);
-  background: rgba(255, 107, 157, 0.15);
-  border-color: var(--primary);
-}
-
-.nav-link.router-link-active::before {
-  width: 80%;
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
 }
 
 .mobile-menu-btn {

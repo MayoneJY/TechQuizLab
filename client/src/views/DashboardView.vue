@@ -2,78 +2,81 @@
   <div class="page-container animate-fade-in">
     <PageHeader title="대시보드" :icon="IconChart" />
 
+    <!-- 통계 요약 -->
+    <div class="stats-summary">
+      <div class="stat-box">
+        <div class="stat-icon">
+          <IconTrophy :size="32" :color="primary" />
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalBattles }}</div>
+          <div class="stat-label">총 전투 횟수</div>
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon">
+          <IconGem :size="32" :color="warning" />
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalXp }}</div>
+          <div class="stat-label">총 획득 XP</div>
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon">
+          <IconStar :size="32" :color="success" />
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ topLevel }}</div>
+          <div class="stat-label">최고 레벨</div>
+        </div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon">
+          <IconUsers :size="32" :color="secondary" />
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ raidCount }}</div>
+          <div class="stat-label">레이드 참여</div>
+        </div>
+      </div>
+    </div>
+
     <div class="grid grid-auto-fill">
+      <!-- 빠른 액션 -->
       <GamificationCard variant="primary" class="animate-slide-in">
-        <CardHeader title="능력치 레벨" :icon="IconStar" icon-color="#ffd93d" />
-        <LoadingSpinner v-if="statsLoading" />
-        <EmptyState
-          v-else-if="stats.length === 0"
-          message="아직 능력치가 없습니다. 몬스터와 전투를 시작해보세요!"
-          :icon="IconMonster"
-        />
-        <div v-else class="stats-list">
-          <StatCard
-            v-for="stat in stats"
-            :key="stat.statCode"
-            :stat-code="stat.statCode"
-            :stat-name="stat.statName || stat.statCode"
-            :xp="stat.xp || 0"
-            :level="stat.level || 1"
-          />
+        <CardHeader title="빠른 액션" :icon="IconZap" icon-color="#f59e0b" />
+        <div class="quick-actions">
+          <router-link to="/monsters" class="action-button">
+            <IconSword :size="24" :color="primary" />
+            <div>
+              <div class="action-title">개인전 시작</div>
+              <div class="action-desc">혼자 연습하기</div>
+            </div>
+            <div class="action-arrow">→</div>
+          </router-link>
+          <router-link to="/raids" class="action-button">
+            <IconRaid :size="24" :color="secondary" />
+            <div>
+              <div class="action-title">레이드 참가</div>
+              <div class="action-desc">함께 전투하기</div>
+            </div>
+            <div class="action-arrow">→</div>
+          </router-link>
+          <router-link to="/board" class="action-button">
+            <IconStar :size="24" :color="warning" />
+            <div>
+              <div class="action-title">커뮤니티</div>
+              <div class="action-desc">정보 공유하기</div>
+            </div>
+            <div class="action-arrow">→</div>
+          </router-link>
         </div>
       </GamificationCard>
 
-      <GamificationCard variant="success" class="animate-slide-in">
-        <CardHeader title="최근 레이드 기록" :icon="IconTrophy" icon-color="#ffd93d" />
-        <LoadingSpinner v-if="historyLoading" />
-        <EmptyState
-          v-else-if="history.length === 0"
-          message="아직 레이드 기록이 없습니다."
-          :icon="IconUsers"
-        />
-        <div v-else class="history-list">
-          <div
-            v-for="item in history.slice(0, 5)"
-            :key="item.id"
-            class="history-item"
-          >
-            <div class="history-icon">
-              <IconRaid
-                v-if="item.mode === 'RAID'"
-                :size="32"
-                color="#6c5ce7"
-              />
-              <IconSword
-                v-else
-                :size="32"
-                color="#4ecdc4"
-              />
-            </div>
-            <div class="history-content">
-              <div class="history-title">{{ item.monsterName || '알 수 없음' }}</div>
-              <div class="history-meta">
-                <span class="history-mode" :class="item.mode.toLowerCase()">
-                  {{ item.mode === 'RAID' ? '레이드' : '개인전' }}
-                </span>
-                <span class="history-date">{{ formatDate(item.createdAt) }}</span>
-              </div>
-              <div class="history-stats">
-                <span class="stat-badge">
-                  <IconStar :size="14" color="#ffd93d" />
-                  {{ item.xpTotal || 0 }} XP
-                </span>
-                <span class="stat-badge">
-                  <IconSword :size="14" color="#ff6b6b" />
-                  {{ item.damage || 0 }} 데미지
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </GamificationCard>
-
+      <!-- 오늘의 추천 몬스터 -->
       <GamificationCard variant="warning" class="animate-slide-in">
-        <CardHeader title="오늘의 추천 몬스터" :icon="IconFire" icon-color="#ff6b6b" />
+        <CardHeader title="오늘의 추천 몬스터" :icon="IconFire" icon-color="#f59e0b" />
         <EmptyState
           v-if="recommendedMonsters.length === 0"
           message="추천 몬스터가 없습니다."
@@ -81,24 +84,71 @@
         />
         <div v-else class="monster-list">
           <div
-            v-for="monster in recommendedMonsters.slice(0, 5)"
+            v-for="monster in recommendedMonsters.slice(0, 3)"
             :key="monster.id"
             class="monster-item"
             @click="$router.push(`/monsters/${monster.id}`)"
           >
             <div class="monster-icon">
-              <IconMonster :size="40" color="#6c5ce7" />
+              <IconMonster :size="40" :color="primary" />
             </div>
             <div class="monster-content">
               <div class="monster-name">{{ monster.name }}</div>
               <div class="monster-title">{{ monster.title }}</div>
               <div class="monster-hp">
-                <IconHeart :size="14" color="#ff6b6b" />
+                <IconHeart :size="14" color="#ef4444" />
                 HP: {{ monster.currentHp || monster.hpBase }}/{{ monster.hpMax }}
               </div>
             </div>
             <div class="monster-arrow">→</div>
           </div>
+        </div>
+      </GamificationCard>
+
+      <!-- 최근 활동 -->
+      <GamificationCard variant="success" class="animate-slide-in">
+        <CardHeader title="최근 활동" :icon="IconChart" icon-color="#10b981" />
+        <LoadingSpinner v-if="historyLoading" />
+        <EmptyState
+          v-else-if="history.length === 0"
+          message="아직 활동 기록이 없습니다."
+          :icon="IconTrophy"
+        />
+        <div v-else class="activity-list">
+          <div
+            v-for="item in history.slice(0, 3)"
+            :key="item.id"
+            class="activity-item"
+          >
+            <div class="activity-icon">
+              <IconRaid
+                v-if="item.mode === 'RAID'"
+                :size="24"
+                :color="secondary"
+              />
+              <IconSword
+                v-else
+                :size="24"
+                :color="primary"
+              />
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">{{ item.monsterName || '알 수 없음' }}</div>
+              <div class="activity-meta">
+                <span class="activity-mode" :class="item.mode.toLowerCase()">
+                  {{ item.mode === 'RAID' ? '레이드' : '개인전' }}
+                </span>
+                <span class="activity-date">{{ formatDate(item.createdAt) }}</span>
+              </div>
+            </div>
+            <div class="activity-xp">
+              <IconGem :size="16" :color="warning" />
+              {{ item.xpTotal || 0 }}
+            </div>
+          </div>
+          <router-link to="/profile" class="view-all-link">
+            전체 활동 보기 →
+          </router-link>
         </div>
       </GamificationCard>
     </div>
@@ -109,6 +159,7 @@
 import { ref, onMounted } from 'vue'
 import { useStatsStore } from '@/stores/stats'
 import { useMonsterStore } from '@/stores/monster'
+import { computed } from 'vue'
 import IconChart from '@/components/icons/IconChart.vue'
 import IconStar from '@/components/icons/IconStar.vue'
 import IconMonster from '@/components/icons/IconMonster.vue'
@@ -118,8 +169,9 @@ import IconFire from '@/components/icons/IconFire.vue'
 import IconSword from '@/components/icons/IconSword.vue'
 import IconHeart from '@/components/icons/IconHeart.vue'
 import IconRaid from '@/components/icons/IconRaid.vue'
+import IconZap from '@/components/icons/IconZap.vue'
+import IconGem from '@/components/icons/IconGem.vue'
 import GamificationCard from '@/components/GamificationCard.vue'
-import StatCard from '@/components/StatCard.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -133,6 +185,19 @@ const history = ref([])
 const statsLoading = ref(false)
 const historyLoading = ref(false)
 const recommendedMonsters = ref([])
+
+const primary = '#6366f1'
+const secondary = '#8b5cf6'
+const warning = '#f59e0b'
+const success = '#10b981'
+
+const totalBattles = computed(() => history.value.length)
+const totalXp = computed(() => history.value.reduce((sum, item) => sum + (item.xpTotal || 0), 0))
+const topLevel = computed(() => {
+  if (stats.value.length === 0) return 0
+  return Math.max(...stats.value.map(s => s.level || 1))
+})
+const raidCount = computed(() => history.value.filter(h => h.mode === 'RAID').length)
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -155,7 +220,7 @@ onMounted(async () => {
   }
   historyLoading.value = false
 
-  const monstersResult = await monsterStore.fetchMonsters({ limit: 5 })
+  const monstersResult = await monsterStore.fetchMonsters({ limit: 3 })
   if (monstersResult.success) {
     recommendedMonsters.value = monsterStore.monsters
   }
@@ -163,25 +228,215 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 통계 요약 */
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
 
+.stat-box {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
 
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-light);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* 빠른 액션 */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+  transform: translateX(4px);
+}
+
+.action-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.action-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.action-arrow {
+  margin-left: auto;
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* 활동 목록 */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+}
+
+.activity-icon {
+  flex-shrink: 0;
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.activity-mode {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.activity-mode.raid {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--secondary);
+}
+
+.activity-mode.solo {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+}
+
+.activity-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.activity-xp {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.view-all-link {
+  display: block;
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-top: var(--spacing-sm);
+  transition: all 0.2s ease;
+}
+
+.view-all-link:hover {
+  color: var(--primary-dark);
+  transform: translateX(4px);
+}
 
 .history-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .history-item {
   display: flex;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
   background: var(--bg-card);
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid var(--border);
-  box-shadow: var(--shadow-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -198,10 +453,10 @@ onMounted(async () => {
 }
 
 .history-item:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--primary);
+  transform: translateY(-2px);
+  border-color: var(--border-light);
   background: var(--bg-card-hover);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-md);
 }
 
 .history-item:hover::before {
@@ -265,41 +520,39 @@ onMounted(async () => {
 .stat-badge {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.375rem 0.875rem;
-  background: var(--bg-card);
-  border-radius: 12px;
-  font-size: 12px;
+  gap: var(--spacing-xs);
+  padding: 0.375rem 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 500;
-  font-family: 'DungGeunMo', sans-serif;
   color: var(--text-secondary);
-  box-shadow: var(--shadow-inset);
-  border: 2px solid var(--border);
-  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
 }
 
 .stat-badge:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+  border-color: var(--border-light);
 }
 
 .monster-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .monster-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
   background: var(--bg-card);
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid var(--border);
-  box-shadow: var(--shadow-md);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
 }
@@ -316,10 +569,10 @@ onMounted(async () => {
 }
 
 .monster-item:hover {
-  transform: translateX(8px) translateY(-4px) scale(1.02);
-  border-color: var(--warning);
+  transform: translateY(-2px);
+  border-color: var(--border-light);
   background: var(--bg-card-hover);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-md);
 }
 
 .monster-item:hover::before {

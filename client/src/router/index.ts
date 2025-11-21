@@ -6,6 +6,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'onboarding',
+      component: () => import('@/views/OnboardingView.vue'),
+      meta: { requiresGuest: true },
+    },
+    {
+      path: '/home',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
     },
@@ -52,9 +58,24 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/raids/:id',
+      path: '/raids/:id/waiting',
+      name: 'raid-waiting',
+      component: () => import('@/views/RaidWaitingRoomView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/raids/:id/battle',
       name: 'raid-battle',
       component: () => import('@/views/RaidBattleView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/raids/:id',
+      name: 'raid-detail',
+      redirect: (to) => {
+        // 레이드 상태에 따라 대기방 또는 전투로 리다이렉트
+        return { name: 'raid-waiting', params: { id: to.params.id } }
+      },
       meta: { requiresAuth: true },
     },
     {
