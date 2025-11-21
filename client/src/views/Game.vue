@@ -96,35 +96,63 @@
         Score: {{ gameStore.score }}
       </div>
       
+      <!-- Loading State -->
+      <div v-if="gameStore.isLoading || questionStore.isLoading" class="loading-container">
+        <p class="pixel-text loading-text">로딩 중...</p>
+      </div>
+      
       <!-- Question -->
-      <div class="question-container">
+      <div v-else-if="gameStore.currentQuiz" class="question-container">
         <h2 class="question-text pixel-text">
-          {{ gameStore.currentQuiz?.question }}
+          {{ gameStore.currentQuiz.question }}
         </h2>
       </div>
       
-      <!-- Answer Options -->
-      <div class="answers-container">
+      <!-- Answer Input -->
+      <div v-if="gameStore.currentQuiz && !gameStore.selectedAnswer" class="answer-input-container">
+        <input
+          v-model="answerInput"
+          type="text"
+          placeholder="답을 입력하세요"
+          class="pixel-input answer-input"
+          @keyup.enter="handleSubmit"
+          :disabled="gameStore.isLoading"
+        />
         <button
-          v-for="(option, index) in gameStore.currentQuiz?.options"
-          :key="index"
-          class="answer-button pixel-button"
-          :class="{
-            selected: gameStore.selectedAnswer === index,
-            correct: gameStore.selectedAnswer !== null && index === gameStore.currentQuiz?.correctAnswer,
-            wrong: gameStore.selectedAnswer === index && gameStore.selectedAnswer !== gameStore.currentQuiz?.correctAnswer
-          }"
-          @click="selectAnswer(index)"
-          :disabled="gameStore.selectedAnswer !== null"
+          class="pixel-button primary submit-button"
+          @click="handleSubmit"
+          :disabled="!answerInput || gameStore.isLoading"
         >
-          {{ option }}
+          제출
+        </button>
+        <button
+          v-if="gameStore.currentQuiz && !isAnswerCorrect"
+          class="pixel-button link-button bookmark-button"
+          @click="bookmarkQuestion"
+          title="오답 노트에 추가"
+        >
+          북마크
         </button>
       </div>
       
-      <!-- Auto submit after selection -->
+      <!-- Result Message -->
       <div v-if="gameStore.selectedAnswer !== null" class="auto-submit-message pixel-text">
-        {{ gameStore.selectedAnswer === gameStore.currentQuiz?.correctAnswer ? '정답입니다! 🎉' : '오답입니다! 😢' }}
+        <div :class="isAnswerCorrect ? 'correct-message' : 'wrong-message'">
+          {{ isAnswerCorrect ? '정답입니다! 🎉' : '오답입니다! 😢' }}
+        </div>
+        <div v-if="!isAnswerCorrect && gameStore.currentQuiz" class="correct-answer">
+          정답: {{ gameStore.currentQuiz.answer }}
+        </div>
       </div>
+      
+      <!-- Bookmark Button -->
+      <button
+        v-if="gameStore.selectedAnswer !== null && !isAnswerCorrect"
+        class="pixel-button warning bookmark-button"
+        @click="bookmarkQuestion"
+      >
+        오답 노트에 추가
+      </button>
       
       <!-- Explanation -->
       <div 
@@ -143,9 +171,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
+import { useQuestionStore } from '../stores/question'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import ExplosionEffect from '../components/ExplosionEffect.vue'
 import PixelHeart from '../components/PixelHeart.vue'
@@ -154,8 +183,10 @@ import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const gameStore = useGameStore()
+const questionStore = useQuestionStore()
 const showExplosion = ref(false)
 const explosionColor = ref('#ffd43b')
+const answerInput = ref('')
 
 function getStarStyle(index: number) {
   return {
@@ -166,38 +197,81 @@ function getStarStyle(index: number) {
   }
 }
 
-function selectAnswer(index: number) {
-  gameStore.selectAnswer(index)
-  // Auto submit after a short delay
-  setTimeout(() => {
-    submitAnswer()
-  }, 500)
+const isAnswerCorrect = computed(() => {
+  if (!gameStore.currentQuiz || gameStore.selectedAnswer === null) return false
+  return gameStore.selectedAnswer === gameStore.currentQuiz.answer
+})
+
+function selectAnswer(answer: string) {
+  gameStore.selectAnswer(answer)
 }
 
-function submitAnswer() {
-  if (gameStore.selectedAnswer === null) return
+async function handleSubmit() {
+  if (!answerInput.value || !gameStore.currentQuiz) return
   
-  const isCorrect = gameStore.selectedAnswer === gameStore.currentQuiz?.correctAnswer
-  explosionColor.value = isCorrect ? '#51cf66' : '#ff6b6b'
-  showExplosion.value = true
-  setTimeout(() => {
-    showExplosion.value = false
-  }, 100)
-  
-  gameStore.submitAnswer()
+  await submitAnswer()
 }
 
-function restartGame() {
-  gameStore.resetGame(gameStore.currentCategory)
+async function bookmarkQuestion() {
+  if (!gameStore.currentQuiz) return
+  
+  try {
+    await questionStore.bookmarkQuestion(gameStore.currentQuiz.id)
+    alert('오답 노트에 추가되었습니다!')
+  } catch (error) {
+    console.error('Failed to bookmark:', error)
+    alert('북마크 추가에 실패했습니다.')
+  }
+}
+
+async function submitAnswer() {
+  if (!answerInput.value && gameStore.selectedAnswer === null) return
+  if (!gameStore.currentQuiz) return
+  
+  const answer = answerInput.value || gameStore.selectedAnswer || ''
+  if (!gameStore.selectedAnswer) {
+    gameStore.selectAnswer(answer)
+  }
+  
+  try {
+    const isCorrect = await gameStore.submitAnswer()
+    explosionColor.value = isCorrect ? '#51cf66' : '#ff6b6b'
+    showExplosion.value = true
+    setTimeout(() => {
+      showExplosion.value = false
+    }, 100)
+    
+    answerInput.value = ''
+  } catch (error: any) {
+    console.error('Failed to submit answer:', error)
+    // 에러 메시지 표시
+    const errorMsg = error.serverMessage || error.message || '답안 제출에 실패했습니다.'
+    alert(errorMsg)
+  }
+}
+
+async function restartGame() {
+  if (gameStore.topicId) {
+    await gameStore.resetGame(gameStore.topicId)
+  }
 }
 
 function goHome() {
   router.push('/')
 }
 
-onMounted(() => {
-  if (!gameStore.currentQuiz) {
+onMounted(async () => {
+  // 문제가 없으면 홈으로 리다이렉트
+  if (!gameStore.currentQuiz && gameStore.totalQuestions === 0) {
+    alert('문제를 불러올 수 없습니다.')
     router.push('/')
+    return
+  }
+  
+  // 문제가 로드 중이면 대기
+  if (gameStore.isLoading || questionStore.isLoading) {
+    // 로딩 완료 대기
+    return
   }
 })
 </script>
@@ -484,6 +558,45 @@ onMounted(() => {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-10px); }
   75% { transform: translateX(10px); }
+}
+
+.answer-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.answer-input {
+  width: 100%;
+  font-size: 12px;
+  padding: 15px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+.bookmark-button {
+  margin-top: 10px;
+  font-size: 10px;
+  padding: 10px 20px;
+}
+
+.correct-answer {
+  margin-top: 10px;
+  font-size: 10px;
+  color: #ffd43b;
+  padding: 10px;
+  background: rgba(255, 212, 59, 0.2);
+  border: 2px solid #ffd43b;
+}
+
+.correct-message {
+  color: #51cf66;
+  animation: correctPulse 0.5s;
+}
+
+.wrong-message {
+  color: #ff6b6b;
+  animation: wrongShake 0.5s;
 }
 </style>
 

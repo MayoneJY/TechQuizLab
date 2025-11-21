@@ -48,19 +48,99 @@
         </button>
       </div>
       
-      <!-- Category Selection -->
+      <!-- Topic Selection -->
       <div v-if="showOptions" class="category-selection">
-        <h3 class="pixel-text">카테고리 선택</h3>
-        <div class="category-buttons">
+        <h3 class="pixel-text">주제 선택</h3>
+        <div v-if="topicStore.isLoading" class="loading-text pixel-text">
+          로딩 중...
+        </div>
+        <div v-else class="category-buttons">
           <button
-            v-for="cat in categories"
-            :key="cat"
+            v-for="topic in topicStore.topics"
+            :key="topic.id"
             class="pixel-button"
-            :class="{ active: selectedCategory === cat }"
-            @click="selectedCategory = cat"
+            :class="{ active: selectedTopicId === topic.id }"
+            @click="selectedTopicId = topic.id"
           >
-            {{ cat }}
+            {{ topic.name }}
           </button>
+        </div>
+        <p v-if="topicStore.error" class="error-text pixel-text">
+          {{ typeof topicStore.error === 'string' ? topicStore.error : JSON.stringify(topicStore.error) }}
+        </p>
+      </div>
+      
+      <!-- User Info -->
+      <div v-if="authStore.isAuthenticated" class="user-info">
+        <div class="user-profile">
+          <p class="pixel-text user-name">{{ authStore.user?.nickname }}</p>
+          <p v-if="authStore.user?.level" class="pixel-text user-level">
+            Lv.{{ authStore.user.level }} | EXP: {{ authStore.user.exp || 0 }}
+          </p>
+        </div>
+        <div class="user-buttons">
+          <button class="pixel-button link-button" @click="showAchievements = !showAchievements">
+            업적
+          </button>
+          <button class="pixel-button link-button" @click="showMissions = !showMissions">
+            미션
+          </button>
+          <button class="pixel-button link-button" @click="handleLogout">
+            로그아웃
+          </button>
+        </div>
+      </div>
+      <div v-else class="user-info">
+        <button class="pixel-button" @click="goToLogin">
+          로그인
+        </button>
+      </div>
+      
+      <!-- Achievements -->
+      <div v-if="showAchievements && authStore.isAuthenticated" class="achievements-screen">
+        <h3 class="pixel-text">업적</h3>
+        <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">로딩 중...</div>
+        <div v-else class="achievements-list">
+          <div
+            v-for="achievement in gamificationStore.achievements"
+            :key="achievement.id"
+            class="achievement-item"
+            :class="{ unlocked: gamificationStore.isAchievementUnlocked(achievement.id) }"
+          >
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-info">
+              <p class="pixel-text achievement-name">{{ achievement.name }}</p>
+              <p class="achievement-desc">{{ achievement.description }}</p>
+              <p class="pixel-text achievement-reward">보상: EXP +{{ achievement.rewardExp }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Daily Missions -->
+      <div v-if="showMissions && authStore.isAuthenticated" class="missions-screen">
+        <h3 class="pixel-text">일일 미션</h3>
+        <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">로딩 중...</div>
+        <div v-else class="missions-list">
+          <div
+            v-for="mission in gamificationStore.dailyMissions"
+            :key="mission.id"
+            class="mission-item"
+            :class="{ completed: mission.isCompleted, claimed: mission.isClaimed }"
+          >
+            <div class="mission-progress">
+              <div class="progress-bar" :style="{ width: `${(mission.progress / 100) * 100}%` }"></div>
+              <p class="pixel-text">{{ mission.progress }}%</p>
+            </div>
+            <button
+              v-if="mission.isCompleted && !mission.isClaimed"
+              class="pixel-button success"
+              @click="claimMission(mission.id)"
+            >
+              보상 받기
+            </button>
+            <p v-else-if="mission.isClaimed" class="pixel-text claimed-text">완료</p>
+          </div>
         </div>
       </div>
       
@@ -93,10 +173,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
-import { categories } from '../data/quizData'
+import { useAuthStore } from '../stores/auth'
+import { useTopicStore } from '../stores/topic'
+import { useGamificationStore } from '../stores/gamification'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelHeart from '../components/PixelHeart.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
@@ -104,9 +186,46 @@ import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const gameStore = useGameStore()
+const authStore = useAuthStore()
+const topicStore = useTopicStore()
+const gamificationStore = useGamificationStore()
+
 const showOptions = ref(false)
 const showAbout = ref(false)
-const selectedCategory = ref('전체')
+const showAchievements = ref(false)
+const showMissions = ref(false)
+const selectedTopicId = ref<number | null>(null)
+
+onMounted(async () => {
+  try {
+    // 주제 목록 가져오기
+    await topicStore.fetchTopics()
+    if (topicStore.topics.length > 0) {
+      selectedTopicId.value = topicStore.topics[0].id
+    } else {
+      console.warn('주제 목록이 비어있습니다.')
+    }
+    
+    // 로그인된 경우 업적 및 미션 정보 가져오기
+    if (authStore.isAuthenticated) {
+      try {
+        await gamificationStore.fetchAllAchievements()
+        await gamificationStore.fetchUserAchievements()
+        await gamificationStore.fetchDailyMissions()
+      } catch (error) {
+        console.error('Failed to load gamification data:', error)
+        // 업적/미션 로드 실패는 게임 진행에 필수는 아니므로 에러를 던지지 않음
+      }
+    }
+  } catch (error: any) {
+    console.error('Failed to load data:', error)
+    const errorMsg = error.serverMessage || error.message || '데이터를 불러오는데 실패했습니다.'
+    // 주제 목록 로드 실패는 사용자에게 알림
+    if (errorMsg) {
+      alert(errorMsg)
+    }
+  }
+})
 
 function getStarStyle(index: number) {
   return {
@@ -117,9 +236,50 @@ function getStarStyle(index: number) {
   }
 }
 
-function startGame() {
-  gameStore.setCategory(selectedCategory.value)
-  router.push('/game')
+async function startGame() {
+  if (!authStore.isAuthenticated) {
+    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')) {
+      router.push('/login')
+    }
+    return
+  }
+  
+  if (!selectedTopicId.value) {
+    alert('주제를 선택해주세요.')
+    return
+  }
+  
+  try {
+    await gameStore.setTopicId(selectedTopicId.value)
+    
+    // 문제가 로드되었는지 확인
+    if (gameStore.totalQuestions === 0) {
+      alert('해당 주제에 문제가 없습니다.')
+      return
+    }
+    
+    router.push('/game')
+  } catch (error: any) {
+    console.error('Failed to start game:', error)
+    const errorMsg = error.serverMessage || error.message || '게임을 시작할 수 없습니다.'
+    alert(errorMsg)
+  }
+}
+
+async function claimMission(missionId: number) {
+  try {
+    await gamificationStore.claimMissionReward(missionId)
+  } catch (error) {
+    console.error('Failed to claim mission:', error)
+  }
+}
+
+function handleLogout() {
+  authStore.logout()
+}
+
+function goToLogin() {
+  router.push('/login')
 }
 </script>
 
@@ -231,6 +391,173 @@ function startGame() {
   font-size: 10px;
   line-height: 2;
   color: #fff;
+}
+
+.user-info {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.user-profile {
+  margin-bottom: 15px;
+}
+
+.user-name {
+  font-size: 14px;
+  color: #ffd43b;
+  margin-bottom: 5px;
+}
+
+.user-level {
+  font-size: 10px;
+  color: #4a9eff;
+}
+
+.user-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.achievements-screen,
+.missions-screen {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 4px solid #fff;
+  border-radius: 0;
+  max-width: 600px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.achievements-screen h3,
+.missions-screen h3 {
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.achievements-list,
+.missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.achievement-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid #666;
+  align-items: center;
+}
+
+.achievement-item.unlocked {
+  border-color: #ffd43b;
+  background: rgba(255, 212, 59, 0.2);
+}
+
+.achievement-icon {
+  font-size: 32px;
+  filter: drop-shadow(2px 2px 0 #000);
+}
+
+.achievement-info {
+  flex: 1;
+}
+
+.achievement-name {
+  font-size: 10px;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.achievement-desc {
+  font-size: 8px;
+  color: #ccc;
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.achievement-reward {
+  font-size: 8px;
+  color: #51cf66;
+}
+
+.mission-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid #666;
+}
+
+.mission-item.completed {
+  border-color: #51cf66;
+}
+
+.mission-item.claimed {
+  opacity: 0.6;
+}
+
+.mission-progress {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background: #000;
+  border: 2px solid #fff;
+}
+
+.mission-progress .progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4a9eff, #51cf66);
+  transition: width 0.3s;
+}
+
+.mission-progress .pixel-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  z-index: 1;
+}
+
+.claimed-text {
+  font-size: 10px;
+  color: #51cf66;
+  text-align: center;
+}
+
+.loading-text {
+  text-align: center;
+  color: #4a9eff;
+  font-size: 10px;
+  padding: 20px;
+}
+
+.user-info {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-name {
+  font-size: 12px;
+  color: #4a9eff;
+}
+
+.loading-text {
+  font-size: 10px;
+  color: #ffd43b;
+  text-align: center;
+  padding: 20px;
 }
 
 .stars-container {

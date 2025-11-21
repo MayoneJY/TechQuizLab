@@ -1,10 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 body {
   font-family: 'Press Start 2P', 'Courier New', monospace;
@@ -76,6 +76,36 @@ body {
 .pixel-button.warning {
   background: #ffd43b;
   color: #000;
+}
+
+.pixel-button.link-button {
+  background: transparent;
+  border: 2px solid #fff;
+  font-size: 10px;
+  padding: 10px 20px;
+  min-width: auto;
+}
+
+.pixel-input {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 10px;
+  padding: 12px;
+  background: #fff;
+  border: 4px solid #000;
+  color: #000;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pixel-input::placeholder {
+  color: #888;
+}
+
+.pixel-input:focus {
+  outline: none;
+  box-shadow: 
+    0 0 0 2px #4a9eff,
+    0 0 0 4px #000;
 }
 
 /* Pixel text */
