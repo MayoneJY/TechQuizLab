@@ -138,6 +138,7 @@ function goHome() {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 30px;
   z-index: 10;
   position: relative;
@@ -145,12 +146,17 @@ function goHome() {
   border: 4px solid #fff;
   padding: 40px;
   max-width: 500px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: auto;
 }
 
 .game-title {
-  font-size: 48px;
+  font-size: 56px;
+  font-weight: 900;
   color: #ffd43b;
   margin-bottom: 20px;
+  letter-spacing: -1px;
 }
 
 .login-form {
@@ -164,20 +170,23 @@ function goHome() {
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 700;
   color: #4a9eff;
   margin-bottom: 10px;
 }
 
 .pixel-input {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  font-size: 10px;
-  padding: 12px;
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 16px;
   background: #fff;
   border: 4px solid #000;
   color: #000;
   width: 100%;
   box-sizing: border-box;
+  border-radius: 8px;
 }
 
 .pixel-input::placeholder {
@@ -201,9 +210,11 @@ function goHome() {
 
 .error-text {
   color: #ff6b6b;
-  font-size: 8px;
+  font-size: 12px;
+  font-weight: 600;
   text-align: center;
   margin-top: 10px;
+  word-break: keep-all;
 }
 </style>
 

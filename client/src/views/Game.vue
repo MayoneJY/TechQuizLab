@@ -296,7 +296,8 @@ onMounted(async () => {
 }
 
 .question-info {
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
   color: #4a9eff;
 }
 
@@ -321,12 +322,14 @@ onMounted(async () => {
 }
 
 .score-display {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 700;
   text-align: center;
   color: #ffd43b;
-  padding: 10px;
+  padding: 12px 20px;
   background: rgba(0, 0, 0, 0.5);
   border: 3px solid #ffd43b;
+  border-radius: 8px;
   display: inline-block;
   margin: 0 auto;
 }
@@ -365,11 +368,13 @@ onMounted(async () => {
 }
 
 .question-text {
-  font-size: 14px;
+  font-size: 18px;
   text-align: center;
   line-height: 2;
   color: #fff;
-  padding: 10px;
+  padding: 20px;
+  font-weight: 700;
+  word-break: keep-all;
 }
 
 .answers-container {
@@ -407,11 +412,13 @@ onMounted(async () => {
 
 .auto-submit-message {
   margin-top: 20px;
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 700;
   text-align: center;
   padding: 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 4px solid #fff;
+  border-radius: 8px;
   animation: messagePulse 0.5s ease-in-out;
 }
 
@@ -438,9 +445,15 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 30px;
   z-index: 10;
   position: relative;
+  width: 100%;
+  max-width: 600px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  min-height: calc(100vh - 40px);
 }
 
 .monsters-invasion {
@@ -479,15 +492,19 @@ onMounted(async () => {
 }
 
 .game-over-title {
-  font-size: 36px;
+  font-size: 48px;
+  font-weight: 900;
   color: #ff6b6b;
   animation: shake 0.5s infinite;
+  letter-spacing: 2px;
 }
 
 .victory-title {
-  font-size: 36px;
+  font-size: 48px;
+  font-weight: 900;
   color: #51cf66;
   animation: victoryPulse 1s ease-in-out infinite;
+  letter-spacing: 2px;
 }
 
 @keyframes shake {
@@ -520,20 +537,23 @@ onMounted(async () => {
 }
 
 .final-score {
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 700;
   color: #ffd43b;
   padding: 15px 30px;
   background: rgba(0, 0, 0, 0.7);
   border: 4px solid #ffd43b;
+  border-radius: 8px;
 }
 
 .stars-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  z-index: 0;
 }
 
 .spaceship {
@@ -550,14 +570,53 @@ onMounted(async () => {
 }
 
 @keyframes correctPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(1.15) rotate(2deg);
+    filter: brightness(1.3);
+  }
+  50% { 
+    transform: scale(1.1) rotate(-2deg);
+    filter: brightness(1.2);
+  }
+  75% {
+    transform: scale(1.15) rotate(2deg);
+    filter: brightness(1.3);
+  }
 }
 
 @keyframes wrongShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
+  0%, 100% { 
+    transform: translateX(0) rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+  10% { 
+    transform: translateX(-15px) rotate(-5deg);
+    filter: hue-rotate(10deg);
+  }
+  20% { 
+    transform: translateX(15px) rotate(5deg);
+    filter: hue-rotate(-10deg);
+  }
+  30% { 
+    transform: translateX(-10px) rotate(-3deg);
+    filter: hue-rotate(5deg);
+  }
+  40% { 
+    transform: translateX(10px) rotate(3deg);
+    filter: hue-rotate(-5deg);
+  }
+  50% { 
+    transform: translateX(-5px) rotate(-2deg);
+    filter: hue-rotate(2deg);
+  }
+  60% { 
+    transform: translateX(5px) rotate(2deg);
+    filter: hue-rotate(-2deg);
+  }
 }
 
 .answer-input-container {
@@ -565,13 +624,29 @@ onMounted(async () => {
   flex-direction: column;
   gap: 15px;
   width: 100%;
+  max-width: 600px;
+  animation: input-enter 0.5s ease-out 0.2s both;
+  box-sizing: border-box;
+}
+
+@keyframes input-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .answer-input {
   width: 100%;
-  font-size: 12px;
-  padding: 15px;
-  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 16px;
+  padding: 15px 20px;
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 500;
+  border-radius: 8px;
 }
 
 .bookmark-button {
@@ -582,11 +657,14 @@ onMounted(async () => {
 
 .correct-answer {
   margin-top: 10px;
-  font-size: 10px;
+  font-size: 14px;
+  font-weight: 600;
   color: #ffd43b;
-  padding: 10px;
+  padding: 12px;
   background: rgba(255, 212, 59, 0.2);
   border: 2px solid #ffd43b;
+  border-radius: 6px;
+  word-break: keep-all;
 }
 
 .correct-message {

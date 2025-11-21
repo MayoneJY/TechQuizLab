@@ -1,8 +1,11 @@
 <template>
+  <CustomCursor />
+  <CursorTrail />
   <router-view />
 </template>
 
 <script setup lang="ts">
-// Main app component
+import CustomCursor from './components/CustomCursor.vue'
+import CursorTrail from './components/CursorTrail.vue'
 </script>
 

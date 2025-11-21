@@ -288,9 +288,28 @@ function goToLogin() {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 30px;
   z-index: 10;
   position: relative;
+  animation: screen-enter 0.8s ease-out;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  min-height: calc(100vh - 40px);
+}
+
+@keyframes screen-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .game-title {
@@ -303,25 +322,40 @@ function goToLogin() {
 .title-main {
   display: block;
   color: #ffd43b;
-  font-size: 56px;
+  font-size: 64px;
   margin-bottom: 15px;
+  font-weight: 900;
   text-shadow: 
     4px 4px 0 #000,
     -2px -2px 0 #000,
     2px -2px 0 #000,
     -2px 2px 0 #000,
     0 0 20px rgba(255, 212, 59, 0.5);
+  letter-spacing: -1px;
+  word-break: keep-all;
 }
 
 .title-sub {
   display: block;
   color: #ff6b6b;
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: 700;
   text-shadow: 
     3px 3px 0 #000,
     -1px -1px 0 #000,
     1px -1px 0 #000,
     -1px 1px 0 #000;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  .title-main {
+    font-size: 40px;
+  }
+  
+  .title-sub {
+    font-size: 18px;
+  }
 }
 
 @keyframes titlePulse {
@@ -353,19 +387,31 @@ function goToLogin() {
   padding: 20px;
   background: rgba(0, 0, 0, 0.7);
   border: 4px solid #fff;
-  border-radius: 0;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
 }
 
 .category-selection h3 {
   margin-bottom: 15px;
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .category-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
   justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .category-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
 }
 
 .category-buttons .pixel-button.active {
@@ -377,20 +423,24 @@ function goToLogin() {
   padding: 30px;
   background: rgba(0, 0, 0, 0.7);
   border: 4px solid #fff;
-  border-radius: 0;
-  max-width: 500px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .about-screen h3 {
-  font-size: 16px;
+  font-size: 20px;
+  font-weight: 700;
   margin-bottom: 20px;
 }
 
 .about-text {
-  font-size: 10px;
+  font-size: 14px;
   line-height: 2;
   color: #fff;
+  font-weight: 500;
 }
 
 .user-info {
@@ -403,13 +453,15 @@ function goToLogin() {
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 700;
   color: #ffd43b;
   margin-bottom: 5px;
 }
 
 .user-level {
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
   color: #4a9eff;
 }
 
@@ -418,6 +470,21 @@ function goToLogin() {
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 500px;
+}
+
+@media (max-width: 768px) {
+  .user-buttons {
+    gap: 8px;
+  }
+  
+  .user-buttons .pixel-button {
+    flex: 1;
+    min-width: 100px;
+    font-size: 11px;
+    padding: 10px 15px;
+  }
 }
 
 .achievements-screen,
@@ -434,7 +501,8 @@ function goToLogin() {
 
 .achievements-screen h3,
 .missions-screen h3 {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 700;
   margin-bottom: 15px;
   text-align: center;
 }
@@ -470,20 +538,24 @@ function goToLogin() {
 }
 
 .achievement-name {
-  font-size: 10px;
+  font-size: 14px;
+  font-weight: 700;
   color: #fff;
   margin-bottom: 5px;
 }
 
 .achievement-desc {
-  font-size: 8px;
+  font-size: 12px;
+  font-weight: 400;
   color: #ccc;
   margin-bottom: 5px;
-  line-height: 1.4;
+  line-height: 1.6;
+  word-break: keep-all;
 }
 
 .achievement-reward {
-  font-size: 8px;
+  font-size: 11px;
+  font-weight: 600;
   color: #51cf66;
 }
 
@@ -523,12 +595,14 @@ function goToLogin() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 8px;
+  font-size: 11px;
+  font-weight: 700;
   z-index: 1;
 }
 
 .claimed-text {
-  font-size: 10px;
+  font-size: 14px;
+  font-weight: 700;
   color: #51cf66;
   text-align: center;
 }
@@ -536,7 +610,8 @@ function goToLogin() {
 .loading-text {
   text-align: center;
   color: #4a9eff;
-  font-size: 10px;
+  font-size: 14px;
+  font-weight: 600;
   padding: 20px;
 }
 
@@ -561,12 +636,13 @@ function goToLogin() {
 }
 
 .stars-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  z-index: 0;
 }
 
 .spaceship {
