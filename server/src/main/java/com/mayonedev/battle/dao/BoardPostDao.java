@@ -8,27 +8,27 @@ import com.mayonedev.battle.entity.Board;
 @Mapper
 public interface BoardPostDao {
     
-    //°Ô½Ã±Û ¸ñ·Ï Á¶È¸
+    //ê²Œì‹œê¸€ ì¡°íšŒ(All) 
     List<Board> selectPostAll() throws Exception;
 
-    //»ç¿ëÀÚ ID·Î °Ô½Ã±Û Á¶È¸
+    //ê²Œì‹œê¸€ ì¡°íšŒ(user id)
     List<Board> selectpostbyuserid(int userId)throws Exception; 
 
-    //°Ô½Ã±Û ID·Î °Ô½Ã±Û Á¶È¸
+    //ê²Œì‹œê¸€ ì¡°íšŒ(post id)
     Board selectByPostId(int id)throws Exception; 
 
-    // TODO ´Ð³×ÀÓÀ¸·Î °Ô½Ã±Û Á¶È¸
+    // ê²Œì‹œê¸€ ì¡°íšŒ(NickName)
     List<Board> selectPostByNickName(String nickname)throws Exception;
 
-    //°Ô½Ã±Û µî·Ï
+    //ê²Œì‹œê¸€ ìž‘ì„±
     void insertPost(Board board)throws Exception;
 
-    //°Ô½Ã±Û ¼öÁ¤
+    //ê²Œì‹œê¸€ ìˆ˜ì •
     void updatePost(Board board)throws Exception;
 
-    //°Ô½Ã±Û »èÁ¦
+    //ê²Œì‹œê¸€ ì‚­ì œ
     void deletePost(int id) throws Exception;
 
-    // TODO ÃÑ °Ô½Ã±Û ¹æ¹® ¼ö Á¶È¸ - ¹Ì±¸Çö
-    int increaseViewCount() throws Exception;
+    // ê²Œì‹œê¸€ ì¡°íšŒìˆ˜ ì €ìž¥
+    int increaseViewCount(int id) throws Exception;
 }

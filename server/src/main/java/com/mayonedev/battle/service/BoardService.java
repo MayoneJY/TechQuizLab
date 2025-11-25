@@ -3,30 +3,23 @@ package com.mayonedev.battle.service;
 import com.mayonedev.battle.entity.Board;
 import java.util.*;
 
-public interface BoardService { //¸ÅÆÛ°¡ ¼­ºñ½º¶û ¾î¶»°Ô ¿¬°áµÉ±î?
+public interface BoardService {
 
-    //°Ô½Ã±Û ¸ñ·Ï Á¶È¸
     List<Board> selectPostAll() throws Exception;
 
-    //»ç¿ëÀÚ ID·Î °Ô½Ã±Û Á¶È¸
     List<Board> selectpostbyuserid(int userId)throws Exception; 
 
-    //°Ô½Ã±Û ID·Î °Ô½Ã±Û Á¶È¸
     Board selectByPostId(int id)throws Exception; 
 
-    // TODO ´Ð³×ÀÓÀ¸·Î °Ô½Ã±Û Á¶È¸
     List<Board> selectPostByNickName(String nickname)throws Exception;
 
-    //°Ô½Ã±Û µî·Ï
     void insertPost(Board board)throws Exception;
 
-    //°Ô½Ã±Û ¼öÁ¤ - º»ÀÎÈ®ÀÎ ÇÊ¿ä : ÀÌ°Íµµ ¿À´Ã ¹è¿î ÀÎÁõ À¸·Î ÇÏ°Ô µÇ´ÂÁö??
     void updatePost(Board board)throws Exception;
 
-    //°Ô½Ã±Û »èÁ¦
     void deletePost(int id) throws Exception;
 
-    // TODO ÃÑ °Ô½Ã±Û ¹æ¹® ¼ö Á¶È¸ - ¹Ì±¸Çö
-    int increaseViewCount() throws Exception;
+    // ê²Œì‹œê¸€ ì¡°íšŒìˆ˜ ì¹´ìš´íŠ¸
+    int increaseViewCount(int id) throws Exception;
 } 
 

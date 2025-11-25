@@ -13,7 +13,7 @@ import com.mayonedev.battle.entity.Board;
 public class BoardServiceImplMapper implements BoardService{
 
     @Autowired
-    public BoardPostDao bDao; // TODO 어느때 퍼블릭? 어느떄 프라이빗
+    public BoardPostDao bDao;
 
     @Override
     public List<Board> selectPostAll() throws Exception {
@@ -24,7 +24,7 @@ public class BoardServiceImplMapper implements BoardService{
     public List<Board> selectpostbyuserid(int userId) throws Exception {
         return bDao.selectpostbyuserid(userId);
     }
-    //???? id ???? ?????
+
     @Override
     public Board selectByPostId(int id) throws Exception {
         return bDao.selectByPostId(id);
@@ -47,15 +47,14 @@ public class BoardServiceImplMapper implements BoardService{
         bDao.updatePost(board);
     }
 
-    //게시글 삭제 - 사용자 아이디가 동일할 때만 삭제 가능
     @Override
     public void deletePost(int id) throws Exception {
         bDao.deletePost(id);
     }
 
     @Override
-    public int increaseViewCount() throws Exception {
-       return bDao.increaseViewCount();
+    public int increaseViewCount(int id) throws Exception {
+       return bDao.increaseViewCount(id);
     }
 
 }

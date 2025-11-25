@@ -3,22 +3,20 @@ package com.mayonedev.battle.entity;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class Board {
-    private int userId;              //ÀÛ¼ºÀÚ id
-    private int id;                  //°Ô½Ã±Û id
-    private String title;            //°Ô½Ã±Û Á¦¸ñ
-    private String content;          //°Ô½Ã±Û ³»¿ë
-    private LocalDateTime created_at; //±Û ÀÛ¼ºÀÏ
-    private LocalDateTime updated_at; //±Û ¼öÁ¤ÀÏ
-    private int view;                 //Á¶È¸¼ö
-    private String tags;               //ÅÂ±×
+    private int userId;              //user id
+    private int id;                  //post id
+    private String title;            //ê²Œì‹œê¸€ ì œëª©
+    private String content;          //ê²Œì‹œê¸€ ë‚´ìš©
+    private LocalDateTime created_at; //ìž‘ì„± ì‹œê°„
+    private LocalDateTime updated_at; //ìˆ˜ì • ì‹œê°„
+    private int view;                 //ì¡°íšŒ ìˆ˜
+    private String tags;              //íƒœê·¸
 
 }
