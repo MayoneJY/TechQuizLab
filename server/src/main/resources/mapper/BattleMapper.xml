@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.BattleDao">
+
+    <resultMap id="battleResultMap" type="com.mayonedev.battle.entity.Battle">
+        <id property="id" column="id"/>
+        <result property="stageId" column="stage_id"/>
+        <result property="mode" column="mode"/>
+        <result property="status" column="status"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="closedAt" column="closed_at"/>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="battleResultMap">
+        SELECT id, stage_id, mode, status, difficulty, created_at, closed_at
+        FROM battle
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.Battle" 
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO battle (stage_id, mode, status, difficulty, created_at, closed_at)
+        VALUES (#{stageId}, #{mode}, #{status}, #{difficulty}, #{createdAt}, #{closedAt})
+    </insert>
+
+    <update id="updateStatus" parameterType="com.mayonedev.battle.entity.Battle">
+        UPDATE battle
+        SET status = #{status},
+            closed_at = #{closedAt}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

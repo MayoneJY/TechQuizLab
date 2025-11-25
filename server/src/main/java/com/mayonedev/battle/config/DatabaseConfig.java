@@ -16,32 +16,31 @@ import javax.sql.DataSource;
 @MapperScan("com.mayonedev.battle.dao")
 @EnableTransactionManagement
 public class DatabaseConfig {
-    
+
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource.hikari")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
-    
+
     @Bean
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
         SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
-        
+
         // MyBatis 설정
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
         configuration.setMapUnderscoreToCamelCase(true);
         configuration.setJdbcTypeForNull(org.apache.ibatis.type.JdbcType.VARCHAR);
         sessionFactory.setConfiguration(configuration);
-        
+
         // Mapper XML 파일 위치 설정
         sessionFactory.setMapperLocations(
-            new PathMatchingResourcePatternResolver().getResources("classpath:/mapper/**/*.xml")
-        );
-        
+                new PathMatchingResourcePatternResolver().getResources("classpath:/mapper/**/*.xml"));
+
         // Type Aliases 설정
         sessionFactory.setTypeAliasesPackage("com.mayonedev.battle.entity");
-        
+
         return sessionFactory.getObject();
     }
 }
