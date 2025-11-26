@@ -5,6 +5,7 @@ import com.mayonedev.battle.dto.UserDto;
 import com.mayonedev.battle.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     
     private final UserDao userDao;
+    private final PasswordEncoder passwordEncoder;
     
     @Override
     public List<User> getAllUsers() {
@@ -59,7 +61,7 @@ public class UserServiceImpl implements UserService {
         
         User user = new User();
         user.setEmail(userDto.getEmail());
-        user.setPassword(userDto.getPassword()); // 실제로는 암호화 필요
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setNickname(userDto.getNickname());
         user.setCreatedAt(LocalDateTime.now());
         
@@ -90,7 +92,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setEmail(userDto.getEmail());
         existingUser.setNickname(userDto.getNickname());
         if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
-            existingUser.setPassword(userDto.getPassword()); // 실제로는 암호화 필요
+            existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }
         
         userDao.update(existingUser);
