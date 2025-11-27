@@ -1,9 +1,13 @@
 package com.mayonedev.battle.service;
 
 import com.mayonedev.battle.dto.UserDto;
+import com.mayonedev.battle.dto.UserRefreshTokenDTO;
+import com.mayonedev.battle.dto.UserRefreshTokenUpdateDTO;
 import com.mayonedev.battle.entity.User;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 
 public interface UserService {
     

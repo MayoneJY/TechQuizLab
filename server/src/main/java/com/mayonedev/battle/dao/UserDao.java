@@ -1,6 +1,9 @@
 package com.mayonedev.battle.dao;
 
+import com.mayonedev.battle.dto.UserRefreshTokenDTO;
+import com.mayonedev.battle.dto.UserRefreshTokenUpdateDTO;
 import com.mayonedev.battle.entity.User;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

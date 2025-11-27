@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private static final String ACCESS_TOKEN_HEADER_KEY = "Authorization";
     private static final List<String> WHITELIST_URLS = List.of(
-            "/api/users/login", "/api/users/register");
+            "/api/users/login", "/api/users/register", "/api/token/refresh");
 
     private UserDetailsService userDetailsService;
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;

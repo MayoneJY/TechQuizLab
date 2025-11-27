@@ -17,6 +17,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 import com.mayonedev.battle.dto.UserDetailsDTO;
+import com.mayonedev.battle.entity.User;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,7 +75,21 @@ public class TokenProvider {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", user.getEmail());
         claims.put("role", user.getRole());
+        claims.put("id", String.valueOf(user.getId()));
+        return claims;
+    }
 
+    /**
+     * 토큰의 Claims를 생성하는 메서드
+     * 
+     * @param user : 사용자 정보(no details)
+     * @return {Map<String, Object>} : 토큰의 Claims
+     */
+    private static Map<String, Object> createClaims(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", user.getEmail());
+        claims.put("role", user.getRole());
+        claims.put("id", String.valueOf(user.getId()));
         return claims;
     }
 
@@ -108,7 +123,22 @@ public class TokenProvider {
         return Jwts.builder()
                 .header().empty().add(createHeader()).and()
                 .claims().empty().add(createClaims(user)).and()
-                .subject(String.valueOf(user.getId()))
+                .signWith(jwtSecretKey)
+                .expiration(createExpirationDate(isAccessToken))
+                .compact();
+    }
+
+    /**
+     * JWT 토큰을 생성하는 메소드
+     * 
+     * @param user          : 사용자 정보(no details)
+     * @param isAccessToken : AccessToken 인지 여부
+     * @return {String} : 생성된 JWT 토큰
+     */
+    public static String generateJWT(User user, boolean isAccessToken) {
+        return Jwts.builder()
+                .header().empty().add(createHeader()).and()
+                .claims().empty().add(createClaims(user)).and()
                 .signWith(jwtSecretKey)
                 .expiration(createExpirationDate(isAccessToken))
                 .compact();
@@ -134,7 +164,33 @@ public class TokenProvider {
         return Jwts.parser().verifyWith(jwtSecretKey).build().parseSignedClaims(token).getPayload();
     }
 
+    /**
+     * 토큰에서 사용자 이메일을 추출하는 메서드
+     * 
+     * @param token : 토큰
+     * @return {String} : 사용자 이메일
+     */
     public static String getClaimsToUserEmail(String token) {
         return getTokenToClaims(token).get("email").toString();
+    }
+
+    /**
+     * 토큰에서 사용자 ID를 추출하는 메서드
+     * 
+     * @param token : 토큰
+     * @return {String} : 사용자 ID
+     */
+    public static String getClaimsToUserId(String token) {
+        return getTokenToClaims(token).get("id").toString();
+    }
+
+    /**
+     * 토큰에서 사용자 권한을 추출하는 메서드
+     * 
+     * @param token : 토큰
+     * @return {String} : 사용자 권한
+     */
+    public static String getClaimsToUserRole(String token) {
+        return getTokenToClaims(token).get("role").toString();
     }
 }
