@@ -1,13 +1,70 @@
+# 잡스페이스 (Job Space) - 취업 퀴즈 게임
 
-  # Portfolio Battle System
+취업을 위한 다양한 테마의 퀴즈를 풀며 잡스페이스에서 취업 준비를 하는 게이미피케이션 퀴즈 게임입니다.
 
-  This is a code bundle for Portfolio Battle System. The original project is available at https://www.figma.com/design/R7JVrwfvYg29zthEWRhZlw/Portfolio-Battle-System.
+## 특징
 
-  ## Running the code
+- 🎮 픽셀 아트 스타일의 레트로 게임 UI
+- 🚀 우주 테마의 게임 환경
+- 💯 다양한 취업 관련 퀴즈 (면접, 이력서, 기술, 직무, 전략)
+- ⭐ 게이미피케이션 요소 (생명력, 점수, 진행도)
+- ✨ Canvas 기반 파티클 효과 및 애니메이션
 
-Run `npm install` to install dependencies.
+## 기술 스택
 
-Run `npm start` to launch the development server.
+- Vue 3 (Composition API)
+- TypeScript
+- Vite
+- Pinia (상태 관리)
+- Vue Router
+- Canvas API (파티클 효과)
 
-Run `npm run build` to create a production build in `build/`.
-  
+## 설치 및 실행
+
+```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+
+# 빌드
+npm run build
+
+# 프리뷰
+npm run preview
+```
+
+## 게임 플레이
+
+1. **시작 화면**: 카테고리를 선택하고 START 버튼을 클릭
+2. **퀴즈 플레이**: 
+   - 정답을 선택하면 점수 +100
+   - 오답을 선택하면 생명력 -1
+   - 생명력이 0이 되면 게임 오버
+3. **게임 완료**: 모든 퀴즈를 완료하면 승리!
+
+## 카테고리
+
+- 전체: 모든 퀴즈
+- 면접: 면접 관련 질문
+- 이력서: 이력서 작성 관련
+- 기술: 기술 면접 질문
+- 직무: 직무 관련 질문
+- 전략: 취업 전략 관련
+
+## 프로젝트 구조
+
+```
+client/
+├── src/
+│   ├── components/      # 재사용 가능한 컴포넌트
+│   ├── views/          # 페이지 컴포넌트
+│   ├── stores/         # Pinia 스토어
+│   ├── router/         # 라우터 설정
+│   ├── data/           # 퀴즈 데이터
+│   └── style.css       # 전역 스타일
+├── index.html
+└── package.json
+```
+

@@ -17,4 +17,6 @@ public class User {
     private Integer level;              // 레벨
     private Integer exp;                // 경험치
     private LocalDateTime createdAt;    // 가입일
+    private String role;                // 권한
+    private boolean enabled;            // 활성화
 }
