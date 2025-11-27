@@ -10,23 +10,30 @@ export interface User {
   level?: number
   exp?: number
   createdAt?: string
+  role?: string
+  enabled?: boolean
 }
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const token = ref<string | null>(null)
+  const refreshToken = ref<string | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  const isAuthenticated = computed(() => user.value !== null)
+  const isAuthenticated = computed(() => user.value !== null && token.value !== null)
 
   // Load user from localStorage on init
   function init() {
     const savedUser = localStorage.getItem('user')
     const savedToken = localStorage.getItem('authToken')
+    const savedRefreshToken = localStorage.getItem('refreshToken')
     if (savedUser && savedToken) {
       user.value = JSON.parse(savedUser)
       token.value = savedToken
+      if (savedRefreshToken) {
+        refreshToken.value = savedRefreshToken
+      }
     }
   }
 
@@ -35,38 +42,40 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await userApi.login(email, password)
-      // 응답 데이터 처리 (서버 응답 형식에 맞게 조정)
+      // 서버 응답: LoginResponseDTO { accessToken, refreshToken }
       const responseData = response.data
       
-      // 응답이 객체이고 user 정보가 있는 경우
-      if (responseData && typeof responseData === 'object') {
-        user.value = responseData.user || responseData
-        // 토큰이 서버에서 오는 경우 사용, 없으면 임시 토큰 생성
-        if (user.value && user.value.id) {
-          token.value = responseData.token || responseData.accessToken || `token_${user.value.id}`
-        } else {
-          token.value = responseData.token || responseData.accessToken || 'token_temp'
+      if (responseData && responseData.accessToken) {
+        // 토큰 저장
+        token.value = responseData.accessToken
+        refreshToken.value = responseData.refreshToken || null
+        
+        localStorage.setItem('authToken', token.value)
+        if (refreshToken.value) {
+          localStorage.setItem('refreshToken', refreshToken.value)
         }
+        
+        // 토큰을 사용하여 사용자 정보 가져오기
+        // 이메일로 사용자 정보 조회
+        try {
+          const userResponse = await userApi.getUserByEmail(email)
+          user.value = userResponse.data
+          if (user.value) {
+            localStorage.setItem('user', JSON.stringify(user.value))
+          }
+        } catch (userErr: any) {
+          console.error('Failed to fetch user info:', userErr)
+          // 사용자 정보를 가져오지 못해도 토큰은 저장되어 있으므로 계속 진행
+        }
+        
+        return user.value
       } else {
-        user.value = responseData
-        if (user.value && user.value.id) {
-          token.value = `token_${user.value.id}`
-        } else {
-          token.value = 'token_temp'
-        }
+        throw new Error('로그인 응답 형식이 올바르지 않습니다.')
       }
-      
-      if (user.value) {
-      localStorage.setItem('user', JSON.stringify(user.value))
-      }
-      if (token.value) {
-      localStorage.setItem('authToken', token.value)
-      }
-      return user.value
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 
                           err.response?.data?.error || 
-                          err.response?.data ||
+                          (typeof err.response?.data === 'string' ? err.response.data : null) ||
                           err.message ||
                           '로그인에 실패했습니다.'
       error.value = errorMessage
@@ -83,34 +92,28 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await userApi.register({ email, password, nickname })
       const responseData = response.data
       
-      // 응답이 객체이고 user 정보가 있는 경우
+      // 회원가입 성공 시 사용자 정보 저장
       if (responseData && typeof responseData === 'object') {
-        user.value = responseData.user || responseData
-        if (user.value && user.value.id) {
-          token.value = responseData.token || responseData.accessToken || `token_${user.value.id}`
-        } else {
-          token.value = responseData.token || responseData.accessToken || 'token_temp'
+        // 회원가입 후 자동 로그인
+        try {
+          await login(email, password)
+        } catch (loginErr) {
+          // 로그인 실패해도 회원가입은 성공했으므로 사용자 정보만 저장
+          user.value = responseData
+          if (user.value) {
+            localStorage.setItem('user', JSON.stringify(user.value))
+          }
+          console.warn('회원가입 후 자동 로그인 실패:', loginErr)
         }
       } else {
-        user.value = responseData
-        if (user.value && user.value.id) {
-      token.value = `token_${user.value.id}`
-        } else {
-          token.value = 'token_temp'
-        }
+        throw new Error('회원가입 응답 형식이 올바르지 않습니다.')
       }
       
-      if (user.value) {
-      localStorage.setItem('user', JSON.stringify(user.value))
-      }
-      if (token.value) {
-      localStorage.setItem('authToken', token.value)
-      }
       return user.value
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 
                           err.response?.data?.error || 
-                          err.response?.data ||
+                          (typeof err.response?.data === 'string' ? err.response.data : null) ||
                           err.message ||
                           '회원가입에 실패했습니다.'
       error.value = errorMessage
@@ -123,8 +126,10 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     user.value = null
     token.value = null
+    refreshToken.value = null
     localStorage.removeItem('user')
     localStorage.removeItem('authToken')
+    localStorage.removeItem('refreshToken')
   }
 
   async function checkEmailExists(email: string): Promise<boolean> {
@@ -151,6 +156,7 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     token,
+    refreshToken,
     isLoading,
     error,
     isAuthenticated,
