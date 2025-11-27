@@ -58,11 +58,12 @@ api.interceptors.response.use(
     
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken')
+      localStorage.removeItem('refreshToken')
       localStorage.removeItem('user')
       // 로그인 페이지로 리다이렉트
       if (window.location.pathname !== '/login') {
-      window.location.href = '/login'
-    }
+        window.location.href = '/login'
+      }
     }
     
     // 에러 메시지 개선
@@ -100,7 +101,10 @@ export const userApi = {
     api.post('/api/users/login', { email, password }),
   
   register: (userDto: { email: string; password: string; nickname: string }) =>
-    api.post('/api/users', userDto),
+    api.post('/api/users/register', userDto),
+  
+  getUserByEmail: (email: string) =>
+    api.get(`/api/users/email/${email}`),
   
   getUser: (id: number) =>
     api.get(`/api/users/${id}`),
