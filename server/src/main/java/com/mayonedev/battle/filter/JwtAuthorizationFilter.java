@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.mayonedev.battle.exception.GlobalException;
 import com.mayonedev.battle.exception.JwtAuthenticationException;
+import com.mayonedev.battle.security.JwtAuthenticationEntryPoint;
 import com.mayonedev.battle.security.TokenProvider;
 import com.mayonedev.battle.security.ValidToken;
 
@@ -32,9 +33,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             "/api/users/login", "/api/users/register");
 
     private UserDetailsService userDetailsService;
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    public JwtAuthorizationFilter(UserDetailsService userDetailsService) {
+    public JwtAuthorizationFilter(UserDetailsService userDetailsService,
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
         this.userDetailsService = userDetailsService;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
     }
 
     @Override
@@ -58,44 +62,50 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String header = request.getHeader(ACCESS_TOKEN_HEADER_KEY);
+        try {
 
-        // Access Token이 존재하지 않다면
-        if (StringUtils.isBlank(header)) {
-            throw new JwtAuthenticationException("TOKEN_NULL");
+            String header = request.getHeader(ACCESS_TOKEN_HEADER_KEY);
+
+            // Access Token이 존재하지 않다면
+            if (StringUtils.isBlank(header)) {
+                throw new JwtAuthenticationException("TOKEN_NULL");
+            }
+            log.info("Access Token 통과");
+
+            String accessToken = TokenProvider.getHeaderToToken(header);
+            ValidToken validToken = TokenProvider.isValidToken(accessToken);
+            log.info("Access Token 검증");
+
+            // Access Token이 만료되었다면
+            if (!validToken.isValid()) {
+                throw new JwtAuthenticationException(validToken.getErrorName());
+            }
+            log.info("Access Token 검증 통과");
+
+            String email = TokenProvider.getClaimsToUserEmail(accessToken);
+            log.info("Access Token email 검증");
+
+            // Access Token이 유효하지 않다면
+            if (StringUtils.isBlank(email)) {
+                throw new JwtAuthenticationException("TOKEN_INVALID");
+            }
+            log.info("Access Token email 검증 통과");
+
+            // Security Context에 Authentication이 존재하지 않는다면
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null, userDetails.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+            log.info("Security Context 설정");
+            filterChain.doFilter(request, response);
+        } catch (JwtAuthenticationException e) {
+            SecurityContextHolder.clearContext();
+            jwtAuthenticationEntryPoint.commence(request, response, e);
         }
-        log.info("Access Token 통과");
-
-        String accessToken = TokenProvider.getHeaderToToken(header);
-        ValidToken validToken = TokenProvider.isValidToken(accessToken);
-        log.info("Access Token 검증");
-
-        // Access Token이 만료되었다면
-        if (!validToken.isValid()) {
-            throw new JwtAuthenticationException(validToken.getErrorName());
-        }
-        log.info("Access Token 검증 통과");
-
-        String email = TokenProvider.getClaimsToUserEmail(accessToken);
-        log.info("Access Token email 검증");
-
-        // Access Token이 유효하지 않다면
-        if (StringUtils.isBlank(email)) {
-            throw new JwtAuthenticationException("TOKEN_INVALID");
-        }
-        log.info("Access Token email 검증 통과");
-
-        // Security Context에 Authentication이 존재하지 않는다면
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
-                    null, userDetails.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
-        log.info("Security Context 설정");
-
-        filterChain.doFilter(request, response);
     }
 }
