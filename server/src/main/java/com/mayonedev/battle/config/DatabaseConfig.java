@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 
 @Configuration
-@MapperScan("com.mayonedev.battle.dao")
+@MapperScan(basePackages = "com.mayonedev.battle.domain", annotationClass = org.apache.ibatis.annotations.Mapper.class)
 @EnableTransactionManagement
 public class DatabaseConfig {
 
@@ -39,7 +39,7 @@ public class DatabaseConfig {
                 new PathMatchingResourcePatternResolver().getResources("classpath:/mapper/**/*.xml"));
 
         // Type Aliases 설정
-        sessionFactory.setTypeAliasesPackage("com.mayonedev.battle.entity");
+        sessionFactory.setTypeAliasesPackage("com.mayonedev.battle.domain");
 
         return sessionFactory.getObject();
     }

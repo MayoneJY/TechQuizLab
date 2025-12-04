@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.QuestionBookmarkDao">
+<mapper namespace="com.mayonedev.battle.domain.question.dao.QuestionBookmarkDao">
 
-    <resultMap id="bookmarkResultMap" type="com.mayonedev.battle.entity.QuestionBookmark">
+    <resultMap id="bookmarkResultMap" type="com.mayonedev.battle.domain.question.entity.QuestionBookmark">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="questionId" column="question_id"/>
@@ -19,7 +19,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.QuestionBookmark" 
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.question.entity.QuestionBookmark" 
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO question_bookmark (user_id, question_id, memo, created_at)
         VALUES (#{userId}, #{questionId}, #{memo}, #{createdAt})

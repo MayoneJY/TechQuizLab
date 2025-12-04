@@ -1,6 +1,6 @@
 package com.mayonedev.battle.exception;
 
-import com.mayonedev.battle.dto.ApiResponse;
+import com.mayonedev.battle.domain.common.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

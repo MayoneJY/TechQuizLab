@@ -16,8 +16,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
-import com.mayonedev.battle.dto.UserDetailsDTO;
-import com.mayonedev.battle.entity.User;
+import com.mayonedev.battle.domain.user.dto.UserDetailsDTO;
+import com.mayonedev.battle.domain.user.entity.User;
 
 import lombok.extern.slf4j.Slf4j;
 

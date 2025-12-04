@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.UserQuestionHistoryDao">
+<mapper namespace="com.mayonedev.battle.domain.question.dao.UserQuestionHistoryDao">
 
-    <resultMap id="historyResultMap" type="com.mayonedev.battle.entity.UserQuestionHistory">
+    <resultMap id="historyResultMap" type="com.mayonedev.battle.domain.question.entity.UserQuestionHistory">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="questionId" column="question_id"/>
@@ -19,7 +19,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.UserQuestionHistory" 
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.question.entity.UserQuestionHistory" 
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user_question_history (user_id, question_id, is_correct, created_at)
         VALUES (#{userId}, #{questionId}, #{isCorrect}, #{createdAt})

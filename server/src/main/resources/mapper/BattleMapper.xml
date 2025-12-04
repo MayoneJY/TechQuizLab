@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.BattleDao">
+<mapper namespace="com.mayonedev.battle.domain.battle.dao.BattleDao">
 
-    <resultMap id="battleResultMap" type="com.mayonedev.battle.entity.Battle">
+    <resultMap id="battleResultMap" type="com.mayonedev.battle.domain.battle.entity.Battle">
         <id property="userId" column="user_id"/>
         <id property="battleId" column="battle_id"/>
         <result property="stageId" column="stage_id"/>
@@ -20,12 +20,12 @@
         WHERE user_id = #{userId} AND battle_id = #{battleId}
     </select>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.Battle">
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.Battle">
         INSERT INTO battle (user_id, battle_id, stage_id, pf_id, total_damage, status, created_at)
         VALUES (#{userId}, #{battleId}, #{stageId}, #{pfId}, #{totalDamage}, #{status}, #{createdAt})
     </insert>
 
-    <update id="updateStatus" parameterType="com.mayonedev.battle.entity.Battle">
+    <update id="updateStatus" parameterType="com.mayonedev.battle.domain.battle.entity.Battle">
         UPDATE battle
         SET status = #{status},
             total_damage = #{totalDamage}

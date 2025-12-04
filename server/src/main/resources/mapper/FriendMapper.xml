@@ -2,15 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.FriendDao">
+<mapper namespace="com.mayonedev.battle.domain.user.dao.FriendDao">
 
-    <resultMap id="friendResultMap" type="com.mayonedev.battle.entity.Friend">
+    <resultMap id="friendResultMap" type="com.mayonedev.battle.domain.user.entity.Friend">
         <id property="userId" column="user_id"/>
         <id property="friendId" column="friend_id"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.Friend">
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.user.entity.Friend">
         INSERT INTO friend (user_id, friend_id, created_at)
         VALUES (#{userId}, #{friendId}, #{createdAt})
     </insert>

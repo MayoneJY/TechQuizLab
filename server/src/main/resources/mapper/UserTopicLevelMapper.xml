@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.UserTopicLevelDao">
+<mapper namespace="com.mayonedev.battle.domain.topic.dao.UserTopicLevelDao">
 
-    <resultMap id="userTopicLevelResultMap" type="com.mayonedev.battle.entity.UserTopicLevel">
+    <resultMap id="userTopicLevelResultMap" type="com.mayonedev.battle.domain.topic.entity.UserTopicLevel">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="topicId" column="topic_id"/>
@@ -24,13 +24,13 @@
         WHERE user_id = #{userId} AND topic_id = #{topicId}
     </select>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.UserTopicLevel" 
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.topic.entity.UserTopicLevel" 
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user_topic_level (user_id, topic_id, level, exp)
         VALUES (#{userId}, #{topicId}, #{level}, #{exp})
     </insert>
 
-    <update id="update" parameterType="com.mayonedev.battle.entity.UserTopicLevel">
+    <update id="update" parameterType="com.mayonedev.battle.domain.topic.entity.UserTopicLevel">
         UPDATE user_topic_level
         SET level = #{level},
             exp = #{exp}

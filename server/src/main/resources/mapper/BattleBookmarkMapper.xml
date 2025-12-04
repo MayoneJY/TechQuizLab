@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.BattleBookmarkDao">
+<mapper namespace="com.mayonedev.battle.domain.battle.dao.BattleBookmarkDao">
 
-    <resultMap id="battleBookmarkResultMap" type="com.mayonedev.battle.entity.BattleBookmark">
+    <resultMap id="battleBookmarkResultMap" type="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
         <id property="userId" column="user_id"/>
         <id property="bookmarkId" column="bookmark_id"/>
         <result property="refBattleId" column="ref_battle_id"/>
@@ -13,7 +13,7 @@
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.BattleBookmark">
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
         INSERT INTO battle_bookmark (
             user_id, bookmark_id, ref_battle_id, ref_detail_id, memo, created_at
         )

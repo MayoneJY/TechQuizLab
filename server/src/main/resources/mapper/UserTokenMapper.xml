@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.RefreshTokenDao">
+<mapper namespace="com.mayonedev.battle.domain.auth.dao.RefreshTokenDao">
 
-    <resultMap id="refreshTokenResultMap" type="com.mayonedev.battle.entity.RefreshToken">
+    <resultMap id="refreshTokenResultMap" type="com.mayonedev.battle.domain.auth.entity.RefreshToken">
         <id property="userId" column="user_id"/>
         <id property="tokenId" column="token_id"/>
         <result property="tokenValue" column="token_value"/>
@@ -13,7 +13,7 @@
     </resultMap>
 
     <!-- refresh token 저장 -->
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.RefreshToken">
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.auth.entity.RefreshToken">
         INSERT INTO refresh_token (user_id, token_id, token_value, expires_at, created_at)
         VALUES (#{userId}, #{tokenId}, #{tokenValue}, #{expiresAt}, #{createdAt})
     </insert>

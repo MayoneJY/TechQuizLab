@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.BattleTurnDao">
+<mapper namespace="com.mayonedev.battle.domain.battle.dao.BattleTurnDao">
 
-    <resultMap id="turnResultMap" type="com.mayonedev.battle.entity.BattleTurn">
+    <resultMap id="turnResultMap" type="com.mayonedev.battle.domain.battle.entity.BattleTurn">
         <id property="id" column="id"/>
         <result property="battleId" column="battle_id"/>
         <result property="turnNo" column="turn_no"/>
@@ -23,7 +23,7 @@
         ORDER BY turn_no ASC
     </select>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.BattleTurn" 
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BattleTurn" 
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO battle_turn (battle_id, turn_no, attacker_id, question_text, answer_text, multiplier, damage, created_at)
         VALUES (#{battleId}, #{turnNo}, #{attackerId}, #{questionText}, #{answerText}, #{multiplier}, #{damage}, #{createdAt})
