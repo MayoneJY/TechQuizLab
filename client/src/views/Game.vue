@@ -70,6 +70,12 @@
         <div class="question-info">
           <span class="pixel-text">QUESTION {{ gameStore.currentQuestionIndex + 1 }}/{{ gameStore.totalQuestions }}</span>
         </div>
+        
+        <!-- Timer Display -->
+        <div class="timer-display pixel-text" :class="{ 'time-low': timeLeft <= 10 }">
+          ⏱️ {{ timeLeft }}s
+        </div>
+
         <div class="lives-display">
           <PixelHeart 
             v-for="i in gameStore.lives" 
@@ -172,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useQuestionStore } from '../stores/question'
@@ -189,7 +195,39 @@ const showExplosion = ref(false)
 const explosionColor = ref('#ffd43b')
 const answerInput = ref('')
 
-function getStarStyle(index: number) {
+// Timer Logic
+const timeLeft = ref(60)
+const timerInterval = ref<number | null>(null)
+
+function startTimer() {
+  stopTimer()
+  timeLeft.value = 60
+  timerInterval.value = window.setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--
+    } else {
+      stopTimer()
+      handleTimeout()
+    }
+  }, 1000)
+}
+
+function stopTimer() {
+  if (timerInterval.value) {
+    clearInterval(timerInterval.value)
+    timerInterval.value = null
+  }
+}
+
+async function handleTimeout() {
+  if (gameStore.selectedAnswer !== null) return // Already submitted
+  
+  // Time out treated as wrong answer
+  alert('시간 초과! 😢')
+  await submitAnswer(true) // Force submit
+}
+
+function getStarStyle(_: number) {
   return {
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,
@@ -202,10 +240,6 @@ const isAnswerCorrect = computed(() => {
   if (!gameStore.currentQuiz || gameStore.selectedAnswer === null) return false
   return gameStore.selectedAnswer === gameStore.currentQuiz.answer
 })
-
-function selectAnswer(answer: string) {
-  gameStore.selectAnswer(answer)
-}
 
 async function handleSubmit() {
   if (!answerInput.value || !gameStore.currentQuiz) return
@@ -225,9 +259,11 @@ async function bookmarkQuestion() {
   }
 }
 
-async function submitAnswer() {
-  if (!answerInput.value && gameStore.selectedAnswer === null) return
+async function submitAnswer(isTimeout = false) {
+  if (!answerInput.value && gameStore.selectedAnswer === null && !isTimeout) return
   if (!gameStore.currentQuiz) return
+  
+  stopTimer() // Stop timer on submit
   
   const answer = answerInput.value || gameStore.selectedAnswer || ''
   if (!gameStore.selectedAnswer) {
@@ -254,12 +290,23 @@ async function submitAnswer() {
 async function restartGame() {
   if (gameStore.topicId) {
     await gameStore.resetGame(gameStore.topicId)
+    startTimer() // Restart timer
   }
 }
 
 function goHome() {
   router.push('/')
 }
+
+// Watch for question change to reset timer
+watch(() => gameStore.currentQuestionIndex, () => {
+  if (gameStore.gameStatus === 'playing') {
+    startTimer()
+    answerInput.value = ''
+  } else {
+    stopTimer()
+  }
+})
 
 onMounted(async () => {
   // 문제가 없으면 홈으로 리다이렉트
@@ -274,6 +321,15 @@ onMounted(async () => {
     // 로딩 완료 대기
     return
   }
+  
+  // Start timer if game is playing
+  if (gameStore.gameStatus === 'playing') {
+    startTimer()
+  }
+})
+
+onUnmounted(() => {
+  stopTimer()
 })
 </script>
 
@@ -300,6 +356,29 @@ onMounted(async () => {
   font-size: 12px;
   font-weight: 600;
   color: #4a9eff;
+}
+
+.timer-display {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid #fff;
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+
+.timer-display.time-low {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .lives-display {

@@ -4,7 +4,7 @@ import axios from 'axios'
 const API_BASE_URL = import.meta.env.DEV
   ? '' // 개발 환경: Vite proxy 사용 (상대 경로)
   : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9033')
-  // : (import.meta.env.VITE_API_BASE_URL || 'https://battle.mayonedev.com')
+// : (import.meta.env.VITE_API_BASE_URL || 'https://battle.mayonedev.com')
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -205,6 +205,30 @@ export const boardApi = {
 
   deletePost: (postId: number) =>
     api.delete(`/api/boards/post/${postId}`)
+}
+
+// Portfolio API
+export const portfolioApi = {
+  getMyPortfolios: (userId: number) =>
+    api.get(`/api/portfolios/user/${userId}`),
+
+  createPortfolio: (portfolioDto: { userId: number; title: string; content: string }) =>
+    api.post('/api/portfolios', portfolioDto),
+
+  updatePortfolio: (pfId: number, portfolioDto: { userId: number; title: string; content: string }) =>
+    api.put(`/api/portfolios/${pfId}`, portfolioDto),
+
+  deletePortfolio: (pfId: number) =>
+    api.delete(`/api/portfolios/${pfId}`)
+}
+
+// Stage API
+export const stageApi = {
+  getAllStages: () =>
+    api.get('/api/stages'),
+
+  getStageById: (stageId: number) =>
+    api.get(`/api/stages/${stageId}`)
 }
 
 export default api

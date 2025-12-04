@@ -36,11 +36,11 @@ export const useQuestionStore = defineStore('question', () => {
       questions.value = response.data
       return questions.value
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          err.response?.data ||
-                          err.message ||
-                          '문제를 불러오는데 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data ||
+        err.message ||
+        '문제를 불러오는데 실패했습니다.'
       error.value = errorMessage
       throw err
     } finally {
@@ -55,11 +55,11 @@ export const useQuestionStore = defineStore('question', () => {
       currentQuestion.value = response.data
       return currentQuestion.value
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          err.response?.data ||
-                          err.message ||
-                          '문제를 불러오는데 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data ||
+        err.message ||
+        '문제를 불러오는데 실패했습니다.'
       error.value = errorMessage
       throw err
     } finally {
@@ -69,16 +69,16 @@ export const useQuestionStore = defineStore('question', () => {
 
   async function submitAnswer(questionId: number, answer: string): Promise<boolean> {
     if (!authStore.user) throw new Error('로그인이 필요합니다.')
-    
+
     try {
-      const response = await questionApi.submitAnswer(questionId, authStore.user.id, answer)
+      const response = await questionApi.submitAnswer(questionId, authStore.user.userId, answer)
       return response.data
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          err.response?.data ||
-                          err.message ||
-                          '답안 제출에 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data ||
+        err.message ||
+        '답안 제출에 실패했습니다.'
       error.value = errorMessage
       throw err
     }
@@ -86,16 +86,16 @@ export const useQuestionStore = defineStore('question', () => {
 
   async function bookmarkQuestion(questionId: number, memo?: string) {
     if (!authStore.user) throw new Error('로그인이 필요합니다.')
-    
+
     try {
-      await questionApi.bookmarkQuestion(questionId, authStore.user.id, memo)
+      await questionApi.bookmarkQuestion(questionId, authStore.user.userId, memo)
       await fetchBookmarks()
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          err.response?.data ||
-                          err.message ||
-                          '북마크 추가에 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data ||
+        err.message ||
+        '북마크 추가에 실패했습니다.'
       error.value = errorMessage
       throw err
     }
@@ -103,17 +103,17 @@ export const useQuestionStore = defineStore('question', () => {
 
   async function fetchBookmarks() {
     if (!authStore.user) return
-    
+
     try {
-      const response = await questionApi.getBookmarks(authStore.user.id)
+      const response = await questionApi.getBookmarks(authStore.user.userId)
       bookmarks.value = response.data
       return bookmarks.value
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          err.response?.data ||
-                          err.message ||
-                          '북마크를 불러오는데 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data ||
+        err.message ||
+        '북마크를 불러오는데 실패했습니다.'
       error.value = errorMessage
     }
   }

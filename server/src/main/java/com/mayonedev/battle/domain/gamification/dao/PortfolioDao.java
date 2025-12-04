@@ -12,4 +12,10 @@ public interface PortfolioDao {
     List<Portfolio> findAllByUserId(Long userId);
 
     Portfolio findByUserAndPfId(@Param("userId") Long userId, @Param("pfId") Long pfId);
+
+    void update(Portfolio portfolio);
+
+    void delete(@Param("userId") Long userId, @Param("pfId") Long pfId);
+
+    Long findMaxPfIdByUserId(Long userId);
 }

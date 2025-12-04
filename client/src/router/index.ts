@@ -8,6 +8,8 @@ import About from '../views/About.vue'
 import Board from '../views/Board.vue'
 import BoardDetail from '../views/BoardDetail.vue'
 import BoardWrite from '../views/BoardWrite.vue'
+import Portfolio from '../views/Portfolio.vue'
+import StageList from '../views/StageList.vue'
 import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
@@ -46,6 +48,17 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/portfolio',
+      name: 'portfolio',
+      component: Portfolio,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/stages',
+      name: 'stages',
+      component: StageList
+    },
+    {
       path: '/board',
       name: 'board',
       component: Board
@@ -70,7 +83,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')

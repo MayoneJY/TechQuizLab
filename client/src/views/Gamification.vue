@@ -26,6 +26,20 @@
         >
           일일 미션
         </button>
+        <button 
+          class="pixel-button tab-button" 
+          :class="{ active: activeTab === 'ranking' }"
+          @click="activeTab = 'ranking'"
+        >
+          랭킹
+        </button>
+        <button 
+          class="pixel-button tab-button" 
+          :class="{ active: activeTab === 'friends' }"
+          @click="activeTab = 'friends'"
+        >
+          친구/라이벌
+        </button>
       </div>
 
       <!-- Achievements Tab -->
@@ -94,6 +108,48 @@
           </div>
         </div>
       </div>
+
+      <!-- Ranking Tab -->
+      <div v-if="activeTab === 'ranking'" class="tab-content">
+        <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">로딩 중...</div>
+        <div v-else class="ranking-list">
+          <div 
+            v-for="rank in gamificationStore.rankings" 
+            :key="rank.userId"
+            class="ranking-item"
+            :class="{ 'my-rank': rank.userId === authStore.user?.userId }"
+          >
+            <div class="rank-number pixel-text">{{ rank.rank }}</div>
+            <div class="rank-info">
+              <p class="pixel-text rank-name">{{ rank.nickname }}</p>
+              <p class="rank-level">Lv.{{ rank.level }}</p>
+            </div>
+            <div class="rank-exp pixel-text">{{ rank.exp }} EXP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friends Tab -->
+      <div v-if="activeTab === 'friends'" class="tab-content">
+        <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">로딩 중...</div>
+        <div v-else class="friends-list">
+          <div 
+            v-for="friend in gamificationStore.friends" 
+            :key="friend.userId"
+            class="friend-item"
+            :class="{ 'is-rival': friend.isRival }"
+          >
+            <div class="friend-icon">{{ friend.isRival ? '⚔️' : '😊' }}</div>
+            <div class="friend-info">
+              <p class="pixel-text friend-name">{{ friend.nickname }}</p>
+              <p class="friend-stats">Lv.{{ friend.level }} | 해결: {{ friend.solvedCount }}문제</p>
+            </div>
+            <div class="friend-action">
+              <span v-if="friend.isRival" class="rival-badge pixel-text">RIVAL</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Spaceship decoration -->
@@ -124,7 +180,7 @@ const router = useRouter()
 const gamificationStore = useGamificationStore()
 const authStore = useAuthStore()
 
-const activeTab = ref<'achievements' | 'missions'>('achievements')
+const activeTab = ref<'achievements' | 'missions' | 'ranking' | 'friends'>('achievements')
 
 onMounted(async () => {
   // 로그인 확인
@@ -138,7 +194,9 @@ onMounted(async () => {
     await Promise.all([
       gamificationStore.fetchAllAchievements(),
       gamificationStore.fetchUserAchievements(),
-      gamificationStore.fetchDailyMissions()
+      gamificationStore.fetchDailyMissions(),
+      gamificationStore.fetchRankings(),
+      gamificationStore.fetchFriends()
     ])
   } catch (error) {
     console.error('Failed to load gamification data:', error)
@@ -594,9 +652,106 @@ async function claimMission(missionId: number) {
   }
   
   .achievement-item,
-  .mission-item {
+  .mission-item,
+  .ranking-item,
+  .friend-item {
     padding: 15px;
   }
+}
+
+.ranking-list,
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.ranking-item {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid #666;
+  border-radius: 8px;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.ranking-item.my-rank {
+  border-color: #ffd43b;
+  background: rgba(255, 212, 59, 0.2);
+}
+
+.rank-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffd43b;
+  width: 40px;
+  text-align: center;
+}
+
+.rank-info {
+  flex: 1;
+}
+
+.rank-name {
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.rank-level {
+  font-size: 14px;
+  color: #4a9eff;
+}
+
+.rank-exp {
+  font-size: 16px;
+  color: #51cf66;
+}
+
+.friend-item {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid #666;
+  border-radius: 8px;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.friend-item.is-rival {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.friend-icon {
+  font-size: 32px;
+}
+
+.friend-info {
+  flex: 1;
+}
+
+.friend-name {
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.friend-stats {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.rival-badge {
+  font-size: 12px;
+  color: #ff6b6b;
+  border: 2px solid #ff6b6b;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 </style>
 

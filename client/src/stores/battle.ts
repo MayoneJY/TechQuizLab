@@ -2,29 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { battleApi } from '../services/api'
 import { useAuthStore } from './auth'
-
-export interface Battle {
-  userId: number
-  battleId: number
-  stageId: number
-  pfId: number
-  totalDamage: number
-  status: string
-  createdAt: string
-}
-
-export interface BattleDetail {
-  userId: number
-  battleId: number
-  detailId: number
-  questionText: string
-  keywordTags: string
-  difficulty: number
-  userAnswer: string
-  aiFeedback: string
-  damage: number
-  createdAt: string
-}
+import type { Battle, BattleDetail } from '../types/schema'
 
 export const useBattleStore = defineStore('battle', () => {
   const authStore = useAuthStore()

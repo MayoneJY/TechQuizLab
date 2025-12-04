@@ -30,7 +30,7 @@
       <div class="menu-buttons">
         <button 
           class="pixel-button primary" 
-          @click="goToTopicSelection"
+          @click="goToStages"
         >
           START
         </button>
@@ -54,12 +54,25 @@
           <button class="pixel-button link-button" @click="goToGamification">
             업적 & 미션
           </button>
+          <button class="pixel-button link-button" @click="goToPortfolio">
+            포트폴리오
+          </button>
+
           <button class="pixel-button link-button" @click="goToBoard">
             게시판
           </button>
           <button class="pixel-button link-button" @click="handleLogout">
             로그아웃
           </button>
+        </div>
+        
+        <!-- Rival Info -->
+        <div v-if="rival" class="rival-info-card">
+          <p class="pixel-text rival-title">RIVAL STATUS</p>
+          <div class="rival-details">
+            <span class="rival-name">{{ rival.nickname }}</span>
+            <span class="rival-score">{{ rival.solvedCount }} 문제 해결</span>
+          </div>
         </div>
       </div>
       <div v-else class="user-info">
@@ -86,9 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useGamificationStore } from '../stores/gamification'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelHeart from '../components/PixelHeart.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
@@ -96,13 +110,17 @@ import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const gamificationStore = useGamificationStore()
 
+const rival = computed(() => gamificationStore.friends.find(f => f.isRival))
 
-onMounted(() => {
-  // 주제 목록은 TopicSelection 화면에서 로드
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    await gamificationStore.fetchFriends()
+  }
 })
 
-function getStarStyle(index: number) {
+function getStarStyle(_: number) {
   return {
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,
@@ -111,9 +129,7 @@ function getStarStyle(index: number) {
   }
 }
 
-function goToTopicSelection() {
-  router.push('/topics')
-}
+
 
 function goToAbout() {
   router.push('/about')
@@ -132,12 +148,45 @@ function goToGamification() {
   router.push('/gamification')
 }
 
+function goToPortfolio() {
+  router.push('/portfolio')
+}
+
+function goToStages() {
+  router.push('/stages')
+}
+
 function goToBoard() {
   router.push('/board')
 }
 </script>
 
 <style scoped>
+.rival-info-card {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(255, 107, 107, 0.15);
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
+  animation: pulse 2s infinite;
+}
+
+.rival-title {
+  font-size: 12px;
+  color: #ff6b6b;
+  margin-bottom: 8px;
+}
+
+.rival-details {
+  display: flex;
+  justify-content: space-between;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .title-screen {
   display: flex;
   flex-direction: column;

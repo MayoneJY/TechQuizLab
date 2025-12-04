@@ -1,22 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { userApi } from '../services/api'
-
-export interface User {
-  userId: number
-  email: string
-  nickname: string
-  password?: string
-  level?: number
-  exp?: number
-  solvedCount?: number
-  currentStreak?: number
-  maxStreak?: number
-  lastLoginAt?: string
-  createdAt?: string
-  role?: string
-  enabled?: boolean
-}
+import type { User } from '../types/schema'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -54,7 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = responseData.accessToken
         refreshToken.value = responseData.refreshToken || null
 
-        localStorage.setItem('authToken', token.value)
+        localStorage.setItem('authToken', token.value!)
         if (refreshToken.value) {
           localStorage.setItem('refreshToken', refreshToken.value)
         }

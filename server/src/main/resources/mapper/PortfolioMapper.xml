@@ -30,4 +30,23 @@
         WHERE user_id = #{userId} AND pf_id = #{pfId}
     </select>
 
+
+    <update id="update" parameterType="com.mayonedev.battle.domain.gamification.entity.Portfolio">
+        UPDATE portfolio
+        SET title = #{title},
+            content = #{content}
+        WHERE user_id = #{userId} AND pf_id = #{pfId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM portfolio
+        WHERE user_id = #{userId} AND pf_id = #{pfId}
+    </delete>
+
+    <select id="findMaxPfIdByUserId" parameterType="long" resultType="long">
+        SELECT COALESCE(MAX(pf_id), 0)
+        FROM portfolio
+        WHERE user_id = #{userId}
+    </select>
+
 </mapper>
