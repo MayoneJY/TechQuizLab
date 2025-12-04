@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useBoardStore } from '../stores/board'
+import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
@@ -80,7 +80,7 @@ import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const route = useRoute()
-const boardStore = useBoardStore()
+const boardStore = useBoardStore2()
 const authStore = useAuthStore()
 
 const isEdit = computed(() => route.name === 'board-edit')
@@ -118,6 +118,10 @@ onMounted(() => {
       title: post.title,
       content: post.content
     }
+    form.value = {
+    category: (post.tags as 'general' | 'question' | 'tip' | 'free') || 'general',
+    content: post.content,
+  }
   }
 })
 
@@ -129,7 +133,7 @@ function goBack() {
   }
 }
 
-function handleSubmit() {
+async function handleSubmit() {
   if (!form.value.title.trim()) {
     alert('제목을 입력해주세요.')
     return
@@ -140,19 +144,26 @@ function handleSubmit() {
     return
   }
 
-  try {
+try {
     if (isEdit.value && postId.value) {
-      boardStore.updatePost(postId.value, form.value.title, form.value.content)
+      await boardStore.updatePost(
+        postId.value,
+        form.value.title,
+        form.value.content,
+        form.value.category,
+      )
       alert('게시글이 수정되었습니다.')
       router.push(`/board/${postId.value}`)
     } else {
-      const newPost = boardStore.createPost(
+
+      const newPost = await boardStore.createPost(
         form.value.title,
         form.value.content,
-        form.value.category
+        form.value.category,
       )
       alert('게시글이 작성되었습니다.')
-      router.push(`/board/${newPost.id}`)
+
+      router.push('/board')
     }
   } catch (error: any) {
     alert(error.message || '작성에 실패했습니다.')
@@ -227,7 +238,7 @@ function handleSubmit() {
 .form-input,
 .form-textarea {
   width: 100%;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .form-select {
@@ -339,5 +350,12 @@ function handleSubmit() {
     width: 100%;
   }
 }
+
+/* Override text-transform for Korean text */
+.pixel-text,
+.pixel-button {
+  text-transform: none !important;
+}
 </style>
+
 

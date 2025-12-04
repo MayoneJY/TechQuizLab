@@ -15,6 +15,10 @@
     <select id="selectByPostId" parameterType="int" resultType="com.mayonedev.battle.entity.Board">
         select * from board where id = #{id}
     </select>
+    <!-- 게시글 조회(tags) -->
+	<select id="selectByPostTags" parameterType="board" resultType="com.mayonedev.battle.entity.Board">
+		select * from board where tags=#{tags}
+	</select>    
 	<!-- 게시글 조회(NickName) -->
     <select id="selectPostByNickName" parameterType="string" resultType="com.mayonedev.battle.entity.Board">
     
@@ -28,8 +32,8 @@
     </select>
     <!-- 게시글 작성 -->
     <insert id="insertPost" parameterType="com.mayonedev.battle.entity.Board">
-        insert into board (id, user_id, title,created_at, content, view, tags)
-        VALUES (#{id}, #{userId}, #{title}, NOW(), #{content}, #{view}, #{tags})
+        insert into board (user_id, title, content, view, tags)
+        VALUES (#{userId}, #{title}, #{content}, 0, #{tags})
     </insert>
     
 	<!-- 게시글 수정 -->
@@ -37,7 +41,6 @@
         update board set 
             title      = #{title},
             content    = #{content},
-            updated_at = NOW(),
             view       = #{view},
             tags       = #{tags}
         where id 	   = #{id}

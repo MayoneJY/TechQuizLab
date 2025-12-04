@@ -8,7 +8,7 @@
         <button class="pixel-button back-button" @click="goBack">
           ← 목록으로
         </button>
-        <div v-if="post && authStore.user && post.authorId === authStore.user.id" class="post-actions">
+        <div v-if="post && authStore.user && post.id === authStore.user.id" class="post-actions">
           <button class="pixel-button edit-button" @click="goToEdit">
             수정
           </button>
@@ -24,24 +24,24 @@
 
       <div v-else class="post-detail">
         <div class="post-header">
-          <span class="post-category" :class="post.category">
-            {{ getCategoryName(post.category) }}
+          <span class="post-category" :class="post.tags">
+            {{ getCategoryName(post.tags) }}
           </span>
           <h1 class="pixel-text post-title">{{ post.title }}</h1>
         </div>
 
         <div class="post-meta">
           <div class="post-author-info">
-            <span class="post-author">{{ post.author }}</span>
-            <span class="post-date">{{ formatDate(post.createdAt) }}</span>
-            <span v-if="post.updatedAt !== post.createdAt" class="post-updated">
+            <span class="post-author">{{ post.userId }}</span>
+            <span class="post-date">{{ formatDate(post?.createdAt) }}</span>
+            <span v-if="post.updatedAt && post.updatedAt !== post.createdAt" class="post-updated">
               (수정됨: {{ formatDate(post.updatedAt) }})
             </span>
           </div>
           <div class="post-stats">
-            <span>👁 {{ post.views }}</span>
+            <span>👁 {{ post.view }}</span>
             <button class="like-button" @click="handleLike">
-              ❤️ {{ post.likes }}
+              ❤️
             </button>
           </div>
         </div>
@@ -115,7 +115,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useBoardStore } from '../stores/board'
+import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
@@ -123,15 +123,17 @@ import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const route = useRoute()
-const boardStore = useBoardStore()
+const boardStore = useBoardStore2()
 const authStore = useAuthStore()
 
 const postId = computed(() => Number(route.params.id))
-const post = computed(() => boardStore.getPost(postId.value))
-const comments = computed(() => boardStore.getComments(postId.value))
+const post = computed(() => boardStore.currentPost)
+// const comments = computed(() => boardStore.getComments(postId.value)) // 아직 미구현
+const comments = ref([]) 
 const newComment = ref('')
 
-onMounted(() => {
+onMounted(async () => {
+  await boardStore.fetchPostById(postId.value)
   if (!post.value) {
     alert('게시글을 찾을 수 없습니다.')
     goBack()
@@ -154,7 +156,7 @@ async function handleDelete() {
   if (!confirm('정말 삭제하시겠습니까?')) return
 
   try {
-    boardStore.deletePost(postId.value)
+    await boardStore.deletePost(postId.value)
     alert('게시글이 삭제되었습니다.')
     goBack()
   } catch (error: any) {
@@ -163,7 +165,8 @@ async function handleDelete() {
 }
 
 function handleLike() {
-  boardStore.toggleLike(postId.value)
+  // boardStore.toggleLike(postId.value) // 아직 미구현
+  alert('준비 중인 기능입니다.')
 }
 
 function handleAddComment() {
@@ -171,23 +174,29 @@ function handleAddComment() {
     alert('댓글을 입력해주세요.')
     return
   }
+  alert('준비 중인 기능입니다.')
 
+  /*
   try {
     boardStore.createComment(postId.value, newComment.value)
     newComment.value = ''
   } catch (error: any) {
     alert(error.message || '댓글 작성에 실패했습니다.')
   }
+  */
 }
 
 function handleDeleteComment(commentId: number) {
   if (!confirm('댓글을 삭제하시겠습니까?')) return
+  alert('준비 중인 기능입니다.')
 
+  /*
   try {
     boardStore.deleteComment(commentId)
   } catch (error: any) {
     alert(error.message || '댓글 삭제에 실패했습니다.')
   }
+  */
 }
 
 function getCategoryName(category: string) {
@@ -560,4 +569,5 @@ function formatDate(dateString: string) {
   }
 }
 </style>
+
 

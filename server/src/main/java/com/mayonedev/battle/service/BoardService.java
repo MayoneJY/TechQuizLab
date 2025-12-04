@@ -7,7 +7,9 @@ public interface BoardService {
 
     List<Board> selectPostAll() throws Exception;
 
-    List<Board> selectpostbyuserid(int userId)throws Exception; 
+    List<Board> selectpostbyuserid(long userId)throws Exception; 
+    
+    List<Board> selectpostByTags(String tags) throws Exception;
 
     Board selectByPostId(int id)throws Exception; 
 
@@ -19,7 +21,6 @@ public interface BoardService {
 
     void deletePost(int id) throws Exception;
 
-    // 게시글 조회수 카운트
     int increaseViewCount(int id) throws Exception;
 } 
 

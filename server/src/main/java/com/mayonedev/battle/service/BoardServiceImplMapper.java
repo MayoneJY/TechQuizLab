@@ -17,11 +17,18 @@ public class BoardServiceImplMapper implements BoardService{
 
     @Override
     public List<Board> selectPostAll() throws Exception {
-        return bDao.selectPostAll();
+    	System.out.println("서비스 까지 들어옴");
+        try {
+        	return bDao.selectPostAll();
+        } catch (Exception e) {
+            e.printStackTrace();  // 🔥 여기서 콘솔에 SQL / NPE 원인 다 나옴
+            throw e;
+        }
+        
     }
 
     @Override
-    public List<Board> selectpostbyuserid(int userId) throws Exception {
+    public List<Board> selectpostbyuserid(long userId) throws Exception {
         return bDao.selectpostbyuserid(userId);
     }
 
@@ -29,6 +36,18 @@ public class BoardServiceImplMapper implements BoardService{
     public Board selectByPostId(int id) throws Exception {
         return bDao.selectByPostId(id);
     }
+    
+	@Override
+	public List<Board> selectpostByTags(String tags) throws Exception {
+    	System.out.println("태그 서비스 까지 들어옴");
+        try {
+        	return bDao.selectByPostTags(tags);
+        } catch (Exception e) {
+            e.printStackTrace();  // 🔥 여기서 콘솔에 SQL / NPE 원인 다 나옴
+            throw e;
+        }
+		
+	}
 
     @Override
     public List<Board> selectPostByNickName(String nickname) throws Exception {
@@ -56,5 +75,7 @@ public class BoardServiceImplMapper implements BoardService{
     public int increaseViewCount(int id) throws Exception {
        return bDao.increaseViewCount(id);
     }
+
+
 
 }

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="board-screen">
     <ParticleBackground />
     <div class="stars-container"></div>
@@ -69,8 +69,8 @@
           @click="goToDetail(post.id)"
         >
           <div class="post-header">
-            <span class="post-category" :class="post.category">
-              {{ getCategoryName(post.category) }}
+            <span class="post-category" :class="post.tags">
+              {{ getCategoryLabel(post.tags || '') }}
             </span>
             <h3 class="pixel-text post-title">{{ post.title }}</h3>
           </div>
@@ -78,12 +78,12 @@
             {{ truncateContent(post.content) }}
           </div>
           <div class="post-footer">
-            <span class="post-author">{{ post.author }}</span>
+            <span class="post-author">작성자 {{ post.userId }}</span>
             <span class="post-date">{{ formatDate(post.createdAt) }}</span>
             <div class="post-stats">
-              <span>👁 {{ post.views }}</span>
-              <span>❤️ {{ post.likes }}</span>
-              <span>💬 {{ getCommentCount(post.id) }}</span>
+              <span>조회수 {{ post.view }}</span>
+              <span>좋아요 0</span>
+              <span>댓글 {{ getCommentCount(post.id) }}</span>
             </div>
           </div>
         </div>
@@ -106,25 +106,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useBoardStore } from '../stores/board'
+import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
-const boardStore = useBoardStore()
+const boardStore = useBoardStore2()
 const authStore = useAuthStore()
 
-const selectedCategory = ref<'all' | 'general' | 'question' | 'tip' | 'free'>('all')
+const selectedCategory = ref('all')
 
-const filteredPosts = computed(() => {
-  if (selectedCategory.value === 'all') {
-    return boardStore.getPosts()
+// 게시글 목록 가져오기
+onMounted(async () => {
+  try {
+    await boardStore.fetchAllPosts()
+  } catch (error) {
+    console.error('게시글 목록 로드 실패:', error)
   }
-  return boardStore.getPosts(selectedCategory.value)
+})
+
+// 카테고리 변경 시 게시글 필터링
+watch(selectedCategory, async (newCategory) => {
+  try {
+    if (newCategory === 'all') {
+      await boardStore.fetchAllPosts()
+    } else {
+      await boardStore.fetchPostsByTags(newCategory)
+    }
+  } catch (error) {
+    console.error('게시글 필터링 실패:', error)
+  }
+})
+
+// 필터링된 게시글 목록
+const filteredPosts = computed(() => {
+  return boardStore.posts
 })
 
 function goHome() {
@@ -139,7 +159,8 @@ function goToDetail(id: number) {
   router.push(`/board/${id}`)
 }
 
-function getCategoryName(category: string) {
+// 카테고리 태그를 한글 이름으로 변환
+function getCategoryLabel(category: string) {
   const names: Record<string, string> = {
     general: '일반',
     question: '질문',
@@ -170,7 +191,8 @@ function formatDate(dateString: string) {
 }
 
 function getCommentCount(postId: number) {
-  return boardStore.getComments(postId).length
+  // board2 스토어에는 아직 댓글 기능이 없으므로 0 반환
+  return 0
 }
 </script>
 
@@ -288,19 +310,31 @@ function getCommentCount(postId: number) {
 
 .post-header {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
 .post-category {
-  padding: 4px 12px;
-  border-radius: 4px;
+  display: inline-block;
+  width: max-content;
+  padding: 2px 8px;
   font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 9999px;
   background: rgba(255, 255, 255, 0.2);
-  border: 2px solid #666;
+  border: 1px solid #666;
+  text-transform: none !important;
+}
+
+.post-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  width: 100%;
+  line-height: 1.4;
 }
 
 .post-category.general {
@@ -325,14 +359,6 @@ function getCommentCount(postId: number) {
   background: rgba(255, 107, 107, 0.3);
   border-color: #ff6b6b;
   color: #ff6b6b;
-}
-
-.post-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-  flex: 1;
 }
 
 .post-content-preview {
@@ -455,5 +481,12 @@ function getCommentCount(postId: number) {
     font-size: 16px;
   }
 }
+
+/* Override text-transform for Korean text */
+.pixel-text,
+.pixel-button {
+  text-transform: none !important;
+}
 </style>
+
 

@@ -13,16 +13,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class BoardPostDto {
-    //작성시 사용
+
     private String title;
     private String text;
-
-    //목록 응답시 사용 - 
     private Long id;
     private String nickname;
     private Long viewCount;
     private LocalDateTime createAt;
     private LocalDateTime updatedAt;
 
-    //포스트맨
 }

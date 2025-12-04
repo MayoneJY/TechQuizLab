@@ -1,18 +1,21 @@
 import axios from 'axios'
 
 // 개발 환경에서는 Vite proxy를 사용하고, 프로덕션에서는 직접 API 호출
-const API_BASE_URL = import.meta.env.DEV 
+const API_BASE_URL = import.meta.env.DEV
   ? '' // 개발 환경: Vite proxy 사용 (상대 경로)
   : (import.meta.env.VITE_API_BASE_URL || 'https://battle.mayonedev.com')
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Content-Type': 'application/json; charset=utf-8',
+    'Accept': 'application/json; charset=utf-8',
+    'Accept-Charset': 'utf-8'
   },
   timeout: 10000, // 10초 타임아웃
-  withCredentials: false // CORS를 위해 false로 설정
+  withCredentials: false, // CORS를 위해 false로 설정
+  responseType: 'json',
+  responseEncoding: 'utf8'
 })
 
 // Request interceptor for auth token
@@ -21,7 +24,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-  
+
   // 개발 환경에서 API 요청 로깅
   if (import.meta.env.DEV) {
     console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
@@ -30,7 +33,7 @@ api.interceptors.request.use((config) => {
       headers: config.headers
     })
   }
-  
+
   return config
 })
 
@@ -55,7 +58,7 @@ api.interceptors.response.use(
         message: error.message
       })
     }
-    
+
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken')
       localStorage.removeItem('refreshToken')
@@ -65,22 +68,22 @@ api.interceptors.response.use(
         window.location.href = '/login'
       }
     }
-    
+
     // 에러 메시지 개선
     if (error.response) {
       // 서버에서 에러 메시지가 오는 경우
       const errorData = error.response.data
       let errorMessage = '요청 처리 중 오류가 발생했습니다.'
-      
+
       if (typeof errorData === 'string') {
         errorMessage = errorData
       } else if (errorData && typeof errorData === 'object') {
-        errorMessage = errorData.message || 
-                      errorData.error || 
-                      errorData.msg ||
-                      JSON.stringify(errorData)
+        errorMessage = errorData.message ||
+          errorData.error ||
+          errorData.msg ||
+          JSON.stringify(errorData)
       }
-      
+
       error.message = errorMessage
       error.serverMessage = errorMessage
     } else if (error.request) {
@@ -90,7 +93,7 @@ api.interceptors.response.use(
       // 요청 설정 중 에러가 발생한 경우
       error.message = error.message || '요청을 보내는 중 오류가 발생했습니다.'
     }
-    
+
     return Promise.reject(error)
   }
 )
@@ -99,19 +102,19 @@ api.interceptors.response.use(
 export const userApi = {
   login: (email: string, password: string) =>
     api.post('/api/users/login', { email, password }),
-  
+
   register: (userDto: { email: string; password: string; nickname: string }) =>
     api.post('/api/users/register', userDto),
-  
+
   getUserByEmail: (email: string) =>
     api.get(`/api/users/email/${email}`),
-  
+
   getUser: (id: number) =>
     api.get(`/api/users/${id}`),
-  
+
   checkEmailExists: (email: string) =>
     api.get(`/api/users/exists/email/${email}`),
-  
+
   checkNicknameExists: (nickname: string) =>
     api.get(`/api/users/exists/nickname/${nickname}`)
 }
@@ -120,10 +123,10 @@ export const userApi = {
 export const topicApi = {
   getAllTopics: () =>
     api.get('/api/topics'),
-  
+
   getTopicById: (id: number) =>
     api.get(`/api/topics/${id}`),
-  
+
   getUserTopicLevel: (topicId: number, userId: number) =>
     api.get(`/api/topics/${topicId}/level?userId=${userId}`)
 }
@@ -132,19 +135,19 @@ export const topicApi = {
 export const questionApi = {
   getQuestionsByTopic: (topicId: number) =>
     api.get(`/api/questions?topicId=${topicId}`),
-  
+
   getQuestionById: (id: number) =>
     api.get(`/api/questions/${id}`),
-  
+
   submitAnswer: (id: number, userId: number, answer: string) =>
     api.post(`/api/questions/${id}/submit`, { userId, answer }),
-  
+
   bookmarkQuestion: (id: number, userId: number, memo?: string) =>
     api.post(`/api/questions/${id}/bookmark`, { userId, memo }),
-  
+
   getHistory: (userId: number) =>
     api.get(`/api/questions/history?userId=${userId}`),
-  
+
   getBookmarks: (userId: number) =>
     api.get(`/api/questions/bookmarks?userId=${userId}`)
 }
@@ -158,13 +161,13 @@ export const battleApi = {
     userId: number
   }) =>
     api.post('/api/battles', request),
-  
+
   getBattle: (id: number) =>
     api.get(`/api/battles/${id}`),
-  
+
   processTurn: (id: number, userId: number, answer: string) =>
     api.post(`/api/battles/${id}/turn`, { userId, answer }),
-  
+
   finishBattle: (id: number) =>
     api.post(`/api/battles/${id}/finish`)
 }
@@ -173,16 +176,36 @@ export const battleApi = {
 export const gamificationApi = {
   getUserAchievements: (userId: number) =>
     api.get(`/api/gamification/my-achievements?userId=${userId}`),
-  
+
   getDailyMissions: (userId: number) =>
     api.get(`/api/gamification/missions/daily?userId=${userId}`),
-  
+
   claimMissionReward: (id: number) =>
     api.post(`/api/gamification/missions/${id}/claim`),
-  
+
   getAllAchievements: () =>
     api.get('/api/gamification/achievements')
 }
 
-export default api
+// Board API
+export const boardApi = {
+  getAllPosts: () =>
+    api.get('/api/boards/post'),
 
+  getPostByPostId: (postId: number) =>
+    api.get(`/api/boards/post/${postId}`),
+
+  getPostbyTags: (tags: string) =>
+    api.get(`/api/boards/post/tags/${tags}`),
+
+  createBoard: (postDto: { userId: number; title: string; content: string; tags: string }) =>
+    api.post('/api/boards/post', postDto),
+
+  updatePost: (postId: number, postDto: { userId: number; title: string; content: string; tags?: string }) =>
+    api.patch(`/api/boards/post/${postId}`, postDto),
+
+  deletePost: (postId: number) =>
+    api.delete(`/api/boards/post/${postId}`)
+}
+
+export default api

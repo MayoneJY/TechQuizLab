@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from './auth'
+import { boardApi } from '../services/api'
+
 
 export interface Post {
   id: number
@@ -30,8 +32,10 @@ const STORAGE_COMMENTS_KEY = 'jobmonster_board_comments'
 export const useBoardStore = defineStore('board', () => {
   const authStore = useAuthStore()
   const posts = ref<Post[]>([])
+  const post = ref<Post | null>(null)
   const comments = ref<Comment[]>([])
   const isLoading = ref(false)
+  const error = ref<string | null>(null)
 
   // 로컬 스토리지에서 데이터 로드
   function loadFromStorage() {
@@ -56,56 +60,7 @@ export const useBoardStore = defineStore('board', () => {
 
   // 초기 목업 데이터 생성
   function initializeMockData() {
-    const mockPosts: Post[] = [
-      {
-        id: 1,
-        title: '취업 준비생들을 위한 조언',
-        content: '안녕하세요! 취업 준비를 하면서 느낀 점들을 공유하고 싶어서 글을 씁니다.\n\n1. 이력서 작성 시 구체적인 성과를 명시하세요.\n2. 기술 스택은 실제로 사용해본 것만 적으세요.\n3. 면접 준비는 충분히 하되, 긴장하지 마세요.\n\n모두 화이팅입니다! 💪',
-        author: '취준생A',
-        authorId: 1,
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        views: 156,
-        likes: 23,
-        category: 'tip'
-      },
-      {
-        id: 2,
-        title: '면접 질문 중 가장 어려웠던 질문은?',
-        content: '면접을 보면서 가장 어려웠던 질문이 뭐였나요?\n\n저는 "왜 우리 회사를 선택했나요?"라는 질문이 항상 어려웠습니다.\n\n여러분은 어떤 질문이 어려웠나요?',
-        author: '면접러',
-        authorId: 2,
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        views: 89,
-        likes: 12,
-        category: 'question'
-      },
-      {
-        id: 3,
-        title: '잡스페이스 게임 재밌네요!',
-        content: '이 게임 정말 재밌습니다! 퀴즈 풀면서 공부도 되고 게임도 되고 일석이조네요.\n\n특히 업적 시스템이 마음에 듭니다. 더 많은 업적을 달성하고 싶어요!',
-        author: '게이머123',
-        authorId: 3,
-        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        views: 45,
-        likes: 8,
-        category: 'free'
-      },
-      {
-        id: 4,
-        title: '프론트엔드 개발자 취업 후기',
-        content: '안녕하세요! 프론트엔드 개발자로 취업한 후기를 공유합니다.\n\n주요 포인트:\n- 포트폴리오가 가장 중요했습니다\n- 기술 면접에서는 실제 프로젝트 경험이 도움이 되었습니다\n- 협업 경험을 강조하는 것이 좋았습니다\n\n질문 있으면 댓글 달아주세요!',
-        author: '프론트개발자',
-        authorId: 4,
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        views: 234,
-        likes: 45,
-        category: 'general'
-      }
-    ]
+    const mockPosts: Post[] = []
 
     posts.value = mockPosts
     saveToStorage()
@@ -124,21 +79,33 @@ export const useBoardStore = defineStore('board', () => {
   // 게시글 목록 가져오기
   function getPosts(category?: string) {
     if (category) {
-      return posts.value.filter(post => post.category === category)
+      return boardApi.getAllPosts(); //카테고리가 잇을 때 api
     }
-    return posts.value.sort((a, b) => 
+    return posts.value.sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   }
 
   // 게시글 상세 가져오기
-  function getPost(id: number): Post | undefined {
-    const post = posts.value.find(p => p.id === id)
-    if (post) {
-      post.views++
-      saveToStorage()
+  async function getPost(id: number) {
+    isLoading.value = true;
+
+    try {
+      //제대로 받을 받아왔을 떄
+      const response = await boardApi.getPostByPostId(id);
+      post.value = response.data;
+      return post;
+
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.response?.data ||
+        err.message ||
+        '문제를 불러오는데 실패했습니다.'
+      error
+    } finally {
+      isLoading.value = false;
     }
-    return post
   }
 
   // 게시글 작성
@@ -266,9 +233,11 @@ export const useBoardStore = defineStore('board', () => {
   loadFromStorage()
 
   return {
+    post,
     posts,
     comments,
     isLoading,
+    error,
     getPosts,
     getPost,
     createPost,
@@ -278,6 +247,7 @@ export const useBoardStore = defineStore('board', () => {
     getComments,
     createComment,
     deleteComment
+
   }
 })
 
