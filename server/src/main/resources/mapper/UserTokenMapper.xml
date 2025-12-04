@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.UserTokenDao">
+
+    <!-- refresh token 저장 -->
+    <insert id="insertRefreshToken" parameterType="com.mayonedev.battle.dto.UserRefreshTokenDTO">
+        INSERT INTO user_refresh_token (refresh_token, user_id, validity)
+        VALUES (#{refreshToken}, #{userId}, #{validity})
+    </insert>
+
+    <!-- refresh token 조회 -->
+    <select id="findByRefreshToken" parameterType="string" resultType="com.mayonedev.battle.entity.UserRefreshToken">
+        SELECT * 
+        FROM user_refresh_token 
+        WHERE refresh_token = #{refreshToken}
+    </select>
+
+    <!-- refresh token 삭제 -->
+    <delete id="deleteByRefreshToken" parameterType="string">
+        DELETE FROM user_refresh_token 
+        WHERE refresh_token = #{refreshToken}
+    </delete>
+
+    <!-- refresh token 사용 처리 -->
+    <update id="updateRefreshToken" parameterType="com.mayonedev.battle.dto.UserRefreshTokenUpdateDTO">
+        UPDATE user_refresh_token 
+        SET revoked = #{revoked}
+        WHERE refresh_token = #{refreshToken}
+    </update>
+
+</mapper>

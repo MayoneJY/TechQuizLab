@@ -7,7 +7,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mayonedev.battle.dto.ApiResponse;
 import com.mayonedev.battle.exception.JwtAuthenticationException;
@@ -25,6 +24,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException {
+        log.info("인증 실패");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=utf-8");
 
@@ -47,7 +47,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 default -> "인증에 실패했습니다. 1";
             };
         }
-        log.info(authException.getMessage());
+        // log.info(authException.getMessage());
         return "인증에 실패했습니다. 2";
     }
 

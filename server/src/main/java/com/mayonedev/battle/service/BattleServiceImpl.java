@@ -3,16 +3,14 @@ package com.mayonedev.battle.service;
 import com.mayonedev.battle.dao.BattleDao;
 import com.mayonedev.battle.dao.BattleParticipantDao;
 import com.mayonedev.battle.dao.BattleTurnDao;
-import com.mayonedev.battle.dao.QuestionDao;
+// import com.mayonedev.battle.dao.QuestionDao;
 import com.mayonedev.battle.entity.Battle;
 import com.mayonedev.battle.entity.BattleParticipant;
 import com.mayonedev.battle.entity.BattleTurn;
-import com.mayonedev.battle.entity.Question;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +19,7 @@ public class BattleServiceImpl implements BattleService {
     private final BattleDao battleDao;
     private final BattleParticipantDao participantDao;
     private final BattleTurnDao turnDao;
-    private final QuestionDao questionDao;
+    // private final QuestionDao questionDao;
 
     @Override
     @Transactional

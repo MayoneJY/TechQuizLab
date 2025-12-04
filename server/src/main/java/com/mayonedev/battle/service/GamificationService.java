@@ -1,7 +1,6 @@
 package com.mayonedev.battle.service;
 
 import com.mayonedev.battle.entity.Achievement;
-import com.mayonedev.battle.entity.DailyMission;
 import com.mayonedev.battle.entity.UserAchievement;
 import com.mayonedev.battle.entity.UserDailyMission;
 import java.util.List;

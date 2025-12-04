@@ -2,13 +2,18 @@ package com.mayonedev.battle.controller;
 
 import com.mayonedev.battle.dto.LoginResponseDTO;
 import com.mayonedev.battle.dto.UserDetailsDTO;
+import com.mayonedev.battle.dto.UserRefreshTokenDTO;
 import com.mayonedev.battle.dto.UserDto;
 import com.mayonedev.battle.entity.User;
 import com.mayonedev.battle.security.TokenProvider;
 import com.mayonedev.battle.service.UserService;
+import com.mayonedev.battle.service.UserTokenService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,6 +23,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,6 +34,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserTokenService userTokenService;
     private final AuthenticationManager authenticationManager;
 
     @GetMapping("/")
@@ -131,9 +138,10 @@ public class UserController {
         return ResponseEntity.ok(exists);
     }
 
+    // refresh token httponly cookie으로 전달
     @PostMapping("/login")
     @Operation(summary = "사용자 로그인", description = "이메일과 비밀번호로 로그인합니다.")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         log.info("로그인 요청 - 이메일: {}", loginRequest.getEmail());
         try {
             // User user = userService.login(loginRequest.getEmail(),
@@ -153,7 +161,18 @@ public class UserController {
             String accessToken = TokenProvider.generateJWT(userDetailsDTO, true);
             String refreshToken = TokenProvider.generateJWT(userDetailsDTO, false);
 
-            return ResponseEntity.ok().body(new LoginResponseDTO(accessToken, refreshToken));
+            // refresh token 저장
+            if(userTokenService.insertRefreshToken(new UserRefreshTokenDTO(userDetailsDTO.getId(), refreshToken, LocalDateTime.now().plusDays(7), false)) == 0) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token 발급 실패");
+            }
+
+            Cookie cookie = new Cookie("refreshToken", refreshToken);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/api/token/refresh");
+            cookie.setMaxAge(60 * 60 * 24 * 7); // 7일
+            response.addCookie(cookie);
+            
+            return ResponseEntity.ok().body(new LoginResponseDTO(accessToken));
 
         } catch (RuntimeException e) {
             log.error("로그인 실패: {}", e.getMessage());
