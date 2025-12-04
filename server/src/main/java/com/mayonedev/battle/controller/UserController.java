@@ -162,7 +162,13 @@ public class UserController {
             String refreshToken = TokenProvider.generateJWT(userDetailsDTO, false);
 
             // refresh token 저장
-            if(userTokenService.insertRefreshToken(new UserRefreshTokenDTO(userDetailsDTO.getId(), refreshToken, LocalDateTime.now().plusDays(7), false)) == 0) {
+            UserRefreshTokenDTO tokenDto = UserRefreshTokenDTO.builder()
+                    .userId(userDetailsDTO.getUserId())
+                    .refreshToken(refreshToken)
+                    .expiresAt(LocalDateTime.now().plusDays(7))
+                    .build();
+
+            if (userTokenService.insertRefreshToken(tokenDto) == 0) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token 발급 실패");
             }
 
@@ -171,7 +177,7 @@ public class UserController {
             cookie.setPath("/api/token/refresh");
             cookie.setMaxAge(60 * 60 * 24 * 7); // 7일
             response.addCookie(cookie);
-            
+
             return ResponseEntity.ok().body(new LoginResponseDTO(accessToken));
 
         } catch (RuntimeException e) {

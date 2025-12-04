@@ -7,6 +7,8 @@ import java.util.List;
 @Mapper
 public interface StageDao {
     List<Stage> findAll();
-    Stage findById(Long id);
-    int insert(Stage stage);
+
+    Stage findById(Long stageId);
+
+    void insert(Stage stage);
 }

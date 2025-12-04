@@ -83,7 +83,7 @@ public class BoardController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("resmsg", "로그인이 필요합니다."));
             }
             User u = userService.getUserByEmail(loginuser.getEmail());
-            b.setUserId(u.getId());
+            b.setUserId(u.getUserId());
             boardService.insertPost(b);
             Map<String, Object> map = Map.of("resmsg", "게시글이 등록되었습니다", "resvalue", b);
 
@@ -108,7 +108,7 @@ public class BoardController {
             // 여기에 서비스 선언해서 유저 DTO 에서 user id 조회해가지고 둘이 맞는지 검사하면 된다 하 ..
             User u = userService.getUserByEmail(loginuser.getEmail());
 
-            if (u.getId() == b.getUserId()) {
+            if (u.getUserId() == b.getUserId()) {
                 boardService.updatePost(b);
                 Map<String, Object> map = Map.of("resmsg", "게시글이 수정되었습니다.", "resvalue", b);
                 return ResponseEntity
@@ -137,7 +137,7 @@ public class BoardController {
             Board b = boardService.selectByPostId(id);
             User u = userService.getUserByEmail(loginuser.getEmail());
 
-            if (u.getId() == b.getUserId()) {
+            if (u.getUserId() == b.getUserId()) {
                 boardService.deletePost(id);
                 Map<String, Object> map = Map.of("resmsg", "게시글이 삭제되었습니다.", "resvalue", id);
                 return ResponseEntity

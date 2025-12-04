@@ -75,7 +75,7 @@ public class TokenProvider {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", user.getEmail());
         claims.put("role", user.getRole());
-        claims.put("id", String.valueOf(user.getId()));
+        claims.put("id", String.valueOf(user.getUserId()));
         return claims;
     }
 
@@ -89,7 +89,7 @@ public class TokenProvider {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", user.getEmail());
         claims.put("role", user.getRole());
-        claims.put("id", String.valueOf(user.getId()));
+        claims.put("id", String.valueOf(user.getUserId()));
         return claims;
     }
 

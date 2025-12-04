@@ -3,12 +3,16 @@ import { ref, computed } from 'vue'
 import { userApi } from '../services/api'
 
 export interface User {
-  id: number
+  userId: number
   email: string
   nickname: string
   password?: string
   level?: number
   exp?: number
+  solvedCount?: number
+  currentStreak?: number
+  maxStreak?: number
+  lastLoginAt?: string
   createdAt?: string
   role?: string
   enabled?: boolean
@@ -44,17 +48,17 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await userApi.login(email, password)
       // 서버 응답: LoginResponseDTO { accessToken, refreshToken }
       const responseData = response.data
-      
+
       if (responseData && responseData.accessToken) {
         // 토큰 저장
         token.value = responseData.accessToken
         refreshToken.value = responseData.refreshToken || null
-        
+
         localStorage.setItem('authToken', token.value)
         if (refreshToken.value) {
           localStorage.setItem('refreshToken', refreshToken.value)
         }
-        
+
         // 토큰을 사용하여 사용자 정보 가져오기
         // 이메일로 사용자 정보 조회
         try {
@@ -67,17 +71,17 @@ export const useAuthStore = defineStore('auth', () => {
           console.error('Failed to fetch user info:', userErr)
           // 사용자 정보를 가져오지 못해도 토큰은 저장되어 있으므로 계속 진행
         }
-        
+
         return user.value
       } else {
         throw new Error('로그인 응답 형식이 올바르지 않습니다.')
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          (typeof err.response?.data === 'string' ? err.response.data : null) ||
-                          err.message ||
-                          '로그인에 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        (typeof err.response?.data === 'string' ? err.response.data : null) ||
+        err.message ||
+        '로그인에 실패했습니다.'
       error.value = errorMessage
       throw err
     } finally {
@@ -91,7 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await userApi.register({ email, password, nickname })
       const responseData = response.data
-      
+
       // 회원가입 성공 시 사용자 정보 저장
       if (responseData && typeof responseData === 'object') {
         // 회원가입 후 자동 로그인
@@ -108,14 +112,14 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         throw new Error('회원가입 응답 형식이 올바르지 않습니다.')
       }
-      
+
       return user.value
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          (typeof err.response?.data === 'string' ? err.response.data : null) ||
-                          err.message ||
-                          '회원가입에 실패했습니다.'
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        (typeof err.response?.data === 'string' ? err.response.data : null) ||
+        err.message ||
+        '회원가입에 실패했습니다.'
       error.value = errorMessage
       throw err
     } finally {

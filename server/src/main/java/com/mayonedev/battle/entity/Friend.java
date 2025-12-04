@@ -8,11 +8,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Stage {
-    private Long stageId;
-    private String companyName;
-    private String title;
-    private String jobCategory;
-    private String content;
-    private LocalDateTime deadline;
+public class Friend {
+    private Long userId;
+    private Long friendId;
+    private LocalDateTime createdAt;
 }

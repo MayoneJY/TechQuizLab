@@ -2,32 +2,33 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.UserTokenDao">
+<mapper namespace="com.mayonedev.battle.dao.RefreshTokenDao">
+
+    <resultMap id="refreshTokenResultMap" type="com.mayonedev.battle.entity.RefreshToken">
+        <id property="userId" column="user_id"/>
+        <id property="tokenId" column="token_id"/>
+        <result property="tokenValue" column="token_value"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
 
     <!-- refresh token 저장 -->
-    <insert id="insertRefreshToken" parameterType="com.mayonedev.battle.dto.UserRefreshTokenDTO">
-        INSERT INTO user_refresh_token (refresh_token, user_id, validity)
-        VALUES (#{refreshToken}, #{userId}, #{validity})
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.RefreshToken">
+        INSERT INTO refresh_token (user_id, token_id, token_value, expires_at, created_at)
+        VALUES (#{userId}, #{tokenId}, #{tokenValue}, #{expiresAt}, #{createdAt})
     </insert>
 
     <!-- refresh token 조회 -->
-    <select id="findByRefreshToken" parameterType="string" resultType="com.mayonedev.battle.entity.UserRefreshToken">
+    <select id="findByTokenValue" parameterType="string" resultMap="refreshTokenResultMap">
         SELECT * 
-        FROM user_refresh_token 
-        WHERE refresh_token = #{refreshToken}
+        FROM refresh_token 
+        WHERE token_value = #{tokenValue}
     </select>
 
     <!-- refresh token 삭제 -->
-    <delete id="deleteByRefreshToken" parameterType="string">
-        DELETE FROM user_refresh_token 
-        WHERE refresh_token = #{refreshToken}
+    <delete id="deleteByTokenValue" parameterType="string">
+        DELETE FROM refresh_token 
+        WHERE token_value = #{tokenValue}
     </delete>
-
-    <!-- refresh token 사용 처리 -->
-    <update id="updateRefreshToken" parameterType="com.mayonedev.battle.dto.UserRefreshTokenUpdateDTO">
-        UPDATE user_refresh_token 
-        SET revoked = #{revoked}
-        WHERE refresh_token = #{refreshToken}
-    </update>
 
 </mapper>

@@ -4,7 +4,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.mayonedev.battle.dto.UserRefreshTokenDTO;
 import com.mayonedev.battle.dto.UserRefreshTokenUpdateDTO;
-import com.mayonedev.battle.entity.UserRefreshToken;
+import com.mayonedev.battle.entity.RefreshToken;
 
 public interface UserTokenService {
     /**
@@ -15,7 +15,7 @@ public interface UserTokenService {
     /**
      * refresh token 조회
      */
-    UserRefreshToken findByRefreshToken(@Param("refreshToken") String refreshToken);
+    RefreshToken findByRefreshToken(@Param("refreshToken") String refreshToken);
 
     /**
      * refresh token 삭제

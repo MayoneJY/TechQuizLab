@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class UserRefreshTokenDTO {
     private Long userId;
     private String refreshToken;
-    private LocalDateTime validity;
-    private boolean revoked;
+    private LocalDateTime expiresAt;
+    private boolean revoked; // Keeping it for now if used elsewhere, but service ignores it.
 }

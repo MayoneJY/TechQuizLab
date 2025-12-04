@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.BattleDetailDao">
+
+    <resultMap id="battleDetailResultMap" type="com.mayonedev.battle.entity.BattleDetail">
+        <id property="userId" column="user_id"/>
+        <id property="battleId" column="battle_id"/>
+        <id property="detailId" column="detail_id"/>
+        <result property="questionText" column="question_text"/>
+        <result property="keywordTags" column="keyword_tags"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="userAnswer" column="user_answer"/>
+        <result property="aiFeedback" column="ai_feedback"/>
+        <result property="damage" column="damage"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.BattleDetail">
+        INSERT INTO battle_detail (
+            user_id, battle_id, detail_id, question_text, keyword_tags, 
+            difficulty, user_answer, ai_feedback, damage, created_at
+        )
+        VALUES (
+            #{userId}, #{battleId}, #{detailId}, #{questionText}, #{keywordTags},
+            #{difficulty}, #{userAnswer}, #{aiFeedback}, #{damage}, #{createdAt}
+        )
+    </insert>
+
+    <select id="findByBattleId" resultMap="battleDetailResultMap">
+        SELECT *
+        FROM battle_detail
+        WHERE user_id = #{userId} AND battle_id = #{battleId}
+        ORDER BY detail_id ASC
+    </select>
+
+</mapper>

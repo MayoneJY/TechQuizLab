@@ -5,44 +5,33 @@
 <mapper namespace="com.mayonedev.battle.dao.StageDao">
 
     <resultMap id="stageResultMap" type="com.mayonedev.battle.entity.Stage">
-        <id property="id" column="id"/>
-        <result property="url" column="url"/>
-        <result property="active" column="active"/>
-        <result property="name" column="name"/>
+        <id property="stageId" column="stage_id"/>
+        <result property="companyName" column="company_name"/>
         <result property="title" column="title"/>
-        <result property="industryName" column="industry_name"/>
-        <result property="jobTypeName" column="job_type_name"/>
-        <result property="experienceLevelName" column="experience_level_name"/>
-        <result property="requiredEducationLevelName" column="required_education_level_name"/>
-        <result property="openingTimestamp" column="opening_timestamp"/>
-        <result property="expirationTimestamp" column="expiration_timestamp"/>
-        <result property="keyword" column="keyword"/>
-        <result property="locationName" column="location_name"/>
+        <result property="jobCategory" column="job_category"/>
+        <result property="content" column="content"/>
+        <result property="deadline" column="deadline"/>
     </resultMap>
 
     <select id="findAll" resultMap="stageResultMap">
         SELECT *
         FROM stage
-        ORDER BY opening_timestamp DESC
+        ORDER BY stage_id DESC
     </select>
 
     <select id="findById" parameterType="long" resultMap="stageResultMap">
         SELECT *
         FROM stage
-        WHERE id = #{id}
+        WHERE stage_id = #{stageId}
     </select>
 
     <insert id="insert" parameterType="com.mayonedev.battle.entity.Stage" 
-            useGeneratedKeys="true" keyProperty="id">
+            useGeneratedKeys="true" keyProperty="stageId">
         INSERT INTO stage (
-            url, active, name, title, industry_name, job_type_name, 
-            experience_level_name, required_education_level_name, 
-            opening_timestamp, expiration_timestamp, keyword, location_name
+            company_name, title, job_category, content, deadline
         )
         VALUES (
-            #{url}, #{active}, #{name}, #{title}, #{industryName}, #{jobTypeName},
-            #{experienceLevelName}, #{requiredEducationLevelName},
-            #{openingTimestamp}, #{expirationTimestamp}, #{keyword}, #{locationName}
+            #{companyName}, #{title}, #{jobCategory}, #{content}, #{deadline}
         )
     </insert>
 

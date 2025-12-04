@@ -5,32 +5,31 @@
 <mapper namespace="com.mayonedev.battle.dao.BattleDao">
 
     <resultMap id="battleResultMap" type="com.mayonedev.battle.entity.Battle">
-        <id property="id" column="id"/>
+        <id property="userId" column="user_id"/>
+        <id property="battleId" column="battle_id"/>
         <result property="stageId" column="stage_id"/>
-        <result property="mode" column="mode"/>
+        <result property="pfId" column="pf_id"/>
+        <result property="totalDamage" column="total_damage"/>
         <result property="status" column="status"/>
-        <result property="difficulty" column="difficulty"/>
         <result property="createdAt" column="created_at"/>
-        <result property="closedAt" column="closed_at"/>
     </resultMap>
 
-    <select id="findById" parameterType="long" resultMap="battleResultMap">
-        SELECT id, stage_id, mode, status, difficulty, created_at, closed_at
+    <select id="findByUserAndBattleId" resultMap="battleResultMap">
+        SELECT user_id, battle_id, stage_id, pf_id, total_damage, status, created_at
         FROM battle
-        WHERE id = #{id}
+        WHERE user_id = #{userId} AND battle_id = #{battleId}
     </select>
 
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.Battle" 
-            useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO battle (stage_id, mode, status, difficulty, created_at, closed_at)
-        VALUES (#{stageId}, #{mode}, #{status}, #{difficulty}, #{createdAt}, #{closedAt})
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.Battle">
+        INSERT INTO battle (user_id, battle_id, stage_id, pf_id, total_damage, status, created_at)
+        VALUES (#{userId}, #{battleId}, #{stageId}, #{pfId}, #{totalDamage}, #{status}, #{createdAt})
     </insert>
 
     <update id="updateStatus" parameterType="com.mayonedev.battle.entity.Battle">
         UPDATE battle
         SET status = #{status},
-            closed_at = #{closedAt}
-        WHERE id = #{id}
+            total_damage = #{totalDamage}
+        WHERE user_id = #{userId} AND battle_id = #{battleId}
     </update>
 
 </mapper>

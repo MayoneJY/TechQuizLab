@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.BookmarkPracticeDao">
+
+    <resultMap id="bookmarkPracticeResultMap" type="com.mayonedev.battle.entity.BookmarkPractice">
+        <id property="userId" column="user_id"/>
+        <id property="bookmarkId" column="bookmark_id"/>
+        <id property="practiceId" column="practice_id"/>
+        <result property="userAnswer" column="user_answer"/>
+        <result property="aiFeedback" column="ai_feedback"/>
+        <result property="damage" column="damage"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.BookmarkPractice">
+        INSERT INTO bookmark_practice (
+            user_id, bookmark_id, practice_id, user_answer, ai_feedback, damage, created_at
+        )
+        VALUES (
+            #{userId}, #{bookmarkId}, #{practiceId}, #{userAnswer}, #{aiFeedback}, #{damage}, #{createdAt}
+        )
+    </insert>
+
+    <select id="findByBookmarkId" resultMap="bookmarkPracticeResultMap">
+        SELECT *
+        FROM bookmark_practice
+        WHERE user_id = #{userId} AND bookmark_id = #{bookmarkId}
+        ORDER BY practice_id DESC
+    </select>
+
+</mapper>

@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Battle {
+public class BookmarkPractice {
     private Long userId;
-    private Long battleId;
-    private Long stageId;
-    private Long pfId;
-    private Integer totalDamage;
-    private String status;
+    private Long bookmarkId;
+    private Long practiceId;
+    private String userAnswer;
+    private String aiFeedback;
+    private Integer damage;
     private LocalDateTime createdAt;
 }

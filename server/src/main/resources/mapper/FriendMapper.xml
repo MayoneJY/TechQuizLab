@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.dao.FriendDao">
+
+    <resultMap id="friendResultMap" type="com.mayonedev.battle.entity.Friend">
+        <id property="userId" column="user_id"/>
+        <id property="friendId" column="friend_id"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.entity.Friend">
+        INSERT INTO friend (user_id, friend_id, created_at)
+        VALUES (#{userId}, #{friendId}, #{createdAt})
+    </insert>
+
+    <select id="findAllByUserId" parameterType="long" resultMap="friendResultMap">
+        SELECT *
+        FROM friend
+        WHERE user_id = #{userId}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM friend
+        WHERE user_id = #{userId} AND friend_id = #{friendId}
+    </delete>
+
+</mapper>
