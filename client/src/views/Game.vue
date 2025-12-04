@@ -182,6 +182,7 @@ import { onMounted, ref, computed, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useQuestionStore } from '../stores/question'
+import { retroMusicPlayer } from '../utils/retroMusic'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import ExplosionEffect from '../components/ExplosionEffect.vue'
 import PixelHeart from '../components/PixelHeart.vue'
@@ -326,10 +327,20 @@ onMounted(async () => {
   if (gameStore.gameStatus === 'playing') {
     startTimer()
   }
+  // 게임 화면 진입 시 게임 브금 재생
+  try {
+    await retroMusicPlayer.playGameMusic()
+    console.log('🎮 Game music started')
+  } catch (error) {
+    console.error('Failed to play game music:', error)
+  }
 })
 
 onUnmounted(() => {
   stopTimer()
+  // 게임 화면에서 나갈 때 게임 브금 정지
+  retroMusicPlayer.stopGameMusic()
+  console.log('🎮 Game music stopped')
 })
 </script>
 
