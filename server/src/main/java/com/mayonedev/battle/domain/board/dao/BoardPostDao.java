@@ -1,39 +1,44 @@
 package com.mayonedev.battle.domain.board.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
-import com.mayonedev.battle.domain.board.entity.Board;
+
+import com.mayonedev.battle.domain.board.dto.BoardPostDto;
+import com.mayonedev.battle.domain.board.entity.Post;
 
 @Mapper
 public interface BoardPostDao {
-    
-    //ê²Œì‹œê¸€ ì¡°íšŒ(All) 
-    List<Board> selectPostAll() throws Exception;
 
-    //ê²Œì‹œê¸€ ì¡°íšŒ(user id)
-    List<Board> selectpostbyuserid(long userId)throws Exception; 
+    // °Ô½Ã±Û Á¶È¸(All)
+    List<BoardPostDto> selectPostAll() throws Exception;
 
-    //ê²Œì‹œê¸€ ì¡°íšŒ(post id)
-    Board selectByPostId(int id)throws Exception; 
-    
-    //ê²Œì‹œê¸€ ì¡°íšŒ(tags)
-    List<Board> selectByPostTags(String tags) throws Exception;
+    // °Ô½Ã±Û Á¶È¸(user id)
+    List<BoardPostDto> selectPostByUserId(long userId) throws Exception;
 
-    // ê²Œì‹œê¸€ ì¡°íšŒ(NickName)
-    List<Board> selectPostByNickName(String nickname)throws Exception;
+    // °Ô½Ã±Û Á¶È¸(post id) - º¹ÇÕÅ° »ç¿ë
+    BoardPostDto selectByPostId(Map<String, Object> params) throws Exception;
 
-    //ê²Œì‹œê¸€ ìž‘ì„±
-    void insertPost(Board board)throws Exception;
+    // °Ô½Ã±Û Á¶È¸(tags)
+    List<BoardPostDto> selectByPostTags(String tags) throws Exception;
 
-    //ê²Œì‹œê¸€ ìˆ˜ì •
-    void updatePost(Board board)throws Exception;
+    // °Ô½Ã±Û Á¶È¸(NickName)
+    List<BoardPostDto> selectPostByNickName(String nickname) throws Exception;
 
-    //ê²Œì‹œê¸€ ì‚­ì œ
-    void deletePost(int id) throws Exception;
+    // °Ô½Ã±Û ÀÛ¼º
+    void insertPost(Post post) throws Exception;
 
-    // ê²Œì‹œê¸€ ì¡°íšŒìˆ˜ ì €ìž¥
-    int increaseViewCount(int id) throws Exception;
+    // °Ô½Ã±Û ¼öÁ¤
+    void updatePost(Post post) throws Exception;
 
-	
+    // °Ô½Ã±Û »èÁ¦ - º¹ÇÕÅ° »ç¿ë
+    void deletePost(Map<String, Object> params) throws Exception;
+
+    // °Ô½Ã±Û Á¶È¸¼ö ÀúÀå - º¹ÇÕÅ° »ç¿ë
+    int increaseViewCount(Map<String, Object> params) throws Exception;
+
+    // °Ô½Ã±Û Ä«Å×°í¸® ¾ÆÀÌµð °Ë»ö
+    long selectBoardId(String tags);
+
 }

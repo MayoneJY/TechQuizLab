@@ -191,20 +191,23 @@ export const boardApi = {
   getAllPosts: () =>
     api.get('/api/boards/post'),
 
-  getPostByPostId: (postId: number) =>
-    api.get(`/api/boards/post/${postId}`),
+  // 복합키 사용: board_id와 post_id 모두 필요
+  getPostByPostId: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}`),
 
   getPostbyTags: (tags: string) =>
     api.get(`/api/boards/post/tags/${tags}`),
 
-  createBoard: (postDto: { userId: number; title: string; content: string; tags: string }) =>
+  createBoard: (postDto: { title: string; content: string; tags: string }) =>
     api.post('/api/boards/post', postDto),
 
-  updatePost: (postId: number, postDto: { userId: number; title: string; content: string; tags?: string }) =>
-    api.patch(`/api/boards/post/${postId}`, postDto),
+  // 복합키 사용
+  updatePost: (boardId: number, postId: number, postDto: { title: string; content: string; tags: string }) =>
+    api.patch(`/api/boards/${boardId}/post/${postId}`, postDto),
 
-  deletePost: (postId: number) =>
-    api.delete(`/api/boards/post/${postId}`)
+  // 복합키 사용
+  deletePost: (boardId: number, postId: number) =>
+    api.delete(`/api/boards/${boardId}/post/${postId}`)
 }
 
 // Portfolio API

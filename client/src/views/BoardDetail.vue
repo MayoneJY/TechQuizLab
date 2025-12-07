@@ -133,7 +133,13 @@ const comments = ref([])
 const newComment = ref('')
 
 onMounted(async () => {
-  await boardStore.fetchPostById(postId.value)
+  await boardStore.fetchAllPosts()
+  const foundPost = boardStore.posts.find(p => p.post_id === postId.value)
+  
+  if (foundPost) {
+    await boardStore.fetchPostById(foundPost.board_id, foundPost.post_id)
+  }
+  
   if (!post.value) {
     alert('게시글을 찾을 수 없습니다.')
     goBack()
@@ -154,13 +160,18 @@ function goToLogin() {
 
 async function handleDelete() {
   if (!confirm('정말 삭제하시겠습니까?')) return
-
+  
+  if (!post.value) {
+    alert('게시글 정보를 찾을 수 없습니다.')
+    return
+  }
   try {
-    await boardStore.deletePost(postId.value)
+    await boardStore.deletePost(post.value.board_id, post.value.post_id)
     alert('게시글이 삭제되었습니다.')
     goBack()
   } catch (error: any) {
-    alert(error.message || '삭제에 실패했습니다.')
+    const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '삭제에 실패했습니다.'
+    alert(errorMsg)
   }
 }
 

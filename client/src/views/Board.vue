@@ -64,9 +64,9 @@
         </div>
         <div
           v-for="post in filteredPosts"
-          :key="post.id"
+          :key="post.post_id"
           class="post-item"
-          @click="goToDetail(post.id)"
+          @click="goToDetail(post.post_id)"
         >
           <div class="post-header">
             <span class="post-category" :class="post.tags">
@@ -78,12 +78,12 @@
             {{ truncateContent(post.content) }}
           </div>
           <div class="post-footer">
-            <span class="post-author">작성자 {{ post.userId }}</span>
-            <span class="post-date">{{ formatDate(post.createdAt) }}</span>
+            <span class="post-author">작성자 {{ post.nickname || post.user_id }}</span>
+            <span class="post-date">{{ formatDate(post.created_at) }}</span>
             <div class="post-stats">
-              <span>조회수 {{ post.view }}</span>
+              <span>조회수 {{ post.view_count }}</span>
               <span>좋아요 0</span>
-              <span>댓글 {{ getCommentCount(post.id) }}</span>
+              <span>댓글 {{ getCommentCount(post.post_id) }}</span>
             </div>
           </div>
         </div>

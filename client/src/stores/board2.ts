@@ -5,23 +5,22 @@ import { boardApi } from '../services/api'
 
 //보여줄 게시글 
 export interface Post {
-    id: number              // 게시글 ID (post_id)
-    userId: number          // 작성자 ID
-    title: string           // 게시글 제목
-    content: string         // 게시글 내용
-    createdAt: string      // 작성 시간 (LocalDateTime -> string으로 변환됨)
-    updatedAt: string      // 수정 시간
-    view: number            // 조회수
-    tags: string            // 태그 (쉼표로 구분된 문자열)
+    post_id: number              // 게시글 ID (post_id)
+    board_id: number             // 게시판 ID
+    user_id: number              // 작성자 ID
+    title: string                // 게시글 제목
+    content: string              // 게시글 내용
+    view_count: number           // 조회수
+    created_at: string           // 작성 시간 (LocalDateTime -> string으로 변환됨)
+    nickname: string             // 작성자 닉네임
+    tags: string                 // 태그 (쉼표로 구분된 문자열)
 }
 
 //게시글 작성 및 수정 (클라->백엔)
 export interface PostCreateAndUpdateDto {
-    //id : URL 로 이동 
-    userId: number          // 작성자 ID
     title: string           // 게시글 제목
     content: string         // 게시글 내용
-    tags: string
+    tags: string            // 태그
 }
 
 export const useBoardStore2 = defineStore('board2', () => {
@@ -117,14 +116,14 @@ export const useBoardStore2 = defineStore('board2', () => {
     }
 
 
-    //게시글 상세 조회
-    async function fetchPostById(postId: number) {
+    //게시글 상세 조회 - 복합키 사용
+    async function fetchPostById(boardId: number, postId: number) {
         isLoading.value = true
         error.value = null
 
         try {
-            // boardApi.getPostByPostId(postId) 호출 -> GET /api/boards/post/{id}
-            const response = await boardApi.getPostByPostId(postId)
+            // boardApi.getPostByPostId(boardId, postId) 호출 -> GET /api/boards/{board_id}/post/{post_id}
+            const response = await boardApi.getPostByPostId(boardId, postId)
 
             // 백엔드 응답 구조: { resmsg: string, resvalue: Board }
             if (response.data && response.data.resvalue) {
@@ -167,7 +166,6 @@ export const useBoardStore2 = defineStore('board2', () => {
         try {
             // 서버로 보낼 데이터 구성
             const postDto: PostCreateAndUpdateDto = {
-                userId: authStore.user.id,
                 title,
                 content,
                 tags: tags || ''
@@ -199,8 +197,8 @@ export const useBoardStore2 = defineStore('board2', () => {
         }
     }
 
-    //게시글 수정
-    async function updatePost(postId: number, title: string, content: string, tags?: string) {
+    //게시글 수정 - 복합키 사용
+    async function updatePost(boardId: number, postId: number, title: string, content: string, tags?: string) {
         // 로그인 체크
         if (!authStore.user) {
             error.value = '로그인이 필요합니다.'
@@ -213,14 +211,13 @@ export const useBoardStore2 = defineStore('board2', () => {
         try {
             // 서버로 보낼 데이터 구성
             const postDto: PostCreateAndUpdateDto = {
-                userId: authStore.user.id,
                 title,
                 content,
                 tags: tags || ''
             }
 
-            // boardApi.updatePost(postId) 호출 -> PATCH /api/boards/post/{id}
-            const response = await boardApi.updatePost(postId, postDto)
+            // boardApi.updatePost(boardId, postId, postDto) 호출 -> PATCH /api/boards/{board_id}/post/{post_id}
+            const response = await boardApi.updatePost(boardId, postId, postDto)
 
             console.log('게시글 수정 성공:', response.data)
 
@@ -228,8 +225,8 @@ export const useBoardStore2 = defineStore('board2', () => {
             await fetchAllPosts()
 
             // 현재 보고 있던 게시글이면 상세도 새로고침
-            if (currentPost.value?.id === postId) {
-                await fetchPostById(postId)
+            if (currentPost.value?.post_id === postId) {
+                await fetchPostById(boardId, postId)
             }
 
             return response.data
@@ -249,8 +246,8 @@ export const useBoardStore2 = defineStore('board2', () => {
         }
     }
 
-    //게시글 삭제
-    async function deletePost(postId: number) {
+    //게시글 삭제 - 복합키 사용
+    async function deletePost(boardId: number, postId: number) {
 
         // 로그인 체크
         if (!authStore.user) {
@@ -262,8 +259,8 @@ export const useBoardStore2 = defineStore('board2', () => {
         error.value = null
 
         try {
-            // boardApi.deletePost(postId) 호출 -> DELETE /api/boards/post/{id}
-            const response = await boardApi.deletePost(postId)
+            // boardApi.deletePost(boardId, postId) 호출 -> DELETE /api/boards/{board_id}/post/{post_id}
+            const response = await boardApi.deletePost(boardId, postId)
 
             console.log('게시글 삭제 성공:', response.data)
 
@@ -271,7 +268,7 @@ export const useBoardStore2 = defineStore('board2', () => {
             await fetchAllPosts()
 
             // 현재 보고 있던 게시글이면 null로 초기화
-            if (currentPost.value?.id === postId) {
+            if (currentPost.value?.post_id === postId) {
                 currentPost.value = null
             }
 
