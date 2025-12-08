@@ -8,7 +8,7 @@
         <button class="pixel-button back-button" @click="goBack">
           ← 목록으로
         </button>
-        <div v-if="post && authStore.user && post.id === authStore.user.id" class="post-actions">
+        <div v-if="post && authStore.user && post.user_id === authStore.user.userId" class="post-actions">
           <button class="pixel-button edit-button" @click="goToEdit">
             수정
           </button>
@@ -51,7 +51,10 @@
         </div>
 
         <div class="comments-section">
-          <h3 class="pixel-text comments-title">댓글 ({{ comments.length }})</h3>
+          <h3 class="pixel-text comments-title">
+            댓글 ({{ commentCount }})
+
+          </h3>
           
           <div v-if="authStore.isAuthenticated" class="comment-form">
             <textarea
@@ -72,26 +75,71 @@
             <div v-if="comments.length === 0" class="empty-comments pixel-text">
               댓글이 없습니다. 첫 댓글을 작성해보세요!
             </div>
-            <div
-              v-for="comment in comments"
-              :key="comment.id"
-              class="comment-item"
-            >
-              <div class="comment-header">
-                <span class="comment-author">{{ comment.author }}</span>
-                <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
-                <button
-                  v-if="authStore.user && comment.authorId === authStore.user.id"
-                  class="comment-delete"
-                  @click="handleDeleteComment(comment.id)"
-                >
-                  삭제
-                </button>
+            <template v-for="comment in comments" :key="comment.comment_id">
+              <div
+                v-if="!comment.parent_comment_id"
+                class="comment-item"
+              >
+                <div class="comment-header" :class="{ 'deleted-comment-header': comment.is_deleted === 1 }">
+                  <span class="comment-author">{{ comment.nickname }}</span>
+                  <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
+                  <div class="comment-actions">
+                    <button
+                      v-if="authStore.isAuthenticated && comment.is_deleted === 0"
+                      class="comment-reply"
+                      @click="handleReply(comment.comment_id)"
+                    >
+                      답글
+                    </button>
+                    <button
+                      v-if="authStore.user && comment.user_id === authStore.user.userId && comment.is_deleted === 0"
+                      class="comment-delete"
+                      @click="handleDeleteComment(comment.comment_id)"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+                <div class="comment-content" :class="{ 'deleted-comment-content': comment.is_deleted === 1 }">
+                  <span v-if="comment.is_deleted === 1" class="deleted-text">삭제된 댓글입니다.</span>
+                  <span v-else>{{ comment.content }}</span>
+                </div>
+                <div v-if="replyingTo === comment.comment_id && comment.is_deleted === 0" class="reply-form">
+                  <textarea
+                    v-model="replyContent"
+                    class="pixel-input reply-input"
+                    placeholder="대댓글을 입력하세요..."
+                    rows="2"
+                  ></textarea>
+                  <div class="reply-actions">
+                    <button class="pixel-button reply-submit" @click="handleAddReply(comment.comment_id)">
+                      등록
+                    </button>
+                    <button class="pixel-button reply-cancel" @click="cancelReply">
+                      취소
+                    </button>
+                  </div>
+                </div>
+                <div v-for="reply in comments.filter(c => c.parent_comment_id === comment.comment_id && c.is_deleted === 0)" :key="reply.comment_id" class="reply-item">
+                  <div class="comment-header">
+                    <span class="comment-author">↳ {{ reply.nickname }}</span>
+                    <span class="comment-date">{{ formatDate(reply.created_at) }}</span>
+                    <div class="comment-actions">
+                      <button
+                        v-if="authStore.user && reply.user_id === authStore.user.userId"
+                        class="comment-delete"
+                        @click="handleDeleteComment(reply.comment_id)"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                  <div class="comment-content">
+                    {{ reply.content }}
+                  </div>
+                </div>
               </div>
-              <div class="comment-content">
-                {{ comment.content }}
-              </div>
-            </div>
+            </template>
           </div>
         </div>
       </div>
@@ -116,6 +164,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
+import { useBoardCommentStore } from '../stores/boardComment'
 import { useAuthStore } from '../stores/auth'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
@@ -124,13 +173,34 @@ import PixelMonster from '../components/PixelMonster.vue'
 const router = useRouter()
 const route = useRoute()
 const boardStore = useBoardStore2()
+const commentStore = useBoardCommentStore()
 const authStore = useAuthStore()
 
 const postId = computed(() => Number(route.params.id))
 const post = computed(() => boardStore.currentPost)
-// const comments = computed(() => boardStore.getComments(postId.value)) // 아직 미구현
-const comments = ref([]) 
+const comments = computed(() => commentStore.comments)
 const newComment = ref('')
+const replyingTo = ref<number | null>(null)
+const replyContent = ref('')
+
+// 댓글 수 계산 (삭제되지 않은 댓글만 카운트)
+const commentCount = computed(() => {
+  return comments.value.filter(comment => comment.is_deleted === 0).length
+})
+
+// 일반 댓글 수 (대댓글 제외)
+const parentCommentCount = computed(() => {
+  return comments.value.filter(comment => 
+    !comment.parent_comment_id && comment.is_deleted === 0
+  ).length
+})
+
+// 대댓글 수
+const replyCount = computed(() => {
+  return comments.value.filter(comment => 
+    comment.parent_comment_id !== null && comment.is_deleted === 0
+  ).length
+})
 
 onMounted(async () => {
   await boardStore.fetchAllPosts()
@@ -138,6 +208,10 @@ onMounted(async () => {
   
   if (foundPost) {
     await boardStore.fetchPostById(foundPost.board_id, foundPost.post_id)
+    
+    if (post.value) {
+      await commentStore.fetchComments(post.value.board_id, post.value.post_id)
+    }
   }
   
   if (!post.value) {
@@ -180,34 +254,71 @@ function handleLike() {
   alert('준비 중인 기능입니다.')
 }
 
-function handleAddComment() {
+async function handleAddComment() {
   if (!newComment.value.trim()) {
     alert('댓글을 입력해주세요.')
     return
   }
-  alert('준비 중인 기능입니다.')
 
-  /*
+  if (!post.value) {
+    alert('게시글 정보를 찾을 수 없습니다.')
+    return
+  }
+
   try {
-    boardStore.createComment(postId.value, newComment.value)
+    await commentStore.createComment(post.value.board_id, post.value.post_id, newComment.value)
     newComment.value = ''
   } catch (error: any) {
-    alert(error.message || '댓글 작성에 실패했습니다.')
+    const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '댓글 작성에 실패했습니다.'
+    alert(errorMsg)
   }
-  */
 }
 
-function handleDeleteComment(commentId: number) {
+async function handleDeleteComment(commentId: number) {
   if (!confirm('댓글을 삭제하시겠습니까?')) return
-  alert('준비 중인 기능입니다.')
 
-  /*
-  try {
-    boardStore.deleteComment(commentId)
-  } catch (error: any) {
-    alert(error.message || '댓글 삭제에 실패했습니다.')
+  if (!post.value) {
+    alert('게시글 정보를 찾을 수 없습니다.')
+    return
   }
-  */
+
+  try {
+    await commentStore.deleteComment(post.value.board_id, post.value.post_id, commentId)
+  } catch (error: any) {
+    const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '댓글 삭제에 실패했습니다.'
+    alert(errorMsg)
+  }
+}
+
+function handleReply(commentId: number) {
+  replyingTo.value = commentId
+  replyContent.value = ''
+}
+
+function cancelReply() {
+  replyingTo.value = null
+  replyContent.value = ''
+}
+
+async function handleAddReply(parentCommentId: number) {
+  if (!replyContent.value.trim()) {
+    alert('대댓글을 입력해주세요.')
+    return
+  }
+
+  if (!post.value) {
+    alert('게시글 정보를 찾을 수 없습니다.')
+    return
+  }
+
+  try {
+    await commentStore.createReply(post.value.board_id, post.value.post_id, parentCommentId, replyContent.value)
+    replyingTo.value = null
+    replyContent.value = ''
+  } catch (error: any) {
+    const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '대댓글 작성에 실패했습니다.'
+    alert(errorMsg)
+  }
 }
 
 function getCategoryName(category: string) {
@@ -412,6 +523,27 @@ function formatDate(dateString: string) {
   font-weight: 700;
   color: #ffd43b;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.comment-count-badge {
+  background: linear-gradient(135deg, #4a9eff 0%, #6bb3ff 100%);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(74, 158, 255, 0.3);
+}
+
+.reply-count-info {
+  font-size: 14px;
+  color: #ccc;
+  font-weight: 400;
 }
 
 .comment-form {
@@ -476,20 +608,77 @@ function formatDate(dateString: string) {
   color: #888;
 }
 
-.comment-delete {
+.comment-actions {
   margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-reply,
+.comment-delete {
   background: none;
   border: none;
-  color: #ff6b6b;
+  color: #4a9eff;
   cursor: pointer;
   font-size: 12px;
-  padding: 4px 8px;
+  padding: 6px 12px;
   border-radius: 4px;
   transition: all 0.3s;
+  font-weight: 500;
+}
+
+.comment-delete {
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.comment-reply:hover {
+  background: rgba(74, 158, 255, 0.2);
+  color: #6bb3ff;
 }
 
 .comment-delete:hover {
   background: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.5);
+  color: #ff8a8a;
+}
+
+.reply-item {
+  margin-left: 30px;
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid rgba(74, 158, 255, 0.3);
+  border-radius: 4px;
+}
+
+.reply-form {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(74, 158, 255, 0.1);
+  border-radius: 4px;
+}
+
+.reply-input {
+  width: 100%;
+  margin-bottom: 10px;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.reply-submit,
+.reply-cancel {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
+.reply-cancel {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .comment-content {
@@ -498,6 +687,19 @@ function formatDate(dateString: string) {
   color: #ccc;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.deleted-comment-header {
+  opacity: 0.6;
+}
+
+.deleted-comment-content {
+  opacity: 0.6;
+}
+
+.deleted-text {
+  color: #888;
+  font-style: italic;
 }
 
 .empty-comments {

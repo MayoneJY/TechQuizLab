@@ -83,7 +83,7 @@
             <div class="post-stats">
               <span>조회수 {{ post.view_count }}</span>
               <span>좋아요 0</span>
-              <span>댓글 {{ getCommentCount(post.post_id) }}</span>
+              <span>댓글 {{ getCommentCount(post) }}개</span>
             </div>
           </div>
         </div>
@@ -190,9 +190,8 @@ function formatDate(dateString: string) {
   return date.toLocaleDateString('ko-KR')
 }
 
-function getCommentCount(postId: number) {
-  // board2 스토어에는 아직 댓글 기능이 없으므로 0 반환
-  return 0
+function getCommentCount(post: any) {
+  return post.comment_count || 0
 }
 </script>
 

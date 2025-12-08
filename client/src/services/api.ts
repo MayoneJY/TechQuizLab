@@ -210,6 +210,21 @@ export const boardApi = {
     api.delete(`/api/boards/${boardId}/post/${postId}`)
 }
 
+// Board Comment API
+export const boardCommentApi = {
+  getComments: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/comment`),
+
+  createComment: (boardId: number, postId: number, content: string) =>
+    api.post(`/api/boards/${boardId}/post/${postId}/comment`, { content }),
+
+  createReply: (boardId: number, postId: number, parentCommentId: number, content: string) =>
+    api.post(`/api/boards/${boardId}/post/${postId}/comment/${parentCommentId}/reply`, { content }),
+
+  deleteComment: (boardId: number, postId: number, commentId: number) =>
+    api.delete(`/api/boards/${boardId}/post/${postId}/comment/${commentId}`)
+}
+
 // Portfolio API
 export const portfolioApi = {
   getMyPortfolios: (userId: number) =>

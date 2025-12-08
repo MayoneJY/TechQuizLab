@@ -21,6 +21,8 @@ public class BoardPostDto {
 	private String nickname;
 
 	private String tags;
+	
+	private Long comment_count;
 
 	public BoardPostDto(long board_id, String title, String content) {
 		super();

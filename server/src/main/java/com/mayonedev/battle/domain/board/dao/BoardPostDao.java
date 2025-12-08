@@ -1,4 +1,4 @@
-package com.mayonedev.battle.domain.board.dao;
+ï»¿package com.mayonedev.battle.domain.board.dao;
 
 import java.util.List;
 import java.util.Map;
@@ -11,34 +11,34 @@ import com.mayonedev.battle.domain.board.entity.Post;
 @Mapper
 public interface BoardPostDao {
 
-    // °Ô½Ã±Û Á¶È¸(All)
+    // ê²Œì‹œê¸€ ì¡°íšŒ(All)
     List<BoardPostDto> selectPostAll() throws Exception;
 
-    // °Ô½Ã±Û Á¶È¸(user id)
+    // ê²Œì‹œê¸€ ì¡°íšŒ(user id)
     List<BoardPostDto> selectPostByUserId(long userId) throws Exception;
 
-    // °Ô½Ã±Û Á¶È¸(post id) - º¹ÇÕÅ° »ç¿ë
+    // ê²Œì‹œê¸€ ì¡°íšŒ(post id) - ë³µí•©í‚¤ ì‚¬ìš©
     BoardPostDto selectByPostId(Map<String, Object> params) throws Exception;
 
-    // °Ô½Ã±Û Á¶È¸(tags)
+    // ê²Œì‹œê¸€ ì¡°íšŒ(tags)
     List<BoardPostDto> selectByPostTags(String tags) throws Exception;
 
-    // °Ô½Ã±Û Á¶È¸(NickName)
+    // ê²Œì‹œê¸€ ì¡°íšŒ(NickName)
     List<BoardPostDto> selectPostByNickName(String nickname) throws Exception;
 
-    // °Ô½Ã±Û ÀÛ¼º
+    // ê²Œì‹œê¸€ ì‘ì„±
     void insertPost(Post post) throws Exception;
 
-    // °Ô½Ã±Û ¼öÁ¤
+    // ê²Œì‹œê¸€ ìˆ˜ì •
     void updatePost(Post post) throws Exception;
 
-    // °Ô½Ã±Û »èÁ¦ - º¹ÇÕÅ° »ç¿ë
+    // ê²Œì‹œê¸€ ì‚­ì œ - ë³µí•©í‚¤ ì‚¬ìš©
     void deletePost(Map<String, Object> params) throws Exception;
 
-    // °Ô½Ã±Û Á¶È¸¼ö ÀúÀå - º¹ÇÕÅ° »ç¿ë
+    // ê²Œì‹œê¸€ ì¡°íšŒìˆ˜ ì €ì¥ - ë³µí•©í‚¤ ì‚¬ìš©
     int increaseViewCount(Map<String, Object> params) throws Exception;
 
-    // °Ô½Ã±Û Ä«Å×°í¸® ¾ÆÀÌµğ °Ë»ö
+    // ê²Œì‹œê¸€ ì¹´í…Œê³ ë¦¬ ì•„ì´ë”” ê²€ìƒ‰
     long selectBoardId(String tags);
 
 }

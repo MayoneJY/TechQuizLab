@@ -14,6 +14,7 @@ export interface Post {
     created_at: string           // 작성 시간 (LocalDateTime -> string으로 변환됨)
     nickname: string             // 작성자 닉네임
     tags: string                 // 태그 (쉼표로 구분된 문자열)
+    comment_count?: number       // 댓글 개수
 }
 
 //게시글 작성 및 수정 (클라->백엔)
