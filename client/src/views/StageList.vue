@@ -5,15 +5,29 @@
     <div class="stage-container">
       <div class="header">
         <h1 class="pixel-text title">
-          <span class="glitch" data-text="미션 선택">미션 선택</span>
+          <span class="glitch" data-text="실전 모의면접">실전 모의면접</span>
         </h1>
         <button class="pixel-button back-button" @click="goHome">
           ← 홈으로
         </button>
       </div>
 
-      <div v-if="isLoading" class="loading-state">
-        <p class="pixel-text loading-text">데이터 로딩 중...</p>
+      <div v-if="isLoading" class="stage-grid">
+         <div v-for="i in 3" :key="i" class="stage-card skeleton-card">
+           <div class="card-badges">
+              <div class="skeleton skeleton-text" style="width: 50px; height: 20px;"></div>
+              <div class="skeleton skeleton-text" style="width: 60px; height: 20px;"></div>
+           </div>
+           
+           <div class="card-content" style="gap: 15px;">
+              <div class="skeleton skeleton-text" style="width: 40%; height: 16px;"></div>
+              <div class="skeleton skeleton-text" style="width: 80%; height: 24px;"></div>
+           </div>
+           
+           <div class="card-footer">
+              <div class="skeleton skeleton-bar action-btn" style="height: 36px; border-radius: 4px;"></div>
+           </div>
+         </div>
       </div>
       <div v-else-if="stages.length === 0" class="empty-state glass-panel">
         <p class="pixel-text">진행 가능한 미션이 없습니다</p>
@@ -307,5 +321,49 @@ function isUrgent(dateString?: string) {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
+}
+
+/* Skeleton Styles - Consistent with other pages */
+.skeleton-card {
+  cursor: default;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #444;
+}
+
+.skeleton-card:hover {
+  transform: none;
+  border-color: #444;
+}
+
+.skeleton {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
 </style>

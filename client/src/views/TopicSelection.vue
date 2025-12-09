@@ -11,8 +11,13 @@
         </button>
       </div>
 
-      <div v-if="topicStore.isLoading" class="loading-container">
-        <p class="pixel-text loading-text">로딩 중...</p>
+      <div v-if="topicStore.isLoading" class="topics-grid">
+        <div v-for="i in 3" :key="i" class="topic-card skeleton-card">
+          <div class="skeleton skeleton-icon"></div>
+          <div class="skeleton skeleton-text title-skeleton"></div>
+          <div class="skeleton skeleton-text desc-skeleton"></div>
+          <div class="skeleton skeleton-text desc-skeleton short"></div>
+        </div>
       </div>
 
       <div v-else-if="topicStore.topics.length === 0" class="empty-message pixel-text">
@@ -391,6 +396,76 @@ async function startGame() {
   
   .topic-name {
     font-size: 18px;
+  }
+}
+
+
+/* Skeleton Styles */
+.skeleton-card {
+  cursor: default;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #444;
+}
+
+.skeleton-card:hover {
+  transform: none;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #444;
+}
+
+.skeleton {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+}
+
+.title-skeleton {
+  width: 60%;
+  height: 24px;
+  margin: 0 auto 10px;
+}
+
+.desc-skeleton {
+  width: 90%;
+  height: 16px;
+  margin: 0 auto 8px;
+}
+
+.desc-skeleton.short {
+  width: 70%;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 </style>
