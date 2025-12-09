@@ -170,6 +170,9 @@
     <div class="monster monster-2">
       <PixelMonster type="alien" />
     </div>
+    <div class="planet">
+      <PixelPlanet type="earth" />
+    </div>
   </div>
 </template>
 
@@ -180,6 +183,7 @@ import { useAuthStore } from '../stores/auth'
 import { useGamificationStore } from '../stores/gamification'
 import PixelHeart from '../components/PixelHeart.vue'
 import PixelMonster from '../components/PixelMonster.vue'
+import PixelPlanet from '../components/PixelPlanet.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -587,6 +591,16 @@ function goToMyPage() { router.push('/mypage') }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-30px); }
+}
+
+.planet {
+  position: fixed;
+  top: 10%;
+  right: 15%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.8;
+  transform: scale(2);
 }
 </style>
 
