@@ -5,7 +5,7 @@
     <div class="gamification-container">
       <div class="header">
         <h1 class="pixel-text title">
-          <span class="glitch" data-text="업적 및 랭킹">업적 및 랭킹</span>
+          <span class="glitch" data-text="미션 및 랭킹">미션 및 랭킹</span>
         </h1>
         <button class="pixel-button back-button" @click="goHome">
           ← 홈으로
@@ -136,7 +136,7 @@
         <div v-else-if="activeTab === 'friends'" class="tab-content" key="friends">
           
           <div class="tab-actions">
-            <button class="pixel-button primary small-btn" @click="openAddFriendModal">
+            <button class="pixel-button small-btn" @click="openAddFriendModal">
               + 친구 추가
             </button>
           </div>
@@ -177,31 +177,33 @@
     </div>
 
     <!-- Add Friend Modal -->
-    <div v-if="isAddFriendModalOpen" class="modal-overlay" @click.self="closeAddFriendModal">
-      <div class="modal-content glass-card">
-        <h3 class="pixel-text modal-title">친구 추가</h3>
-        <p class="modal-desc">친구의 닉네임을 입력하세요.</p>
-        
-        <input 
-          v-model="targetNickname" 
-          type="text" 
-          placeholder="닉네임 입력..." 
-          class="pixel-input"
-          @keyup.enter="submitAddFriend"
-        />
-        
-        <div class="modal-actions">
-          <button class="pixel-button secondary" @click="closeAddFriendModal">취소</button>
-          <button 
-            class="pixel-button primary" 
-            @click="submitAddFriend" 
-            :disabled="!targetNickname || isAddingFriend"
-          >
-            {{ isAddingFriend ? '추가 중...' : '추가' }}
-          </button>
+    <Teleport to="body">
+      <div v-if="isAddFriendModalOpen" class="modal-overlay" @click.self="closeAddFriendModal">
+        <div class="modal-content glass-card">
+          <h3 class="pixel-text modal-title">친구 추가</h3>
+          <p class="modal-desc">친구의 닉네임을 입력하세요.</p>
+          
+          <input 
+            v-model="targetNickname" 
+            type="text" 
+            placeholder="닉네임 입력..." 
+            class="pixel-input"
+            @keyup.enter="submitAddFriend"
+          />
+          
+          <div class="modal-actions">
+            <button class="pixel-button secondary" @click="closeAddFriendModal">취소</button>
+            <button 
+              class="pixel-button" 
+              @click="submitAddFriend" 
+              :disabled="!targetNickname || isAddingFriend"
+            >
+              {{ isAddingFriend ? '추가 중...' : '추가' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Floating monsters -->
     <div class="monster monster-1">
@@ -302,7 +304,7 @@ async function claimMission(missionId: number) {
   width: 100%; 
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 100;
+  z-index: 10000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -354,6 +356,7 @@ async function claimMission(missionId: number) {
 }
 .modal-actions button {
   flex: 1;
+  min-width: auto;
 }
 
 /* Button Variants */
@@ -372,8 +375,10 @@ async function claimMission(missionId: number) {
   color: #888;
 }
 .secondary:hover {
-  border-color: #fff;
-  color: #fff;
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
 }
 .tab-actions {
   display: flex;

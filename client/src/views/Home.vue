@@ -62,7 +62,7 @@
           <div class="feature-card glass-card" @click="goToGamification">
             <div class="card-icon">🏆</div>
             <div class="card-info">
-              <h3 class="pixel-text">업적 & 미션</h3>
+              <h3 class="pixel-text">미션 & 랭킹</h3>
               <p>나의 성장을 확인하세요.</p>
             </div>
           </div>
