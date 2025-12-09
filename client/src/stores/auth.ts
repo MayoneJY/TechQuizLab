@@ -139,6 +139,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function fetchUser() {
+    if (!user.value?.userId) return
+    try {
+      const response = await userApi.getUser(user.value.userId)
+      user.value = response.data
+      localStorage.setItem('user', JSON.stringify(user.value))
+    } catch (err) {
+      console.error('Failed to refresh user data', err)
+    }
+  }
+
   // Initialize on store creation
   init()
 
@@ -153,7 +164,8 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     checkEmailExists,
-    checkNicknameExists
+    checkNicknameExists,
+    fetchUser
   }
 })
 

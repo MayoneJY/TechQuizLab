@@ -21,17 +21,22 @@ export interface UserAchievement {
 }
 
 export interface UserDailyMission {
-  id: number
   userId: number
-  dailyMissionId: number
-  missionName?: string
-  description?: string
-  progress: number
+  missionDate: string
+  missionId: number
+  currentCount: number
   isCompleted: boolean
-  isClaimed: boolean
-  assignedDate: string
-  targetValue?: number
-  currentValue?: number
+  isRewarded: boolean
+  createdAt: string
+  // joined mission fields
+  mission?: {
+    missionId: number
+    title: string
+    missionType: string
+    goalCount: number
+    rewardExp: number
+    isActive: boolean
+  }
 }
 
 export interface Ranking {
@@ -123,9 +128,11 @@ export const useGamificationStore = defineStore('gamification', () => {
   }
 
   async function claimMissionReward(missionId: number) {
+    if (!authStore.user) return
     try {
-      await gamificationApi.claimMissionReward(missionId)
+      await gamificationApi.claimMissionReward(missionId, authStore.user.userId)
       await fetchDailyMissions()
+      await authStore.fetchUser()
     } catch (err: any) {
       const errorMessage = err.response?.data?.message ||
         err.response?.data?.error ||
@@ -138,25 +145,33 @@ export const useGamificationStore = defineStore('gamification', () => {
   }
 
   async function fetchRankings() {
-    // Mock data
-    rankings.value = [
-      { userId: 1, nickname: 'AlgorithmMaster', level: 10, exp: 5000, rank: 1 },
-      { userId: 2, nickname: 'JavaKing', level: 8, exp: 3500, rank: 2 },
-      { userId: 3, nickname: 'FrontendWizard', level: 7, exp: 3200, rank: 3 },
-      { userId: 4, nickname: 'SSAFY_Ace', level: 6, exp: 2800, rank: 4 },
-      { userId: 5, nickname: 'CodingBear', level: 5, exp: 2100, rank: 5 },
-    ]
-    return rankings.value
+    isLoading.value = true
+    try {
+      const response = await gamificationApi.getRankings()
+      rankings.value = response.data
+      return rankings.value
+    } catch (err: any) {
+      console.error('Failed to fetch rankings', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
   }
 
   async function fetchFriends() {
-    // Mock data
-    friends.value = [
-      { userId: 101, nickname: 'StudyMate', level: 4, exp: 1500, isRival: true, solvedCount: 45 },
-      { userId: 102, nickname: 'RivalOne', level: 5, exp: 1800, isRival: true, solvedCount: 52 },
-      { userId: 103, nickname: 'Newbie', level: 1, exp: 100, isRival: false, solvedCount: 5 },
-    ]
-    return friends.value
+    if (!authStore.user) return
+
+    isLoading.value = true
+    try {
+      const response = await gamificationApi.getFriends(authStore.user.userId)
+      friends.value = response.data
+      return friends.value
+    } catch (err: any) {
+      console.error('Failed to fetch friends', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
   }
 
   function getUserAchievementIds(): number[] {

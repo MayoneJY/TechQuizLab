@@ -9,22 +9,35 @@
           <span class="title-main glitch" data-text="잡스페이스">잡스페이스</span>
         </h1>
         
+        <!-- User Status Card with Skeleton -->
         <div v-if="authStore.isAuthenticated" class="user-status-card glass-panel clickable-card" @click="goToMyPage">
-          <div class="user-profile-header">
-            <span class="user-name pixel-text">{{ authStore.user?.nickname }}</span>
-            <span class="user-level pixel-text">Lv.{{ authStore.user?.level || 1 }}</span>
-          </div>
-          
-          <!-- Experience Bar -->
-          <div class="exp-bar-container">
-            <div class="exp-bar">
-              <div 
-                class="exp-fill" 
-                :style="{ width: `${expPercentage}%` }"
-              ></div>
+          <template v-if="isDashboardLoading">
+            <div class="user-profile-header">
+              <div class="skeleton skeleton-text" style="width: 100px; height: 24px;"></div>
+              <div class="skeleton skeleton-text" style="width: 50px; height: 24px;"></div>
             </div>
-            <span class="exp-text pixel-text">{{ authStore.user?.exp || 0 }} / {{ maxExp }} EXP</span>
-          </div>
+            <div class="exp-bar-container">
+               <div class="skeleton skeleton-bar" style="width: 100%; height: 12px; margin-bottom: 5px;"></div>
+               <div class="skeleton skeleton-text" style="width: 80px; height: 14px; float: right;"></div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="user-profile-header">
+              <span class="user-name pixel-text">{{ authStore.user?.nickname }}</span>
+              <span class="user-level pixel-text">Lv.{{ authStore.user?.level || 1 }}</span>
+            </div>
+            
+            <!-- Experience Bar -->
+            <div class="exp-bar-container">
+              <div class="exp-bar">
+                <div 
+                  class="exp-fill" 
+                  :style="{ width: `${expPercentage}%` }"
+                ></div>
+              </div>
+              <span class="exp-text pixel-text">{{ authStore.user?.exp || 0 }} / {{ maxExp }} EXP</span>
+            </div>
+          </template>
         </div>
       </header>
 
@@ -88,22 +101,38 @@
           <!-- Widget: Daily Mission Status -->
           <div class="dashboard-widget glass-panel">
             <h3 class="widget-title pixel-text">오늘의 미션</h3>
-            <div v-if="dailyMissions.length > 0" class="mini-mission-list">
-              <div 
-                v-for="mission in dailyMissions.slice(0, 3)" 
-                :key="mission.id"
-                class="mini-mission-item"
-                :class="{ completed: mission.isCompleted }"
-              >
-                <div class="mini-mission-icon">
-                  {{ mission.isCompleted ? '✅' : '⬜' }}
-                </div>
-                <div class="mini-mission-name">{{ mission.missionName || '일일 미션' }}</div>
+            
+            <template v-if="isDashboardLoading">
+              <div class="mini-mission-list">
+                 <div class="mini-mission-item skeleton-item" v-for="i in 3" :key="i">
+                    <div class="skeleton skeleton-box" style="width: 20px; height: 20px; border-radius: 4px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 70%; height: 16px;"></div>
+                 </div>
               </div>
-            </div>
-            <div v-else class="empty-widget-text">
-              미션을 불러오는 중...
-            </div>
+            </template>
+            <template v-else>
+              <div v-if="dailyMissions.length > 0" class="mini-mission-list">
+                <div 
+                  v-for="mission in dailyMissions" 
+                  :key="mission.missionId"
+                  class="mini-mission-item"
+                  :class="{ completed: mission.isCompleted }"
+                >
+                  <div class="mini-mission-icon">
+                    {{ mission.isCompleted ? '✅' : '⬜' }}
+                  </div>
+                  <div class="mini-mission-name">
+                    {{ mission.mission?.title || '일일 미션' }}
+                    <span class="mini-mission-progress">
+                      ({{ mission.currentCount }}/{{ mission.mission?.goalCount }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="empty-widget-text">
+                미션을 불러오는 중...
+              </div>
+            </template>
           </div>
 
           <!-- Widget: Rival Status -->
@@ -145,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useGamificationStore } from '../stores/gamification'
@@ -155,6 +184,8 @@ import PixelMonster from '../components/PixelMonster.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
+
+const isDashboardLoading = ref(true)
 
 const dailyMissions = computed(() => gamificationStore.dailyMissions)
 const rival = computed(() => gamificationStore.friends.find(f => f.isRival))
@@ -169,12 +200,19 @@ const expPercentage = computed(() => {
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     try {
-      await Promise.all([
-        gamificationStore.fetchFriends(),
-        gamificationStore.fetchDailyMissions()
-      ])
+      isDashboardLoading.value = true
+      // Request 1: Fetch Missions (Triggers Auto-Complete & EXP Reward on Server)
+      await gamificationStore.fetchDailyMissions()
+      
+      // Request 2: Fetch User (Gets updated EXP/Level)
+      await authStore.fetchUser()
+
+      // Request 3: Others
+      await gamificationStore.fetchFriends()
     } catch (e) {
       console.error('Failed to fetch dashboard data', e)
+    } finally {
+      isDashboardLoading.value = false
     }
   }
 })
@@ -206,6 +244,46 @@ function goToMyPage() { router.push('/mypage') }
   flex-direction: column;
   align-items: center;
 }
+
+/* Skeleton Effect */
+.skeleton {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 
 /* Header */
 .dashboard-header {
@@ -421,6 +499,12 @@ function goToMyPage() { router.push('/mypage') }
   padding: 5px;
   border-radius: 4px;
   background: rgba(0,0,0,0.2);
+}
+
+.mini-mission-progress {
+  font-size: 11px;
+  color: #888;
+  margin-left: 5px;
 }
 
 .mini-mission-item.completed {

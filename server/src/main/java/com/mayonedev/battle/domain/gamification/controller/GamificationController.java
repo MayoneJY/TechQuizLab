@@ -3,6 +3,8 @@ package com.mayonedev.battle.domain.gamification.controller;
 import com.mayonedev.battle.domain.gamification.entity.Achievement;
 import com.mayonedev.battle.domain.gamification.entity.UserAchievement;
 import com.mayonedev.battle.domain.gamification.entity.UserDailyMission;
+import com.mayonedev.battle.domain.gamification.dto.FriendDTO;
+import com.mayonedev.battle.domain.gamification.dto.RankingDTO;
 import com.mayonedev.battle.domain.gamification.service.GamificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,13 +39,27 @@ public class GamificationController {
     @GetMapping("/missions/daily")
     @Operation(summary = "오늘의 일일 미션 조회 (자동 할당)")
     public ResponseEntity<List<UserDailyMission>> getDailyMissions(@RequestParam Long userId) {
+        System.out.println("GAMIFICATION CONTROLLER HIT: getDailyMissions USER=" + userId);
         return ResponseEntity.ok(gamificationService.getDailyMissions(userId));
     }
 
     @PostMapping("/missions/{id}/claim")
     @Operation(summary = "일일 미션 보상 수령")
-    public ResponseEntity<Void> claimMissionReward(@PathVariable Long id) {
-        gamificationService.claimMissionReward(id);
+    public ResponseEntity<Void> claimMissionReward(@PathVariable Long id, @RequestParam Long userId) {
+        System.out.println("GAMIFICATION CONTROLLER HIT: claimMissionReward ID=" + id + ", USER=" + userId);
+        gamificationService.claimMissionReward(userId, id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/rankings")
+    @Operation(summary = "랭킹 조회")
+    public ResponseEntity<List<RankingDTO>> getRankings() {
+        return ResponseEntity.ok(gamificationService.getRankings());
+    }
+
+    @GetMapping("/friends")
+    @Operation(summary = "친구 목록 조회")
+    public ResponseEntity<List<FriendDTO>> getFriends(@RequestParam Long userId) {
+        return ResponseEntity.ok(gamificationService.getFriends(userId));
     }
 }

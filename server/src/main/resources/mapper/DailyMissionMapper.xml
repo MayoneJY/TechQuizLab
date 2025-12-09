@@ -5,19 +5,20 @@
 <mapper namespace="com.mayonedev.battle.domain.gamification.dao.DailyMissionDao">
 
     <resultMap id="dailyMissionResultMap" type="com.mayonedev.battle.domain.gamification.entity.DailyMission">
-        <id property="id" column="id"/>
-        <result property="content" column="content"/>
+        <id property="missionId" column="mission_id"/>
+        <result property="title" column="title"/>
         <result property="missionType" column="mission_type"/>
-        <result property="targetValue" column="target_value"/>
+        <result property="goalCount" column="goal_count"/>
         <result property="rewardExp" column="reward_exp"/>
+        <result property="isActive" column="is_active"/>
     </resultMap>
 
     <select id="findAll" resultMap="dailyMissionResultMap">
-        SELECT * FROM daily_mission
+        SELECT * FROM daily_mission WHERE is_active = 1
     </select>
-
-    <select id="findById" parameterType="long" resultMap="dailyMissionResultMap">
-        SELECT * FROM daily_mission WHERE id = #{id}
+    
+    <select id="findById" resultMap="dailyMissionResultMap">
+    	SELECT * FROM daily_mission WHERE mission_id = #{missionId}
     </select>
 
 </mapper>

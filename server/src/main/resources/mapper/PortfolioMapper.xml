@@ -29,8 +29,7 @@
         FROM portfolio
         WHERE user_id = #{userId} AND pf_id = #{pfId}
     </select>
-
-
+    
     <update id="update" parameterType="com.mayonedev.battle.domain.gamification.entity.Portfolio">
         UPDATE portfolio
         SET title = #{title},

@@ -1,6 +1,7 @@
 package com.mayonedev.battle.domain.user.dao;
 
 import com.mayonedev.battle.domain.user.entity.Friend;
+import com.mayonedev.battle.domain.gamification.dto.FriendDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -12,4 +13,6 @@ public interface FriendDao {
     List<Friend> findAllByUserId(Long userId);
 
     void delete(@Param("userId") Long userId, @Param("friendId") Long friendId);
+
+    List<FriendDTO> findFriendsWithDetails(Long userId);
 }

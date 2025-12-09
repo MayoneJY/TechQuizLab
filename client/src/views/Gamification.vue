@@ -80,32 +80,32 @@
           <div v-else class="missions-list">
             <div
               v-for="mission in gamificationStore.dailyMissions"
-              :key="mission.id"
+              :key="mission.missionId"
               class="mission-item glass-card"
-              :class="{ completed: mission.isCompleted, claimed: mission.isClaimed }"
+              :class="{ completed: mission.isCompleted, claimed: mission.isRewarded }"
             >
               <div class="mission-header">
                 <div class="mission-icon">📋</div>
                 <div class="mission-info">
-                  <p class="pixel-text mission-name">{{ mission.missionName || '일일 미션' }}</p>
-                  <p class="mission-desc">{{ mission.description || '미션을 완료하세요!' }}</p>
+                  <p class="pixel-text mission-name">{{ mission.mission?.title || '일일 미션' }}</p>
+                  <p class="mission-desc">{{ mission.mission?.missionType || '미션을 완료하세요!' }}</p>
                 </div>
               </div>
               <div class="mission-progress-container">
                 <div class="mission-progress">
-                  <div class="progress-bar" :style="{ width: `${Math.min(mission.progress || 0, 100)}%` }"></div>
-                  <p class="pixel-text progress-text">{{ Math.min(mission.progress || 0, 100) }}%</p>
+                  <div class="progress-bar" :style="{ width: `${Math.min((mission.currentCount / (mission.mission?.goalCount || 1)) * 100, 100)}%` }"></div>
+                  <p class="pixel-text progress-text">{{ mission.currentCount }} / {{ mission.mission?.goalCount }}</p>
                 </div>
               </div>
               <div class="mission-actions">
                 <button
-                  v-if="mission.isCompleted && !mission.isClaimed"
+                  v-if="mission.isCompleted && !mission.isRewarded"
                   class="pixel-button success small-action-btn"
-                  @click="claimMission(mission.id)"
+                  @click="claimMission(mission.missionId)"
                 >
                   보상 받기
                 </button>
-                <p v-else-if="mission.isClaimed" class="pixel-text claimed-text">완료됨</p>
+                <p v-else-if="mission.isRewarded" class="pixel-text claimed-text">완료됨</p>
                 <p v-else class="pixel-text progress-status">진행 중</p>
               </div>
               <div class="scan-line"></div>

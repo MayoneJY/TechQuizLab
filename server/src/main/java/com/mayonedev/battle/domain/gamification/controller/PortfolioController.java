@@ -2,6 +2,8 @@ package com.mayonedev.battle.domain.gamification.controller;
 
 import com.mayonedev.battle.domain.gamification.entity.Portfolio;
 import com.mayonedev.battle.domain.gamification.service.PortfolioService;
+import com.mayonedev.battle.domain.user.dto.UserDetailsDTO;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +46,8 @@ public class PortfolioController {
     @Operation(summary = "포트폴리오 삭제")
     public ResponseEntity<Void> deletePortfolio(
             @PathVariable Long pfId,
-            @RequestParam Long userId) { // Delete는 body가 없으므로 param으로 받음
-        portfolioService.deletePortfolio(userId, pfId);
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        portfolioService.deletePortfolio(userDetails.getUserId(), pfId);
         return ResponseEntity.ok().build();
     }
 }

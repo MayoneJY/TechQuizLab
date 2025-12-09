@@ -8,9 +8,10 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DailyMission {
-    private Long id;
-    private String content;
+    private Integer missionId;
+    private String title;
     private String missionType;
-    private Integer targetValue;
+    private Integer goalCount;
     private Integer rewardExp;
+    private Boolean isActive;
 }

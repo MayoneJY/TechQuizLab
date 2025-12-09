@@ -2,37 +2,39 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.domain.topic.dao.StageDao">
+<mapper namespace="com.mayonedev.battle.domain.stage.dao.StageDao">
 
-    <resultMap id="stageResultMap" type="com.mayonedev.battle.domain.topic.entity.Stage">
+    <resultMap id="StageResultMap" type="com.mayonedev.battle.domain.stage.entity.Stage">
         <id property="stageId" column="stage_id"/>
         <result property="companyName" column="company_name"/>
         <result property="title" column="title"/>
+        <result property="deadline" column="deadline"/>
         <result property="jobCategory" column="job_category"/>
         <result property="content" column="content"/>
-        <result property="deadline" column="deadline"/>
     </resultMap>
 
-    <select id="findAll" resultMap="stageResultMap">
-        SELECT *
+    <select id="findAll" resultMap="StageResultMap">
+        SELECT 
+            stage_id,
+            company_name,
+            title,
+            deadline,
+            job_category,
+            content
         FROM stage
-        ORDER BY stage_id DESC
+        ORDER BY deadline ASC
     </select>
 
-    <select id="findById" parameterType="long" resultMap="stageResultMap">
-        SELECT *
+    <select id="findById" resultMap="StageResultMap">
+        SELECT 
+            stage_id,
+            company_name,
+            title,
+            deadline,
+            job_category,
+            content
         FROM stage
         WHERE stage_id = #{stageId}
     </select>
-
-    <insert id="insert" parameterType="com.mayonedev.battle.domain.topic.entity.Stage" 
-            useGeneratedKeys="true" keyProperty="stageId">
-        INSERT INTO stage (
-            company_name, title, job_category, content, deadline
-        )
-        VALUES (
-            #{companyName}, #{title}, #{jobCategory}, #{content}, #{deadline}
-        )
-    </insert>
 
 </mapper>

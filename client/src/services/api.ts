@@ -185,11 +185,17 @@ export const gamificationApi = {
   getDailyMissions: (userId: number) =>
     api.get(`/api/gamification/missions/daily?userId=${userId}`),
 
-  claimMissionReward: (id: number) =>
-    api.post(`/api/gamification/missions/${id}/claim`),
+  claimMissionReward: (id: number, userId: number) =>
+    api.post(`/api/gamification/missions/${id}/claim?userId=${userId}`),
 
   getAllAchievements: () =>
-    api.get('/api/gamification/achievements')
+    api.get('/api/gamification/achievements'),
+
+  getRankings: () =>
+    api.get('/api/gamification/rankings'),
+
+  getFriends: (userId: number) =>
+    api.get(`/api/gamification/friends?userId=${userId}`)
 }
 
 // Board API

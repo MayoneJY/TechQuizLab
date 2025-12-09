@@ -26,4 +26,17 @@
         WHERE user_id = #{userId} AND friend_id = #{friendId}
     </delete>
 
+    <select id="findFriendsWithDetails" parameterType="long" resultType="com.mayonedev.battle.domain.gamification.dto.FriendDTO">
+        SELECT 
+            u.user_id as userId,
+            u.nickname as nickname,
+            u.level as level,
+            u.exp as exp,
+            u.solved_count as solvedCount,
+            false as isRival -- Default for now, requires Rival logic
+        FROM friend f
+        JOIN user u ON f.friend_id = u.user_id
+        WHERE f.user_id = #{userId}
+    </select>
+
 </mapper>

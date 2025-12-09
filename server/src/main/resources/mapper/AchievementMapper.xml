@@ -5,25 +5,20 @@
 <mapper namespace="com.mayonedev.battle.domain.gamification.dao.AchievementDao">
 
     <resultMap id="achievementResultMap" type="com.mayonedev.battle.domain.gamification.entity.Achievement">
-        <id property="id" column="id"/>
+        <id property="id" column="achievement_id"/>
         <result property="name" column="name"/>
         <result property="description" column="description"/>
+        <result property="rewardExp" column="reward_exp"/>
         <result property="conditionType" column="condition_type"/>
         <result property="conditionValue" column="condition_value"/>
-        <result property="rewardExp" column="reward_exp"/>
-        <result property="imgUrl" column="img_url"/>
     </resultMap>
 
     <select id="findAll" resultMap="achievementResultMap">
-        SELECT * FROM achievement
+        SELECT * FROM achievements
     </select>
-
-    <select id="findById" parameterType="long" resultMap="achievementResultMap">
-        SELECT * FROM achievement WHERE id = #{id}
-    </select>
-
-    <select id="findByConditionType" parameterType="string" resultMap="achievementResultMap">
-        SELECT * FROM achievement WHERE condition_type = #{conditionType}
+    
+    <select id="findById" resultMap="achievementResultMap">
+        SELECT * FROM achievements WHERE achievement_id = #{id}
     </select>
 
 </mapper>
