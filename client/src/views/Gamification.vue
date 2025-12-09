@@ -134,6 +134,12 @@
         <!-- Friends Tab -->
         <div v-else-if="activeTab === 'friends'" class="tab-content" key="friends">
           
+          <div class="tab-actions">
+            <button class="pixel-button primary small-btn" @click="openAddFriendModal">
+              + 친구 추가
+            </button>
+          </div>
+
           <div v-if="isPageLoading || gamificationStore.isLoading" class="friends-list">
               <div v-for="i in 3" :key="i" class="friend-item glass-card skeleton-item">
                   <div class="skeleton skeleton-circle" style="width: 32px; height: 32px;"></div>
@@ -169,6 +175,33 @@
       </transition>
     </div>
 
+    <!-- Add Friend Modal -->
+    <div v-if="isAddFriendModalOpen" class="modal-overlay" @click.self="closeAddFriendModal">
+      <div class="modal-content glass-card">
+        <h3 class="pixel-text modal-title">친구 추가</h3>
+        <p class="modal-desc">친구의 닉네임을 입력하세요.</p>
+        
+        <input 
+          v-model="targetNickname" 
+          type="text" 
+          placeholder="닉네임 입력..." 
+          class="pixel-input"
+          @keyup.enter="submitAddFriend"
+        />
+        
+        <div class="modal-actions">
+          <button class="pixel-button secondary" @click="closeAddFriendModal">취소</button>
+          <button 
+            class="pixel-button primary" 
+            @click="submitAddFriend" 
+            :disabled="!targetNickname || isAddingFriend"
+          >
+            {{ isAddingFriend ? '추가 중...' : '추가' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Floating monsters -->
     <div class="monster monster-1">
       <PixelMonster type="alien" />
@@ -192,6 +225,35 @@ const authStore = useAuthStore()
 
 const activeTab = ref<'missions' | 'ranking' | 'friends'>('missions')
 const isPageLoading = ref(true)
+
+// Friend Modal State
+const isAddFriendModalOpen = ref(false)
+const targetNickname = ref('')
+const isAddingFriend = ref(false)
+
+function openAddFriendModal() {
+  isAddFriendModalOpen.value = true
+  targetNickname.value = ''
+}
+
+function closeAddFriendModal() {
+  isAddFriendModalOpen.value = false
+}
+
+async function submitAddFriend() {
+  if (!targetNickname.value) return
+  isAddingFriend.value = true
+  try {
+    await gamificationStore.addFriend(targetNickname.value)
+    alert('친구가 추가되었습니다!')
+    closeAddFriendModal()
+  } catch (error: any) {
+    const msg = error.response?.data?.message || error.message || '실패했습니다.'
+    alert(msg)
+  } finally {
+    isAddingFriend.value = false
+  }
+}
 
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
@@ -231,6 +293,101 @@ async function claimMission(missionId: number) {
 </script>
 
 <style scoped>
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+}
+.modal-content {
+  background: #1a1a1a;
+  border: 2px solid #4a9eff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
+}
+.modal-title {
+  color: #ffd43b;
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+}
+.modal-desc {
+  color: #ccc;
+  text-align: center;
+  font-size: 14px;
+  margin: 0;
+}
+.pixel-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #555;
+  color: #fff;
+  padding: 12px;
+  font-family: inherit;
+  border-radius: 4px;
+  outline: none;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.pixel-input:focus {
+  border-color: #4a9eff;
+}
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.modal-actions button {
+  flex: 1;
+}
+
+/* Button Variants */
+.primary {
+  color: #000;
+  background: #4a9eff;
+  border-color: #4a9eff;
+}
+.primary:hover:not(:disabled) {
+  background: #3a8eef;
+  box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+}
+.secondary {
+  background: transparent;
+  border-color: #888;
+  color: #888;
+}
+.secondary:hover {
+  border-color: #fff;
+  color: #fff;
+}
+.tab-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+.small-btn {
+  font-size: 14px;
+  padding: 8px 16px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .gamification-screen {
   min-height: 100vh;
   position: relative;

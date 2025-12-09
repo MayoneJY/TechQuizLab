@@ -11,6 +11,7 @@ import com.mayonedev.battle.domain.gamification.dto.RankingDTO;
 import com.mayonedev.battle.domain.gamification.entity.Achievement;
 import com.mayonedev.battle.domain.gamification.entity.DailyMission;
 import com.mayonedev.battle.domain.user.entity.User;
+import com.mayonedev.battle.domain.user.entity.Friend;
 import com.mayonedev.battle.domain.gamification.entity.UserAchievement;
 import com.mayonedev.battle.domain.gamification.entity.UserDailyMission;
 import lombok.RequiredArgsConstructor;
@@ -176,5 +177,27 @@ public class GamificationServiceImpl implements GamificationService {
     @Override
     public List<FriendDTO> getFriends(Long userId) {
         return friendDao.findFriendsWithDetails(userId);
+    }
+
+    @Override
+    @Transactional
+    public void addFriend(Long userId, String nickname) {
+        User targetUser = userDao.findByNickname(nickname);
+        if (targetUser == null) {
+            throw new RuntimeException("해당 닉네임의 유저를 찾을 수 없습니다.");
+        }
+        if (targetUser.getUserId().equals(userId)) {
+            throw new RuntimeException("자기 자신을 친구로 추가할 수 없습니다.");
+        }
+
+        try {
+            Friend friend = new Friend();
+            friend.setUserId(userId);
+            friend.setFriendId(targetUser.getUserId());
+            friend.setCreatedAt(LocalDateTime.now());
+            friendDao.insert(friend);
+        } catch (Exception e) {
+            throw new RuntimeException("이미 등록된 친구이거나 친구 추가에 실패했습니다.");
+        }
     }
 }

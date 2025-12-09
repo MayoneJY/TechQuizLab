@@ -21,4 +21,6 @@ public interface GamificationService {
     List<RankingDTO> getRankings();
 
     List<FriendDTO> getFriends(Long userId);
+
+    void addFriend(Long userId, String nickname);
 }

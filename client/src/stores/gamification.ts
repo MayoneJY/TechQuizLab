@@ -174,6 +174,21 @@ export const useGamificationStore = defineStore('gamification', () => {
     }
   }
 
+  async function addFriend(nickname: string) {
+    if (!authStore.user) return
+    try {
+      await gamificationApi.addFriend(authStore.user.userId, nickname)
+      await fetchFriends()
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        '친구 추가에 실패했습니다.'
+      error.value = errorMessage
+      throw err
+    }
+  }
+
   function getUserAchievementIds(): number[] {
     return userAchievements.value.map(ua => ua.achievementId)
   }
@@ -196,6 +211,7 @@ export const useGamificationStore = defineStore('gamification', () => {
     fetchRankings,
     fetchFriends,
     claimMissionReward,
+    addFriend,
     getUserAchievementIds,
     isAchievementUnlocked
   }

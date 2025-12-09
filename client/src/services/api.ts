@@ -195,7 +195,10 @@ export const gamificationApi = {
     api.get('/api/gamification/rankings'),
 
   getFriends: (userId: number) =>
-    api.get(`/api/gamification/friends?userId=${userId}`)
+    api.get(`/api/gamification/friends?userId=${userId}`),
+
+  addFriend: (userId: number, nickname: string) =>
+    api.post(`/api/gamification/friends?userId=${userId}`, { nickname })
 }
 
 // Board API

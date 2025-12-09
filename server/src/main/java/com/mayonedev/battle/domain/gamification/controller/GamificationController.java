@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/gamification")
 @RequiredArgsConstructor
@@ -61,5 +63,13 @@ public class GamificationController {
     @Operation(summary = "친구 목록 조회")
     public ResponseEntity<List<FriendDTO>> getFriends(@RequestParam Long userId) {
         return ResponseEntity.ok(gamificationService.getFriends(userId));
+    }
+
+    @PostMapping("/friends")
+    @Operation(summary = "친구 추가")
+    public ResponseEntity<Void> addFriend(@RequestParam Long userId, @RequestBody Map<String, String> body) {
+        String nickname = body.get("nickname");
+        gamificationService.addFriend(userId, nickname);
+        return ResponseEntity.ok().build();
     }
 }
