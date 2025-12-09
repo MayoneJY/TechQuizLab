@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,45 +38,17 @@ public class GamificationServiceImpl implements GamificationService {
 
     @Override
     public List<Achievement> getAllAchievements() {
-        return achievementDao.findAll();
+        return Collections.emptyList();
     }
 
     @Override
     public List<UserAchievement> getUserAchievements(Long userId) {
-        return userAchievementDao.findByUserId(userId);
+        return Collections.emptyList();
     }
 
     @Override
-    @Transactional
     public void checkAchievements(Long userId) {
-        User user = userDao.findById(userId);
-        List<Achievement> achievements = achievementDao.findAll();
-
-        for (Achievement achievement : achievements) {
-            if (userAchievementDao.existsByUserIdAndAchievementId(userId, achievement.getId())) {
-                continue;
-            }
-
-            boolean achieved = false;
-            if ("LEVEL_UP".equals(achievement.getConditionType())) {
-                if (user.getLevel() >= achievement.getConditionValue()) {
-                    achieved = true;
-                }
-            }
-            // Add other conditions...
-
-            if (achieved) {
-                UserAchievement ua = new UserAchievement();
-                ua.setUserId(userId);
-                ua.setAchievementId(achievement.getId());
-                ua.setAchievedAt(LocalDateTime.now());
-                userAchievementDao.insert(ua);
-
-                // Give reward
-                user.setExp(user.getExp() + achievement.getRewardExp());
-                userDao.update(user);
-            }
-        }
+        // Achievement system disabled request
     }
 
     @Override
@@ -131,12 +104,6 @@ public class GamificationServiceImpl implements GamificationService {
                 udm.setMission(dm);
                 missions.add(udm);
             }
-            // Check achievements after assigning/auto-completing missions
-            try {
-                checkAchievements(userId);
-            } catch (Exception e) {
-                log.error("Check Achievements failed during mission assignment", e);
-            }
         }
         return missions;
     }
@@ -185,9 +152,6 @@ public class GamificationServiceImpl implements GamificationService {
                 log.info("User before update - Level: {}, Exp: {}", user.getLevel(), user.getExp());
 
                 grantExpAndLevelUp(user, Long.valueOf(mission.getRewardExp()));
-
-                // Check achievements after state change
-                checkAchievements(userId);
             }
         } else {
             System.out.println("SERVICE: Claim Failed. userMission is null or invalid state.");

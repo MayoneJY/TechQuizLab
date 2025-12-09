@@ -15,13 +15,6 @@
       <div class="tabs">
         <button 
           class="pixel-button tab-button" 
-          :class="{ active: activeTab === 'achievements' }"
-          @click="activeTab = 'achievements'"
-        >
-          업적
-        </button>
-        <button 
-          class="pixel-button tab-button" 
           :class="{ active: activeTab === 'missions' }"
           @click="activeTab = 'missions'"
         >
@@ -43,37 +36,26 @@
         </button>
       </div>
 
-      <!-- Achievements Tab -->
+      <!-- Missions Tab -->
       <transition name="fade" mode="out-in">
-        <div v-if="activeTab === 'achievements'" class="tab-content" key="achievements">
-          <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">데이터 로딩 중...</div>
-          <div v-else-if="gamificationStore.achievements.length === 0" class="empty-message pixel-text">
-            달성한 업적이 없습니다.
+        <div v-if="activeTab === 'missions'" class="tab-content" key="missions">
+          
+          <div v-if="isPageLoading || gamificationStore.isLoading" class="missions-list">
+             <!-- Skeleton Loading -->
+             <div v-for="i in 3" :key="i" class="mission-item glass-card skeleton-item">
+                <div class="mission-header" style="width: 100%;">
+                    <div class="skeleton skeleton-circle" style="width: 24px; height: 24px;"></div>
+                    <div class="mission-info" style="width: 100%;">
+                         <div class="skeleton skeleton-text" style="width: 40%; height: 20px; margin-bottom: 5px;"></div>
+                         <div class="skeleton skeleton-text" style="width: 70%; height: 14px;"></div>
+                    </div>
+                </div>
+                <div class="mission-progress-container">
+                    <div class="skeleton skeleton-bar" style="width: 100%; height: 20px; border-radius: 10px;"></div>
+                </div>
+             </div>
           </div>
-          <div v-else class="achievements-list">
-            <div
-              v-for="achievement in gamificationStore.achievements"
-              :key="achievement.id"
-              class="achievement-item glass-card"
-              :class="{ unlocked: gamificationStore.isAchievementUnlocked(achievement.id) }"
-            >
-              <div class="achievement-icon">🏆</div>
-              <div class="achievement-info">
-                <p class="pixel-text achievement-name">{{ achievement.name || '알 수 없음' }}</p>
-                <p class="achievement-desc">{{ achievement.description || '설명이 없습니다.' }}</p>
-                <p class="pixel-text achievement-reward">보상: 경험치 +{{ achievement.rewardExp || 0 }}</p>
-              </div>
-              <div v-if="gamificationStore.isAchievementUnlocked(achievement.id)" class="achievement-badge">
-                <span class="checkmark">✓</span>
-              </div>
-              <div class="scan-line"></div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Missions Tab -->
-        <div v-else-if="activeTab === 'missions'" class="tab-content" key="missions">
-          <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">데이터 로딩 중...</div>
           <div v-else-if="gamificationStore.dailyMissions.length === 0" class="empty-message pixel-text">
             오늘의 미션이 없습니다.
           </div>
@@ -115,7 +97,22 @@
 
         <!-- Ranking Tab -->
         <div v-else-if="activeTab === 'ranking'" class="tab-content" key="ranking">
-          <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">데이터 로딩 중...</div>
+          
+          <div v-if="isPageLoading || gamificationStore.isLoading" class="ranking-list">
+              <!-- Skeleton Loading -->
+              <div v-for="i in 5" :key="i" class="ranking-item glass-card skeleton-item">
+                  <div class="skeleton skeleton-text" style="width: 40px; height: 30px;"></div>
+                  <div class="rank-info" style="flex: 1; margin-left: 15px;">
+                      <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 5px;"></div>
+                      <div class="skeleton skeleton-text" style="width: 30%; height: 14px;"></div>
+                  </div>
+                  <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
+              </div>
+          </div>
+
+          <div v-else-if="gamificationStore.rankings.length === 0" class="empty-message pixel-text">
+            랭킹 데이터가 없습니다.
+          </div>
           <div v-else class="ranking-list">
             <div 
               v-for="rank in gamificationStore.rankings" 
@@ -136,7 +133,20 @@
 
         <!-- Friends Tab -->
         <div v-else-if="activeTab === 'friends'" class="tab-content" key="friends">
-          <div v-if="gamificationStore.isLoading" class="loading-text pixel-text">데이터 로딩 중...</div>
+          
+          <div v-if="isPageLoading || gamificationStore.isLoading" class="friends-list">
+              <div v-for="i in 3" :key="i" class="friend-item glass-card skeleton-item">
+                  <div class="skeleton skeleton-circle" style="width: 32px; height: 32px;"></div>
+                  <div class="friend-info" style="flex: 1; margin-left: 15px;">
+                      <div class="skeleton skeleton-text" style="width: 50%; height: 20px; margin-bottom: 5px;"></div>
+                      <div class="skeleton skeleton-text" style="width: 40%; height: 14px;"></div>
+                  </div>
+              </div>
+          </div>
+
+          <div v-else-if="gamificationStore.friends.length === 0" class="empty-message pixel-text">
+             친구 목록이 비어있습니다.
+          </div>
           <div v-else class="friends-list">
             <div 
               v-for="friend in gamificationStore.friends" 
@@ -180,7 +190,8 @@ const router = useRouter()
 const gamificationStore = useGamificationStore()
 const authStore = useAuthStore()
 
-const activeTab = ref<'achievements' | 'missions' | 'ranking' | 'friends'>('achievements')
+const activeTab = ref<'missions' | 'ranking' | 'friends'>('missions')
+const isPageLoading = ref(true)
 
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
@@ -189,15 +200,16 @@ onMounted(async () => {
   }
 
   try {
+    isPageLoading.value = true
     await Promise.all([
-      gamificationStore.fetchAllAchievements(),
-      gamificationStore.fetchUserAchievements(),
       gamificationStore.fetchDailyMissions(),
       gamificationStore.fetchRankings(),
       gamificationStore.fetchFriends()
     ])
   } catch (error) {
     console.error('Failed to load gamification data:', error)
+  } finally {
+    isPageLoading.value = false
   }
 })
 
@@ -627,6 +639,50 @@ async function claimMission(missionId: number) {
     min-width: auto;
     font-size: 12px;
     padding: 10px;
+  }
+}
+
+/* Skeleton Effect */
+.skeleton {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  min-height: 80px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 </style>

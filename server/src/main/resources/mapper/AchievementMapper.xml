@@ -14,7 +14,7 @@
     </resultMap>
 
     <select id="findAll" resultMap="achievementResultMap">
-        SELECT * FROM achievements
+        SELECT * FROM achievement
     </select>
     
     <select id="findById" resultMap="achievementResultMap">
