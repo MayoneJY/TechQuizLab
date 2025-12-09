@@ -13,12 +13,12 @@
         <div v-if="authStore.isAuthenticated" class="user-status-card glass-panel clickable-card" @click="goToMyPage">
           <template v-if="isDashboardLoading">
             <div class="user-profile-header">
-              <div class="skeleton skeleton-text" style="width: 100px; height: 24px;"></div>
-              <div class="skeleton skeleton-text" style="width: 50px; height: 24px;"></div>
+              <div class="skeleton skeleton-text" style="width: 100px; height: 28px;"></div>
+              <div class="skeleton skeleton-text" style="width: 50px; height: 28px;"></div>
             </div>
             <div class="exp-bar-container">
-               <div class="skeleton skeleton-bar" style="width: 100%; height: 12px; margin-bottom: 5px;"></div>
-               <div class="skeleton skeleton-text" style="width: 80px; height: 14px; float: right;"></div>
+               <div class="skeleton skeleton-bar" style="width: 100%; height: 12px; margin-bottom: 5px; border-radius: 6px;"></div>
+               <div class="skeleton skeleton-text" style="width: 80px; height: 20px; float: right;"></div>
             </div>
           </template>
           <template v-else>

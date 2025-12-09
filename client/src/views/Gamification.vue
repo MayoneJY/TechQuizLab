@@ -46,14 +46,14 @@
                 <div class="mission-header" style="width: 100%;">
                     <div class="skeleton skeleton-circle" style="width: 24px; height: 24px;"></div>
                     <div class="mission-info" style="width: 100%;">
-                         <div class="skeleton skeleton-text" style="width: 40%; height: 20px; margin-bottom: 5px;"></div>
-                         <div class="skeleton skeleton-text" style="width: 70%; height: 14px;"></div>
+                         <div class="skeleton skeleton-text" style="width: 40%; height: 24px; margin-bottom: 5px;"></div>
+                         <div class="skeleton skeleton-text" style="width: 70%; height: 18px;"></div>
                     </div>
                 </div>
                 <div class="mission-progress-container">
                     <div class="skeleton skeleton-bar" style="width: 100%; height: 20px; border-radius: 10px;"></div>
                 </div>
-                <div class="skeleton skeleton-text" style="width: 80px; height: 30px; align-self: flex-end; border-radius: 4px;"></div>
+                <div class="skeleton skeleton-text" style="width: 80px; height: 32px; align-self: flex-end; border-radius: 4px;"></div>
              </div>
           </div>
 
@@ -102,12 +102,12 @@
           <div v-if="isPageLoading || gamificationStore.isLoading" class="ranking-list">
               <!-- Skeleton Loading -->
               <div v-for="i in 5" :key="i" class="ranking-item glass-card skeleton-item">
-                  <div class="skeleton skeleton-text" style="width: 40px; height: 30px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 40px; height: 36px;"></div>
                   <div class="rank-info" style="flex: 1; margin-left: 15px;">
-                      <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 5px;"></div>
-                      <div class="skeleton skeleton-text" style="width: 30%; height: 14px;"></div>
+                      <div class="skeleton skeleton-text" style="width: 60%; height: 24px; margin-bottom: 5px;"></div>
+                      <div class="skeleton skeleton-text" style="width: 30%; height: 16px;"></div>
                   </div>
-                  <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 80px; height: 22px;"></div>
               </div>
           </div>
 
@@ -145,8 +145,8 @@
               <div v-for="i in 3" :key="i" class="friend-item glass-card skeleton-item">
                   <div class="skeleton skeleton-circle" style="width: 32px; height: 32px;"></div>
                   <div class="friend-info" style="flex: 1; margin-left: 15px;">
-                      <div class="skeleton skeleton-text" style="width: 50%; height: 20px; margin-bottom: 5px;"></div>
-                      <div class="skeleton skeleton-text" style="width: 40%; height: 14px;"></div>
+                      <div class="skeleton skeleton-text" style="width: 50%; height: 24px; margin-bottom: 5px;"></div>
+                      <div class="skeleton skeleton-text" style="width: 40%; height: 16px;"></div>
                   </div>
               </div>
           </div>
