@@ -53,6 +53,7 @@
                 <div class="mission-progress-container">
                     <div class="skeleton skeleton-bar" style="width: 100%; height: 20px; border-radius: 10px;"></div>
                 </div>
+                <div class="skeleton skeleton-text" style="width: 80px; height: 30px; align-self: flex-end; border-radius: 4px;"></div>
              </div>
           </div>
 
@@ -825,6 +826,7 @@ button:disabled {
   animation: shimmer 1.5s infinite;
 }
 
+
 .skeleton-item {
   display: flex;
   align-items: center;
@@ -832,6 +834,13 @@ button:disabled {
   padding: 20px;
   min-height: 80px;
 }
+
+.mission-item.skeleton-item {
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 150px;
+}
+
 
 .skeleton-circle {
   border-radius: 50%;
