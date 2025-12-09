@@ -117,7 +117,13 @@ export const userApi = {
     api.get(`/api/users/exists/email/${email}`),
 
   checkNicknameExists: (nickname: string) =>
-    api.get(`/api/users/exists/nickname/${nickname}`)
+    api.get(`/api/users/exists/nickname/${nickname}`),
+
+  updateUser: (id: number, userDto: { email?: string; password?: string; nickname?: string }) =>
+    api.put(`/api/users/${id}`, userDto),
+
+  deleteUser: (id: number) =>
+    api.delete(`/api/users/${id}`)
 }
 
 // Topic API

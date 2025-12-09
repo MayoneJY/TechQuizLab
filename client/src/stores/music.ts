@@ -43,11 +43,11 @@ export const useMusicStore = defineStore('music', () => {
     console.log('🎵 MusicStore.play() called')
     console.log('🎵 Current isPlaying:', isPlaying.value)
     console.log('🎵 Volume:', volume.value)
-    
+
     // 먼저 실제 재생 상태 확인
     const actuallyPlaying = retroMusicPlayer.getIsPlaying()
     console.log('🎵 retroMusicPlayer.getIsPlaying():', actuallyPlaying)
-    
+
     if (actuallyPlaying) {
       console.log('⚠️ Music is already playing, just unmuting')
       isMuted.value = false
@@ -55,20 +55,20 @@ export const useMusicStore = defineStore('music', () => {
       localStorage.setItem('musicMuted', 'false')
       return
     }
-    
+
     isMuted.value = false
     retroMusicPlayer.setVolume(volume.value)
-    
+
     try {
       console.log('🎵 Calling retroMusicPlayer.play()')
       await retroMusicPlayer.play()
-      
+
       // 실제로 재생이 시작되었는지 확인
       const checkPlaying = () => {
         const isActuallyPlaying = retroMusicPlayer.getIsPlaying()
         console.log('🎵 After play() call, isActuallyPlaying:', isActuallyPlaying)
         isPlaying.value = isActuallyPlaying
-        
+
         if (isActuallyPlaying) {
           console.log('✅ Music started playing successfully')
           localStorage.setItem('musicPlaying', 'true')
@@ -78,10 +78,10 @@ export const useMusicStore = defineStore('music', () => {
           isPlaying.value = false
         }
       }
-      
+
       // 약간의 지연 후 상태 확인
       setTimeout(checkPlaying, 100)
-      
+
     } catch (error) {
       console.error('❌ Failed to play music:', error)
       isPlaying.value = false
@@ -100,10 +100,10 @@ export const useMusicStore = defineStore('music', () => {
     console.log('🔇 Current isMuted:', isMuted.value)
     console.log('🔇 Current isPlaying:', isPlaying.value)
     console.log('🔇 retroMusicPlayer.getIsPlaying():', retroMusicPlayer.getIsPlaying())
-    
+
     // 실제 재생 상태 확인
     const actuallyPlaying = retroMusicPlayer.getIsPlaying()
-    
+
     if (!actuallyPlaying && isPlaying.value) {
       // 상태가 불일치 - 실제로는 재생 안 되고 있음
       console.log('⚠️ State mismatch - fixing...')
@@ -113,7 +113,7 @@ export const useMusicStore = defineStore('music', () => {
       localStorage.setItem('musicMuted', 'false')
       return
     }
-    
+
     isMuted.value = !isMuted.value
     if (isMuted.value) {
       console.log('🔇 Muting...')
@@ -135,17 +135,27 @@ export const useMusicStore = defineStore('music', () => {
 
   // 랜덤 메인 브금 재생 (다른 화면 진입 시 사용)
   async function playRandomMainMusic() {
-    isMuted.value = false
+    // 사용자가 명시적으로 음악을 껐거나, 음소거 상태면 재생하지 않음
+    const userWantsMusic = localStorage.getItem('musicPlaying')
+
+    if (isMuted.value || userWantsMusic === 'false') {
+      console.log('🔇 Music disabled by user (Muted or Stopped), skipping auto-play')
+      if (userWantsMusic === 'false') {
+        isPlaying.value = false
+      }
+      return
+    }
+
     retroMusicPlayer.setVolume(volume.value)
-    
+
     try {
       console.log('🎲 Playing random main music...')
       await retroMusicPlayer.playRandomMainMusic()
-      
+
       const checkPlaying = () => {
         const isActuallyPlaying = retroMusicPlayer.getIsPlaying()
         isPlaying.value = isActuallyPlaying
-        
+
         if (isActuallyPlaying) {
           console.log('✅ Random main music started playing successfully')
           localStorage.setItem('musicPlaying', 'true')
@@ -155,7 +165,7 @@ export const useMusicStore = defineStore('music', () => {
           isPlaying.value = false
         }
       }
-      
+
       setTimeout(checkPlaying, 100)
     } catch (error) {
       console.error('❌ Failed to play random main music:', error)

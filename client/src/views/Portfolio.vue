@@ -1,11 +1,12 @@
 <template>
   <div class="portfolio-screen">
-    <ParticleBackground />
-    <div class="stars-container"></div>
+
     
     <div class="portfolio-container">
       <div class="header">
-        <h1 class="pixel-text title">포트폴리오 관리</h1>
+        <h1 class="pixel-text title">
+          <span class="glitch" data-text="포트폴리오">포트폴리오</span>
+        </h1>
         <button class="pixel-button back-button" @click="goHome">
           ← 홈으로
         </button>
@@ -13,81 +14,97 @@
 
       <div class="content-wrapper">
         <!-- Portfolio List -->
-        <div v-if="viewMode === 'list'" class="portfolio-list-section">
-          <h2 class="pixel-text section-title">내 포트폴리오</h2>
+        <div class="portfolio-list-section glass-panel" :class="{ 'collapsed': viewMode === 'editor' }">
+          <div class="list-header">
+            <h2 class="pixel-text section-title">MY PROJECTS</h2>
+          <transition name="fade-delay">
+            <button class="pixel-button add-btn small" @click="startNewPortfolio" v-if="viewMode === 'list'">
+              + 새 항목
+            </button>
+          </transition>
+        </div>
           
-          <div v-if="isLoading" class="loading-text pixel-text">로딩 중...</div>
-          <div v-else-if="portfolios.length === 0" class="empty-message pixel-text">
-            등록된 포트폴리오가 없습니다.
+          <div v-if="isLoading" class="loading-state">
+             <p class="pixel-text">로딩 중...</p>
+          </div>
+          <div v-else-if="portfolios.length === 0" class="empty-state">
+            <div class="empty-icon">📂</div>
+            <p class="pixel-text">데이터가 없습니다</p>
+            <button class="pixel-button primary" @click="startNewPortfolio">
+              새 프로젝트 만들기
+            </button>
           </div>
           <div v-else class="portfolio-list">
             <div 
               v-for="pf in portfolios" 
               :key="pf.pfId" 
-              class="portfolio-item"
+              class="portfolio-item glass-card"
+              :class="{ 'active': selectedPfId === pf.pfId }"
               @click="selectPortfolio(pf)"
             >
-              <div class="pf-icon">📄</div>
-              <div class="pf-info">
-                <p class="pixel-text pf-title">{{ pf.title }}</p>
-                <p class="pf-date">{{ formatDate(pf.createdAt) }}</p>
+              <div class="item-icon">💾</div>
+              <div class="item-content">
+                <h3 class="pixel-text item-title">{{ pf.title }}</h3>
+                <span class="item-date">{{ formatDate(pf.createdAt) }}</span>
               </div>
-              <button class="pixel-button delete-btn" @click.stop="deletePortfolio(pf.pfId)">
-                삭제
-              </button>
+              <div class="item-arrow">→</div>
             </div>
           </div>
-          
-          <button class="pixel-button add-btn" @click="startNewPortfolio">
-            + 새 포트폴리오
-          </button>
         </div>
 
         <!-- Portfolio Editor -->
-        <div v-if="viewMode === 'editor'" class="portfolio-editor-section">
-          <div class="editor-header">
-            <h2 class="pixel-text section-title">
-              {{ isEditing ? '포트폴리오 수정' : '새 포트폴리오 작성' }}
-            </h2>
-            <button class="pixel-button back-list-btn" @click="backToList">
-              목록으로
-            </button>
-          </div>
-          
-          <div class="editor-form">
-            <div class="form-group">
-              <label class="pixel-text">제목</label>
-              <input 
-                v-model="editorTitle" 
-                type="text" 
-                class="pixel-input" 
-                placeholder="포트폴리오 제목을 입력하세요"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label class="pixel-text">내용</label>
-              <textarea 
-                v-model="editorContent" 
-                class="pixel-textarea" 
-                placeholder="포트폴리오 내용을 입력하세요 (경력, 프로젝트 등)"
-              ></textarea>
-            </div>
-            
-            <div class="editor-actions">
-              <button class="pixel-button save-btn" @click="savePortfolio">
-                저장하기
+        <transition name="slide-fade">
+          <div v-if="viewMode === 'editor'" class="portfolio-editor-section glass-panel">
+            <div class="editor-header">
+              <h2 class="pixel-text section-title">
+                {{ isEditing ? '프로젝트 수정' : '새 프로젝트' }}
+              </h2>
+              <button class="pixel-button secondary small" @click="backToList">
+                취소
               </button>
             </div>
+            
+            <div class="editor-form">
+              <div class="form-group">
+                <label class="pixel-text label">제목</label>
+                <input 
+                  v-model="editorTitle" 
+                  type="text" 
+                  class="pixel-input glass-input" 
+                  placeholder="프로젝트 이름을 입력하세요"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label class="pixel-text label">내용</label>
+                <textarea 
+                  v-model="editorContent" 
+                  class="pixel-textarea glass-input" 
+                  placeholder="프로젝트 상세 내용, 기술 스택, 역할 등을 작성하세요..."
+                ></textarea>
+              </div>
+              
+              <div class="editor-actions">
+                <button 
+                  v-if="isEditing" 
+                  class="pixel-button danger delete-btn" 
+                  @click="deletePortfolio(selectedPfId!)"
+                >
+                  삭제
+                </button>
+                <button class="pixel-button primary save-btn" @click="savePortfolio">
+                  저장하기
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </transition>
       </div>
     </div>
-
-    <!-- Spaceship decoration -->
-    <div class="spaceship">
-      <PixelSpaceship direction="up" />
-    </div>
+    
+    <!-- Decor elements -->
+    <div class="decoration-circle"></div>
+    <div class="scan-lines"></div>
   </div>
 </template>
 
@@ -97,8 +114,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { portfolioApi } from '../services/api'
 import type { Portfolio } from '../types/schema'
-import ParticleBackground from '../components/ParticleBackground.vue'
-import PixelSpaceship from '../components/PixelSpaceship.vue'
+
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -152,12 +168,13 @@ function startNewPortfolio() {
 
 function backToList() {
   viewMode.value = 'list'
+  selectedPfId.value = null
 }
 
 async function savePortfolio() {
   if (!authStore.user) return
   if (!editorTitle.value.trim()) {
-    alert('제목을 입력해주세요.')
+    alert('Please enter a title.')
     return
   }
 
@@ -168,32 +185,31 @@ async function savePortfolio() {
         title: editorTitle.value,
         content: editorContent.value
       })
-      alert('수정되었습니다.')
     } else {
       await portfolioApi.createPortfolio({
         userId: authStore.user.userId,
         title: editorTitle.value,
         content: editorContent.value
       })
-      alert('저장되었습니다.')
     }
     await fetchPortfolios()
     backToList()
   } catch (error: any) {
     console.error('Failed to save portfolio:', error)
-    alert('저장에 실패했습니다.')
+    alert('Failed to save.')
   }
 }
 
 async function deletePortfolio(pfId: number) {
-  if (!confirm('정말 삭제하시겠습니까?')) return
+  if (!confirm('Area you sure you want to delete this project?')) return
 
   try {
     await portfolioApi.deletePortfolio(pfId)
     await fetchPortfolios()
+    backToList()
   } catch (error) {
     console.error('Failed to delete portfolio:', error)
-    alert('삭제에 실패했습니다.')
+    alert('Failed to delete.')
   }
 }
 
@@ -215,80 +231,68 @@ function formatDate(dateString?: string) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: screen-enter 0.8s ease-out;
+  overflow: hidden;
 }
 
 .portfolio-container {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px; /* Increased max-width for better split view */
+  padding: 20px; /* Added internal padding */
+  box-sizing: border-box;
   z-index: 10;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .title {
   font-size: 32px;
-  font-weight: 700;
   color: #ffd43b;
-  text-shadow: 4px 4px 0 #000;
   margin: 0;
 }
 
 .content-wrapper {
   display: flex;
-  gap: 30px;
-  min-height: 600px;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden; 
 }
 
+/* List Section */
 .portfolio-list-section {
   flex: 1;
-  background: rgba(0, 0, 0, 0.6);
-  border: 3px solid #666;
-  border-radius: 8px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
+  transition: all 0.5s ease;
+  min-width: 300px;
+  padding: 20px; /* Added padding to fix "sticking to wall" issue */
 }
 
-.portfolio-editor-section {
-  flex: 2;
-  background: rgba(0, 0, 0, 0.6);
-  border: 3px solid #666;
-  border-radius: 8px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+.portfolio-list-section.collapsed {
+  flex: 0 0 300px; 
 }
 
-.editor-header {
+.list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border-bottom: 2px solid #4a9eff;
-  padding-bottom: 10px;
 }
 
 .section-title {
-  font-size: 20px;
-  color: #fff;
-  margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.back-list-btn {
-  padding: 8px 16px;
-  font-size: 12px;
-  min-width: auto;
-  background: #868e96;
-  border-color: #495057;
+  font-size: 18px;
+  color: #4a9eff;
+  margin: 0;
 }
 
 .portfolio-list {
@@ -296,166 +300,204 @@ function formatDate(dateString?: string) {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-  max-height: 500px;
-}
-
-/* ... existing styles ... */
-
-.stars-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.spaceship {
-  position: fixed;
-  bottom: 50px;
-  right: 50px;
-  animation: float 3s ease-in-out infinite;
-  z-index: 5;
-  pointer-events: none;
+  gap: 15px;
+  padding-right: 5px;
 }
 
 .portfolio-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid transparent;
-  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
 .portfolio-item:hover {
-  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #4a9eff;
 }
 
-.portfolio-item.selected {
+.portfolio-item.active {
+  background: rgba(74, 158, 255, 0.15);
   border-color: #ffd43b;
-  background: rgba(255, 212, 59, 0.1);
+  box-shadow: 0 0 15px rgba(255, 212, 59, 0.2);
 }
 
-.pf-icon {
+.item-icon {
   font-size: 24px;
 }
 
-.pf-info {
+.item-content {
   flex: 1;
   min-width: 0;
 }
 
-.pf-title {
+.item-title {
   font-size: 16px;
   color: #fff;
-  margin-bottom: 4px;
+  margin: 0 0 5px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pf-date {
+.item-date {
   font-size: 12px;
   color: #888;
 }
 
-.delete-btn {
-  padding: 6px 12px;
-  font-size: 12px;
-  background: #ff6b6b;
-  border-color: #e03131;
+.item-arrow {
+  color: #4a9eff;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-.add-btn {
-  width: 100%;
-  padding: 12px;
-  background: #51cf66;
-  border-color: #2f9e44;
+.portfolio-item:hover .item-arrow,
+.portfolio-item.active .item-arrow {
+  opacity: 1;
+}
+
+/* Editor Section */
+.portfolio-editor-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+.editor-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.form-group label {
-  display: block;
-  color: #4a9eff;
-  margin-bottom: 8px;
-  font-size: 16px;
+.label {
+  font-size: 14px;
+  color: #888;
 }
 
-.pixel-input,
-.pixel-textarea {
-  width: 100%;
+.pixel-input.glass-input, 
+.pixel-textarea.glass-input {
   background: rgba(0, 0, 0, 0.3);
-  border: 2px solid #666;
-  border-radius: 4px;
-  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
   color: #fff;
-  font-family: inherit;
-  font-size: 16px;
-  box-sizing: border-box;
+  width: 100%;
 }
 
-.pixel-input:focus,
+.pixel-input:focus, 
 .pixel-textarea:focus {
   border-color: #4a9eff;
-  outline: none;
+  box-shadow: 0 0 10px rgba(74, 158, 255, 0.2);
 }
 
 .pixel-textarea {
-  height: 300px;
-  resize: none;
+  min-height: 200px;
+  resize: vertical;
 }
 
 .editor-actions {
   margin-top: auto;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  padding-top: 20px;
 }
 
-.save-btn {
-  padding: 12px 30px;
-  font-size: 16px;
-  background: #4a9eff;
-  border-color: #357abd;
-}
-
-.empty-message {
-  text-align: center;
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
   color: #888;
-  padding: 40px 0;
 }
 
-.spaceship {
+.empty-icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+
+/* Transitions */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+/* Fade Delay for New Button */
+.fade-delay-enter-active {
+  transition: opacity 0.5s ease-out;
+  transition-delay: 0.3s; /* Delay the appearance */
+}
+
+.fade-delay-leave-active {
+  transition: none; /* Immediate disappearance */
+}
+
+.fade-delay-enter-from,
+.fade-delay-leave-to {
+  opacity: 0;
+}
+
+
+/* Background Decorations */
+.scan-lines {
   position: fixed;
-  bottom: 50px;
-  right: 50px;
-  animation: float 3s ease-in-out infinite;
-  z-index: 5;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 1px,
+    rgba(255, 255, 255, 0.02) 2px,
+    rgba(255, 255, 255, 0.02) 3px
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+.decoration-circle {
+  position: fixed;
+  top: -100px;
+  right: -100px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74, 158, 255, 0.1) 0%, transparent 70%);
+  filter: blur(50px);
+  z-index: 1;
 }
 
 @media (max-width: 768px) {
-  .content-wrapper {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  .portfolio-list-section,
-  .portfolio-editor-section {
-    height: 400px;
+  .portfolio-list-section.collapsed {
+    display: none;
   }
 }
 </style>

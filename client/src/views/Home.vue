@@ -1,94 +1,140 @@
 <template>
   <div class="game-container">
-    <!-- Particle Background -->
-    <ParticleBackground />
-    
-    <!-- Stars background -->
-    <div class="stars-container">
-      <div 
-        v-for="i in 100" 
-        :key="i" 
-        class="star"
-        :style="getStarStyle(i)"
-      ></div>
-    </div>
-    
-    <!-- Title Screen -->
-    <div class="title-screen">
-      <h1 class="game-title pixel-text">
-        <span class="title-main">잡스페이스</span>
-        <span class="title-sub">JOB SPACE</span>
-      </h1>
+    <!-- Title Screen (Hero Section) -->
+    <div class="dashboard-screen">
       
-      <div class="hearts-display">
-        <PixelHeart 
-          v-for="_ in 8" 
-          :key="`heart-${_}`"
-        />
-      </div>
-      
-      <div class="menu-buttons">
-        <button 
-          class="pixel-button primary" 
-          @click="goToStages"
-        >
-          START
-        </button>
-        <button 
-          class="pixel-button" 
-          @click="goToAbout"
-        >
-          ABOUT
-        </button>
-      </div>
-      
-      <!-- User Info -->
-      <div v-if="authStore.isAuthenticated" class="user-info">
-        <div class="user-profile">
-          <p class="pixel-text user-name">{{ authStore.user?.nickname }}</p>
-          <p v-if="authStore.user?.level" class="pixel-text user-level">
-            Lv.{{ authStore.user.level }} | EXP: {{ authStore.user.exp || 0 }}
-          </p>
-        </div>
-        <div class="user-buttons">
-          <button class="pixel-button link-button" @click="goToGamification">
-            업적 & 미션
-          </button>
-          <button class="pixel-button link-button" @click="goToPortfolio">
-            포트폴리오
-          </button>
-
-          <button class="pixel-button link-button" @click="goToBoard">
-            게시판
-          </button>
-          <button class="pixel-button link-button" @click="handleLogout">
-            로그아웃
-          </button>
-        </div>
+      <!-- HEADER: Title & Status -->
+      <header class="dashboard-header">
+        <h1 class="game-title pixel-text">
+          <span class="title-main glitch" data-text="잡스페이스">잡스페이스</span>
+        </h1>
         
-        <!-- Rival Info -->
-        <div v-if="rival" class="rival-info-card">
-          <p class="pixel-text rival-title">RIVAL STATUS</p>
-          <div class="rival-details">
-            <span class="rival-name">{{ rival.nickname }}</span>
-            <span class="rival-score">{{ rival.solvedCount }} 문제 해결</span>
+        <div v-if="authStore.isAuthenticated" class="user-status-card glass-panel clickable-card" @click="goToMyPage">
+          <div class="user-profile-header">
+            <span class="user-name pixel-text">{{ authStore.user?.nickname }}</span>
+            <span class="user-level pixel-text">Lv.{{ authStore.user?.level || 1 }}</span>
+          </div>
+          
+          <!-- Experience Bar -->
+          <div class="exp-bar-container">
+            <div class="exp-bar">
+              <div 
+                class="exp-fill" 
+                :style="{ width: `${expPercentage}%` }"
+              ></div>
+            </div>
+            <span class="exp-text pixel-text">{{ authStore.user?.exp || 0 }} / {{ maxExp }} EXP</span>
           </div>
         </div>
+      </header>
+
+      <!-- MAIN CONTENT: Dashboard Grid -->
+      <div v-if="authStore.isAuthenticated" class="dashboard-content">
+        
+        <!-- Left Column: Feature Navigation -->
+        <div class="feature-grid">
+          <!-- CARD 1: BATTLE (Main Action) -->
+          <div class="feature-card glass-card battle-card" @click="goToStages">
+            <div class="card-icon">⚔️</div>
+            <div class="card-info">
+              <h3 class="pixel-text">실전 모의면접</h3>
+              <p>기업별 공고에 도전하고<br>면접 스킬을 겨루세요!</p>
+            </div>
+            <div class="card-action">
+              도전하기
+            </div>
+          </div>
+
+          <!-- CARD 2: GAMIFICATION -->
+          <div class="feature-card glass-card" @click="goToGamification">
+            <div class="card-icon">🏆</div>
+            <div class="card-info">
+              <h3 class="pixel-text">업적 & 미션</h3>
+              <p>나의 성장을 확인하세요.</p>
+            </div>
+          </div>
+
+          <!-- CARD 3: PORTFOLIO -->
+          <div class="feature-card glass-card" @click="goToPortfolio">
+            <div class="card-icon">📂</div>
+            <div class="card-info">
+              <h3 class="pixel-text">포트폴리오</h3>
+              <p>나만의 이력을 관리하세요.</p>
+            </div>
+          </div>
+
+          <!-- CARD 4: COMMUNITY -->
+          <div class="feature-card glass-card" @click="goToBoard">
+            <div class="card-icon">💬</div>
+            <div class="card-info">
+              <h3 class="pixel-text">커뮤니티</h3>
+              <p>정보를 공유하고 소통하세요.</p>
+            </div>
+          </div>
+
+          <!-- CARD 5: SYSTEM (My Page) -->
+          <div class="feature-card glass-card" @click="goToMyPage">
+            <div class="card-icon">⚙️</div>
+            <div class="card-info">
+              <h3 class="pixel-text">시스템</h3>
+              <p>내 정보 수정 및 로그아웃</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Widgets -->
+        <div class="widget-column">
+          
+          <!-- Widget: Daily Mission Status -->
+          <div class="dashboard-widget glass-panel">
+            <h3 class="widget-title pixel-text">오늘의 미션</h3>
+            <div v-if="dailyMissions.length > 0" class="mini-mission-list">
+              <div 
+                v-for="mission in dailyMissions.slice(0, 3)" 
+                :key="mission.id"
+                class="mini-mission-item"
+                :class="{ completed: mission.isCompleted }"
+              >
+                <div class="mini-mission-icon">
+                  {{ mission.isCompleted ? '✅' : '⬜' }}
+                </div>
+                <div class="mini-mission-name">{{ mission.missionName || '일일 미션' }}</div>
+              </div>
+            </div>
+            <div v-else class="empty-widget-text">
+              미션을 불러오는 중...
+            </div>
+          </div>
+
+          <!-- Widget: Rival Status -->
+          <div v-if="rival" class="dashboard-widget glass-panel rival-widget">
+            <h3 class="widget-title pixel-text">RIVAL STATUS</h3>
+            <div class="rival-content">
+              <div class="rival-avartar">👾</div>
+              <div class="rival-info">
+                <div class="rival-name">{{ rival.nickname }}</div>
+                <div class="rival-score">{{ rival.solvedCount }} 문제 해결</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <div v-else class="user-info">
-        <button class="pixel-button" @click="goToLogin">
-          로그인
+
+      <!-- GUEST VIEW -->
+      <div v-else class="guest-view">
+        <div class="hearts-display">
+           <PixelHeart v-for="_ in 5" :key="`heart-${_}`" />
+        </div>
+        <p class="guest-msg pixel-text">로그인이 필요합니다</p>
+        <button class="pixel-button primary big-button" @click="goToLogin">
+          게임 시작
         </button>
       </div>
-      
+
     </div>
-    
-    <!-- Spaceship decoration -->
-    <div class="spaceship">
-      <PixelSpaceship direction="up" />
-    </div>
-    
-    <!-- Floating monsters -->
+
+    <!-- Background Monsters -->
     <div class="monster monster-1">
       <PixelMonster type="alien" />
     </div>
@@ -103,608 +149,360 @@ import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useGamificationStore } from '../stores/gamification'
-import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelHeart from '../components/PixelHeart.vue'
-import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
 
+const dailyMissions = computed(() => gamificationStore.dailyMissions)
 const rival = computed(() => gamificationStore.friends.find(f => f.isRival))
+
+// Mock max exp logic (could be from store config)
+const maxExp = computed(() => (authStore.user?.level || 1) * 1000)
+const expPercentage = computed(() => {
+  if (!authStore.user?.exp) return 0
+  return Math.min((authStore.user.exp / maxExp.value) * 100, 100)
+})
 
 onMounted(async () => {
   if (authStore.isAuthenticated) {
-    await gamificationStore.fetchFriends()
+    try {
+      await Promise.all([
+        gamificationStore.fetchFriends(),
+        gamificationStore.fetchDailyMissions()
+      ])
+    } catch (e) {
+      console.error('Failed to fetch dashboard data', e)
+    }
   }
 })
 
-function getStarStyle(_: number) {
-  return {
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    animationDelay: `${Math.random() * 2}s`,
-    animationDuration: `${1 + Math.random() * 2}s`
-  }
-}
+// Navigation
+function goToLogin() { router.push('/login') }
+// function handleLogout() { authStore.logout() } 
+function goToStages() { router.push('/stages') }
+function goToGamification() { router.push('/gamification') }
+function goToPortfolio() { router.push('/portfolio') }
+function goToBoard() { router.push('/board') }
+function goToAbout() { router.push('/about') }
+function goToMyPage() { router.push('/mypage') }
 
-
-
-function goToAbout() {
-  router.push('/about')
-}
-
-
-function handleLogout() {
-  authStore.logout()
-}
-
-function goToLogin() {
-  router.push('/login')
-}
-
-function goToGamification() {
-  router.push('/gamification')
-}
-
-function goToPortfolio() {
-  router.push('/portfolio')
-}
-
-function goToStages() {
-  router.push('/stages')
-}
-
-function goToBoard() {
-  router.push('/board')
-}
 </script>
 
 <style scoped>
-.rival-info-card {
-  margin-top: 15px;
-  padding: 15px;
-  background: rgba(255, 107, 107, 0.15);
-  border: 2px solid #ff6b6b;
-  border-radius: 8px;
+.dashboard-screen {
   width: 100%;
-  max-width: 300px;
-  animation: pulse 2s infinite;
-}
-
-.rival-title {
-  font-size: 12px;
-  color: #ff6b6b;
-  margin-bottom: 8px;
-}
-
-.rival-details {
-  display: flex;
-  justify-content: space-between;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.title-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 30px;
-  z-index: 10;
-  position: relative;
-  animation: screen-enter 0.8s ease-out;
-  width: 100%;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
   padding-bottom: 80px;
   box-sizing: border-box;
+  z-index: 10;
+  position: relative;
   min-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-@keyframes screen-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* Header */
+.dashboard-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 40px;
+  animation: slideDown 0.8s ease-out;
 }
 
 .game-title {
-  font-size: 48px;
-  text-align: center;
-  margin-bottom: 30px;
-  animation: titlePulse 2s ease-in-out infinite;
+  margin-bottom: 20px;
 }
 
 .title-main {
-  display: block;
+  font-size: 48px;
   color: #ffd43b;
-  font-size: 64px;
-  margin-bottom: 15px;
-  font-weight: 900;
-  text-shadow: 
-    4px 4px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 20px rgba(255, 212, 59, 0.5);
-  letter-spacing: -1px;
-  word-break: keep-all;
-}
-
-.title-sub {
+  text-shadow: 4px 4px 0 #000;
   display: block;
-  color: #ff6b6b;
-  font-size: 28px;
-  font-weight: 700;
-  text-shadow: 
-    3px 3px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000;
-  letter-spacing: 2px;
+  font-weight: 900;
 }
 
-@media (max-width: 768px) {
-  .title-main {
-    font-size: 40px;
-  }
-  
-  .title-sub {
-    font-size: 18px;
-  }
-}
-
-@keyframes titlePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.hearts-display {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 400px;
-}
-
-.hearts-display {
-  gap: 8px;
-}
-
-.menu-buttons {
+/* User Status Card */
+.user-status-card {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-
-
-.user-info {
-  margin-top: 20px;
-  text-align: center;
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.user-profile {
-  margin-bottom: 15px;
+.clickable-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(74, 158, 255, 0.5);
+  box-shadow: 0 0 20px rgba(74, 158, 255, 0.2);
 }
 
-.user-name {
+.user-profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
   font-size: 18px;
   font-weight: 700;
-  color: #ffd43b;
-  margin-bottom: 5px;
 }
 
 .user-level {
-  font-size: 12px;
-  font-weight: 600;
   color: #4a9eff;
 }
 
-.user-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
+/* EXP Bar */
+.exp-bar-container {
   width: 100%;
-  max-width: 500px;
+}
+
+.exp-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(0,0,0,0.5);
+  border: 2px solid #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.exp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4a9eff, #5bb0ff);
+  transition: width 0.5s ease-out;
+}
+
+.exp-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  float: right;
+}
+
+/* Dashboard Content Grid */
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 300px; /* 2 Columns: Features | Widgets */
+  gap: 20px;
+  width: 100%;
+  animation: fadeIn 1s ease-out;
 }
 
 @media (max-width: 768px) {
-  .user-buttons {
-    gap: 8px;
-  }
-  
-  .user-buttons .pixel-button {
-    flex: 1;
-    min-width: 100px;
-    font-size: 11px;
-    padding: 10px 15px;
+  .dashboard-content {
+    grid-template-columns: 1fr;
   }
 }
 
-.achievements-screen,
-.missions-screen {
-  margin-top: 30px;
-  margin-bottom: 50px;
-  padding: 25px;
-  background: rgba(0, 0, 0, 0.85);
-  border: 4px solid #fff;
-  border-radius: 8px;
-  max-width: 700px;
-  width: 100%;
-  min-height: 200px;
-  box-sizing: border-box;
-  box-shadow: 0 0 30px rgba(74, 158, 255, 0.3);
+/* Feature Grid */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
 }
 
-.achievements-screen h3,
-.missions-screen h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-  color: #ffd43b;
-  text-shadow: 
-    3px 3px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000;
-  padding-bottom: 15px;
-  border-bottom: 3px solid rgba(255, 255, 255, 0.3);
-}
-
-.achievements-list,
-.missions-list {
+.feature-card {
+  padding: 20px;
+  border-radius: 12px;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 100%;
-}
-
-.empty-message {
+  gap: 10px;
+  align-items: center;
   text-align: center;
-  padding: 40px 20px;
-  color: #888;
-  font-size: 14px;
-  font-weight: 500;
+  border-width: 2px;
+  min-height: 140px;
+  justify-content: center;
 }
 
-.achievement-item {
-  display: flex;
-  gap: 15px;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 3px solid #666;
-  border-radius: 8px;
-  align-items: flex-start;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.achievement-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s;
-}
-
-.achievement-item:hover {
-  border-color: #4a9eff;
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(5px);
-  box-shadow: 0 0 20px rgba(74, 158, 255, 0.4);
-}
-
-.achievement-item:hover::before {
-  left: 100%;
-}
-
-.achievement-item.unlocked {
+.feature-card:hover {
   border-color: #ffd43b;
-  background: rgba(255, 212, 59, 0.25);
-  box-shadow: 0 0 15px rgba(255, 212, 59, 0.3);
 }
 
-.achievement-item.unlocked:hover {
-  border-color: #ffd43b;
-  box-shadow: 0 0 25px rgba(255, 212, 59, 0.5);
+.card-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
 }
 
-.achievement-icon {
-  font-size: 36px;
-  filter: drop-shadow(2px 2px 0 #000);
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.achievement-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.achievement-name {
-  font-size: 16px;
-  font-weight: 700;
+.card-info h3 {
   color: #fff;
-  margin-bottom: 8px;
-  word-break: keep-all;
+  margin: 0;
+  font-size: 16px;
+  margin-bottom: 5px;
 }
 
-.achievement-desc {
-  font-size: 13px;
-  font-weight: 400;
+.card-info p {
   color: #ccc;
-  margin-bottom: 8px;
-  line-height: 1.6;
-  word-break: keep-all;
-}
-
-.achievement-reward {
   font-size: 12px;
-  font-weight: 600;
-  color: #51cf66;
-}
-
-.achievement-badge {
-  font-size: 24px;
-  color: #ffd43b;
-  flex-shrink: 0;
-  filter: drop-shadow(2px 2px 0 #000);
-}
-
-.mission-item {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 3px solid #666;
-  border-radius: 8px;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.mission-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s;
-}
-
-.mission-item:hover {
-  border-color: #4a9eff;
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(5px);
-  box-shadow: 0 0 20px rgba(74, 158, 255, 0.4);
-}
-
-.mission-item:hover::before {
-  left: 100%;
-}
-
-.mission-item.completed {
-  border-color: #51cf66;
-  background: rgba(81, 207, 102, 0.15);
-  box-shadow: 0 0 15px rgba(81, 207, 102, 0.3);
-}
-
-.mission-item.claimed {
-  opacity: 0.7;
-  border-color: #888;
-}
-
-.mission-header {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.mission-icon {
-  font-size: 28px;
-  filter: drop-shadow(2px 2px 0 #000);
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.mission-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.mission-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 6px;
-  word-break: keep-all;
+  margin: 0;
   line-height: 1.4;
 }
 
-.mission-desc {
-  font-size: 13px;
-  font-weight: 400;
-  color: #ccc;
-  line-height: 1.6;
-  word-break: keep-all;
-  margin-bottom: 8px;
-}
-
-.mission-progress-container {
-  width: 100%;
-  margin: 8px 0;
-}
-
-.mission-progress {
-  position: relative;
-  width: 100%;
-  height: 28px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 3px solid #fff;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.mission-progress .progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #4a9eff 0%, #5bb0ff 50%, #51cf66 100%);
-  transition: width 0.5s ease;
-  border-radius: 3px;
-  box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
-}
-
-.mission-item.completed .mission-progress .progress-bar {
-  background: linear-gradient(90deg, #51cf66 0%, #61df76 50%, #51cf66 100%);
-  box-shadow: 0 0 15px rgba(81, 207, 102, 0.7);
-  animation: progressGlow 2s ease-in-out infinite;
-}
-
-@keyframes progressGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(81, 207, 102, 0.7); }
-  50% { box-shadow: 0 0 25px rgba(81, 207, 102, 1); }
-}
-
-.mission-progress .progress-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 
-    2px 2px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000;
-  z-index: 1;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-.mission-actions {
-  display: flex;
-  justify-content: center;
+/* Battle Card Special Style */
+.battle-card {
+  grid-column: span 2; /* Take full width */
+  background: rgba(74, 158, 255, 0.15); /* Slight blue tint */
+  border-color: #4a9eff;
+  flex-direction: row; /* Horizontal layout */
+  text-align: left;
   align-items: center;
-  min-height: 45px;
-  margin-top: 5px;
+  gap: 20px;
+  justify-content: space-between;
 }
 
-.mission-actions .pixel-button {
-  min-width: 150px;
-  font-size: 12px;
-  padding: 12px 20px;
+.battle-card .card-info {
+  flex: 1;
+  text-align: left;
 }
 
-.claimed-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: #51cf66;
-  text-align: center;
-  margin: 0;
-  padding: 8px;
-  background: rgba(81, 207, 102, 0.2);
+.battle-card .card-info h3 {
+  font-size: 20px;
+  color: #ffd43b;
+}
+
+.card-action {
+  background: #ff6b6b;
+  color: #fff;
+  padding: 8px 20px;
   border-radius: 4px;
-}
-
-.progress-status {
-  font-size: 12px;
-  font-weight: 600;
-  color: #4a9eff;
-  text-align: center;
-  margin: 0;
-  padding: 8px;
-}
-
-.loading-text {
-  text-align: center;
-  color: #4a9eff;
+  font-weight: 700;
   font-size: 14px;
-  font-weight: 600;
-  padding: 20px;
+  box-shadow: 0 4px 0 #c92a2a;
 }
 
-.user-info {
-  margin-top: 20px;
+.battle-card:hover .card-action {
+  transform: scale(1.05);
+}
+
+/* Widget Column */
+.widget-column {
   display: flex;
   flex-direction: column;
+  gap: 15px;
+}
+
+.dashboard-widget {
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.widget-title {
+  font-size: 14px;
+  color: #4a9eff;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 5px;
+}
+
+.mini-mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mini-mission-item {
+  display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 13px;
+  color: #ccc;
+  padding: 5px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.2);
 }
 
-.user-name {
+.mini-mission-item.completed {
+  color: #51cf66;
+  background: rgba(81, 207, 102, 0.1);
+}
+
+.rival-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rival-avartar {
+  font-size: 24px;
+  background: rgba(255, 107, 107, 0.2);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #ff6b6b;
+}
+
+.rival-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.rival-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.rival-score {
+  color: #888;
   font-size: 12px;
-  color: #4a9eff;
 }
 
-.loading-text {
-  font-size: 10px;
-  color: #ffd43b;
+/* Guest View */
+.guest-view {
   text-align: center;
-  padding: 20px;
+  margin-top: 50px;
+  animation: fadeIn 1s;
 }
 
-.stars-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
+.guest-msg {
+  color: #fff;
+  font-size: 18px;
+  margin: 20px 0;
 }
 
-.spaceship {
-  position: absolute;
-  bottom: 50px;
-  right: 50px;
-  animation: float 3s ease-in-out infinite;
-  z-index: 5;
+.big-button {
+  font-size: 20px;
+  padding: 15px 40px;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .monster {
-  position: absolute;
-  z-index: 3;
-  animation: float 2s ease-in-out infinite;
+  position: fixed;
+  z-index: 5;
+  pointer-events: none;
 }
 
-.monster-1 {
-  top: 100px;
-  left: 50px;
-  animation-delay: 0s;
-}
-
-.monster-2 {
-  top: 200px;
-  right: 100px;
-  animation-delay: 1s;
-}
+.monster-1 { top: 15%; left: 5%; animation: float 6s infinite ease-in-out; }
+.monster-2 { bottom: 15%; right: 5%; animation: float 5s infinite ease-in-out reverse; }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+  50% { transform: translateY(-30px); }
 }
 </style>
 

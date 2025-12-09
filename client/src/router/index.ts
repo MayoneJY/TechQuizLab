@@ -59,6 +59,12 @@ const router = createRouter({
       component: StageList
     },
     {
+      path: '/mypage',
+      name: 'mypage',
+      component: () => import('../views/MyPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/board',
       name: 'board',
       component: Board
