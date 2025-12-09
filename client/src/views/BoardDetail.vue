@@ -32,16 +32,19 @@
 
         <div class="post-meta">
           <div class="post-author-info">
-            <span class="post-author">{{ post.userId }}</span>
-            <span class="post-date">{{ formatDate(post?.createdAt) }}</span>
-            <span v-if="post.updatedAt && post.updatedAt !== post.createdAt" class="post-updated">
-              (수정됨: {{ formatDate(post.updatedAt) }})
-            </span>
+            <span class="post-author">{{ post.nickname }}</span>
+            <span class="post-date">{{ formatDate(post?.created_at) }}</span>
           </div>
           <div class="post-stats">
-            <span>👁 {{ post.view }}</span>
-            <button class="like-button" @click="handleLike">
-              ❤️
+            <span>👁 {{ post.view_count }}</span>
+            <button 
+              class="like-button" 
+              :class="{ 'liked': isLiked }"
+              @click="handleLike"
+              :disabled="!authStore.isAuthenticated || isLoadingLike"
+            >
+              <span class="like-icon">{{ isLiked ? '❤️' : '🤍' }}</span>
+              <span class="like-count">{{ likeCount }}</span>
             </button>
           </div>
         </div>
@@ -52,7 +55,7 @@
 
         <div class="comments-section">
           <h3 class="pixel-text comments-title">
-            댓글 ({{ commentCount }})
+            댓글 ({{ commentCount}})
 
           </h3>
           
@@ -81,18 +84,18 @@
                 class="comment-item"
               >
                 <div class="comment-header" :class="{ 'deleted-comment-header': comment.is_deleted === 1 }">
-                  <span class="comment-author">{{ comment.nickname }}</span>
-                  <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
-                  <div class="comment-actions">
+                  <span class="comment-author">{{ comment.is_deleted === 1 ? '삭제된 댓글입니다.' : comment.nickname }}</span>
+                  <span v-if="comment.is_deleted === 0" class="comment-date">{{ formatDate(comment.created_at) }}</span>
+                  <div v-if="comment.is_deleted === 0" class="comment-actions">
                     <button
-                      v-if="authStore.isAuthenticated && comment.is_deleted === 0"
+                      v-if="authStore.isAuthenticated"
                       class="comment-reply"
                       @click="handleReply(comment.comment_id)"
                     >
                       답글
                     </button>
                     <button
-                      v-if="authStore.user && comment.user_id === authStore.user.userId && comment.is_deleted === 0"
+                      v-if="authStore.user && comment.user_id === authStore.user.userId"
                       class="comment-delete"
                       @click="handleDeleteComment(comment.comment_id)"
                     >
@@ -101,7 +104,7 @@
                   </div>
                 </div>
                 <div class="comment-content" :class="{ 'deleted-comment-content': comment.is_deleted === 1 }">
-                  <span v-if="comment.is_deleted === 1" class="deleted-text">삭제된 댓글입니다.</span>
+                  <span v-if="comment.is_deleted === 1" class="deleted-text">이 댓글은 삭제되었습니다.</span>
                   <span v-else>{{ comment.content }}</span>
                 </div>
                 <div v-if="replyingTo === comment.comment_id && comment.is_deleted === 0" class="reply-form">
@@ -161,11 +164,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
 import { useBoardCommentStore } from '../stores/boardComment'
 import { useAuthStore } from '../stores/auth'
+import { boardPostlikeApi } from '../services/api'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -182,6 +186,9 @@ const comments = computed(() => commentStore.comments)
 const newComment = ref('')
 const replyingTo = ref<number | null>(null)
 const replyContent = ref('')
+const isLiked = ref(false)
+const likeCount = ref(0)
+const isLoadingLike = ref(false)
 
 // 댓글 수 계산 (삭제되지 않은 댓글만 카운트)
 const commentCount = computed(() => {
@@ -202,6 +209,35 @@ const replyCount = computed(() => {
   ).length
 })
 
+async function fetchLikeStatus() {
+  if (!post.value) return
+
+  try {
+    if (authStore.isAuthenticated) {
+      const [likeStatusRes, likeCountRes] = await Promise.all([
+        boardPostlikeApi.checkPostLike(post.value.board_id, post.value.post_id),
+        boardPostlikeApi.getPostLikeCount(post.value.board_id, post.value.post_id)
+      ])
+
+      if (likeStatusRes.data?.resvalue?.is_liked !== undefined) {
+        isLiked.value = likeStatusRes.data.resvalue.is_liked
+      }
+
+      if (likeCountRes.data?.resvalue?.like_count !== undefined) {
+        likeCount.value = likeCountRes.data.resvalue.like_count
+      }
+    } else {
+      const likeCountRes = await boardPostlikeApi.getPostLikeCount(post.value.board_id, post.value.post_id)
+      if (likeCountRes.data?.resvalue?.like_count !== undefined) {
+        likeCount.value = likeCountRes.data.resvalue.like_count
+      }
+      isLiked.value = false
+    }
+  } catch (error: any) {
+    console.error('좋아요 상태 조회 실패:', error)
+  }
+}
+
 onMounted(async () => {
   await boardStore.fetchAllPosts()
   const foundPost = boardStore.posts.find(p => p.post_id === postId.value)
@@ -211,12 +247,25 @@ onMounted(async () => {
     
     if (post.value) {
       await commentStore.fetchComments(post.value.board_id, post.value.post_id)
+      await fetchLikeStatus()
     }
   }
   
   if (!post.value) {
     alert('게시글을 찾을 수 없습니다.')
     goBack()
+  }
+})
+
+watch(() => post.value?.board_id, () => {
+  if (post.value) {
+    fetchLikeStatus()
+  }
+})
+
+watch(() => authStore.isAuthenticated, () => {
+  if (post.value) {
+    fetchLikeStatus()
   }
 })
 
@@ -249,9 +298,39 @@ async function handleDelete() {
   }
 }
 
-function handleLike() {
-  // boardStore.toggleLike(postId.value) // 아직 미구현
-  alert('준비 중인 기능입니다.')
+async function handleLike() {
+  if (!authStore.isAuthenticated) {
+    alert('로그인이 필요합니다.')
+    return
+  }
+
+  if (!post.value) {
+    alert('게시글 정보를 찾을 수 없습니다.')
+    return
+  }
+
+  if (isLoadingLike.value) return
+
+  isLoadingLike.value = true
+
+  try {
+    if (isLiked.value) {
+      await boardPostlikeApi.removePostLike(post.value.board_id, post.value.post_id)
+      isLiked.value = false
+      likeCount.value = Math.max(0, likeCount.value - 1)
+    } else {
+      await boardPostlikeApi.addPostLike(post.value.board_id, post.value.post_id)
+      isLiked.value = true
+      likeCount.value += 1
+    }
+  } catch (error: any) {
+    const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || '좋아요 처리에 실패했습니다.'
+    alert(errorMsg)
+    
+    await fetchLikeStatus()
+  } finally {
+    isLoadingLike.value = false
+  }
 }
 
 async function handleAddComment() {
@@ -484,18 +563,51 @@ function formatDate(dateString: string) {
 }
 
 .like-button {
-  background: none;
-  border: none;
-  color: #ff6b6b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 16px;
   cursor: pointer;
+  transition: all 0.3s ease;
   font-size: 14px;
-  padding: 5px 10px;
-  border-radius: 4px;
-  transition: all 0.3s;
+  color: #fff;
 }
 
-.like-button:hover {
+.like-button:hover:not(:disabled) {
   background: rgba(255, 107, 107, 0.2);
+  border-color: #ff6b6b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+}
+
+.like-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.like-button.liked {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.like-button.liked:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.like-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.like-count {
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
 }
 
 .post-content {

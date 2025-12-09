@@ -144,6 +144,7 @@ public class BoardPostlikeController {
 		}
 	}
 
+	//임시 사용 X
 	@GetMapping("/post/like/my")
 	@Operation(summary = "내가 좋아요한 게시글 목록 조회", description = "현재 사용자가 좋아요한 게시글 목록을 조회합니다.")
 	public ResponseEntity<?> getMyLikedPosts(@AuthenticationPrincipal UserDetailsDTO loginuser) throws Exception {

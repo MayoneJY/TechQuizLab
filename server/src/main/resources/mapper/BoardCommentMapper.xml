@@ -13,8 +13,9 @@
         <result property="created_at" column="created_at"/>
         <result property="is_deleted" column="is_deleted"/>
         <result property="nickname" column="nickname"/>
-    </resultMap>
+    </resultMap>   
 
+    <!-- Result Map for Comment Entity -->
     <resultMap id="CommentMap" type="com.mayonedev.battle.domain.board.entity.Comment">
         <id property="comment_id" column="comment_id"/>
         <result property="board_id" column="board_id"/>
@@ -74,11 +75,18 @@
             (#{board_id}, #{post_id}, #{user_id}, #{parent_comment_id}, #{content})
     </insert>
 
-    <!-- 댓글 삭제 -->
+
+    <!-- 댓글 삭제(soft delete version) -->
     <update id="softDeleteComment" parameterType="long">
         UPDATE comment
         SET is_deleted = 1
         WHERE comment_id = #{comment_id}
     </update>
+
+    <!-- 댓글 삭제(hard delete version) -->
+    <delete id="deleteComment" parameterType="long">
+        DELETE FROM comment
+        WHERE comment_id = #{comment_id}
+    </delete>
 
 </mapper>

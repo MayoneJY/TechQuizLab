@@ -225,6 +225,25 @@ export const boardCommentApi = {
     api.delete(`/api/boards/${boardId}/post/${postId}/comment/${commentId}`)
 }
 
+// Board Post Like API
+export const boardPostlikeApi = {
+  addPostLike: (boardId: number, postId: number) =>
+    api.post(`/api/boards/${boardId}/post/${postId}/like`),
+
+  removePostLike: (boardId: number, postId: number) =>
+    api.delete(`/api/boards/${boardId}/post/${postId}/like`),
+
+  getPostLikeCount: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/like/count`),
+
+  checkPostLike: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/like/check`),
+
+  getPostLikeList: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/like`)
+
+}
+
 // Portfolio API
 export const portfolioApi = {
   getMyPortfolios: (userId: number) =>

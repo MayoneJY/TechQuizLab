@@ -82,7 +82,7 @@
             <span class="post-date">{{ formatDate(post.created_at) }}</span>
             <div class="post-stats">
               <span>조회수 {{ post.view_count }}</span>
-              <span>좋아요 0</span>
+              <span>좋아요 {{ getLikeCount(post.board_id, post.post_id) }}</span>
               <span>댓글 {{ getCommentCount(post) }}개</span>
             </div>
           </div>
@@ -110,6 +110,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
+import {useBoardPostlikeStore } from '../stores/boardPostlike'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -117,6 +118,7 @@ import PixelMonster from '../components/PixelMonster.vue'
 const router = useRouter()
 const boardStore = useBoardStore2()
 const authStore = useAuthStore()
+const boardpostlikeStore = useBoardPostlikeStore()
 
 const selectedCategory = ref('all')
 
@@ -124,6 +126,7 @@ const selectedCategory = ref('all')
 onMounted(async () => {
   try {
     await boardStore.fetchAllPosts()
+    await fetchAllLikeCounts()
   } catch (error) {
     console.error('게시글 목록 로드 실패:', error)
   }
@@ -137,6 +140,7 @@ watch(selectedCategory, async (newCategory) => {
     } else {
       await boardStore.fetchPostsByTags(newCategory)
     }
+    await fetchAllLikeCounts()
   } catch (error) {
     console.error('게시글 필터링 실패:', error)
   }
@@ -192,6 +196,25 @@ function formatDate(dateString: string) {
 
 function getCommentCount(post: any) {
   return post.comment_count || 0
+}
+
+function getLikeCount(boardId: number, postId: number) {
+  const status = boardpostlikeStore.getLikeStatus(boardId, postId)
+  return status?.like_count ?? 0
+}
+
+async function fetchAllLikeCounts() {
+  const posts = boardStore.posts
+  if (posts.length === 0) return
+
+  try {
+    const promises = posts.map(post => 
+      boardpostlikeStore.getLikeCount(post.board_id, post.post_id)
+    )
+    await Promise.all(promises)
+  } catch (error) {
+    console.error('좋아요 개수 조회 실패:', error)
+  }
 }
 </script>
 
