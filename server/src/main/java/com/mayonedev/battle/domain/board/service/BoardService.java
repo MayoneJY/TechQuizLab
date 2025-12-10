@@ -1,26 +1,34 @@
 package com.mayonedev.battle.domain.board.service;
 
-import com.mayonedev.battle.domain.board.entity.Board;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
+import com.mayonedev.battle.domain.board.dto.BoardPostDto;
+import com.mayonedev.battle.domain.board.entity.Post;
 
 public interface BoardService {
 
-    List<Board> selectPostAll() throws Exception;
-
-    List<Board> selectpostbyuserid(long userId)throws Exception; 
+    List<BoardPostDto> selectPostAll() throws Exception;
     
-    List<Board> selectpostByTags(String tags) throws Exception;
+    Map<String, Object> selectPostAllWithPaging(int page, int size) throws Exception;
 
-    Board selectByPostId(int id)throws Exception; 
+    List<BoardPostDto> selectPostByUserId(long userId) throws Exception;
 
-    List<Board> selectPostByNickName(String nickname)throws Exception;
+    BoardPostDto selectByPostId(Map<String, Object> params) throws Exception;
 
-    void insertPost(Board board)throws Exception;
+    List<BoardPostDto> selectByPostTags(String tags) throws Exception;
+    
+    Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size) throws Exception;
 
-    void updatePost(Board board)throws Exception;
+    List<BoardPostDto> selectPostByNickName(String nickname) throws Exception;
 
-    void deletePost(int id) throws Exception;
+    void insertPost(Post post) throws Exception;
 
-    int increaseViewCount(int id) throws Exception;
-} 
+    BoardPostDto updatePost(Post Post) throws Exception;
 
+    void deletePost(Map<String, Object> params) throws Exception;
+
+    void increaseViewCount(Map<String, Object> params) throws Exception;
+
+    long selectBoardId(String tags);
+}

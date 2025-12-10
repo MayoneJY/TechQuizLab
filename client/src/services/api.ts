@@ -188,23 +188,68 @@ export const gamificationApi = {
 
 // Board API
 export const boardApi = {
-  getAllPosts: () =>
-    api.get('/api/boards/post'),
+  getAllPosts: (page?: number, size?: number) => {
+    if (page && size) {
+      return api.get('/api/boards/post', { params: { page, size } })
+    }
+    return api.get('/api/boards/post')
+  },
 
-  getPostByPostId: (postId: number) =>
-    api.get(`/api/boards/post/${postId}`),
+  // 복합키 사용: board_id와 post_id 모두 필요
+  getPostByPostId: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}`),
 
-  getPostbyTags: (tags: string) =>
-    api.get(`/api/boards/post/tags/${tags}`),
+  getPostbyTags: (tags: string, page?: number, size?: number) => {
+    if (page && size) {
+      return api.get(`/api/boards/post/tags/${tags}`, { params: { page, size } })
+    }
+    return api.get(`/api/boards/post/tags/${tags}`)
+  },
 
-  createBoard: (postDto: { userId: number; title: string; content: string; tags: string }) =>
+  createBoard: (postDto: { title: string; content: string; tags: string }) =>
     api.post('/api/boards/post', postDto),
 
-  updatePost: (postId: number, postDto: { userId: number; title: string; content: string; tags?: string }) =>
-    api.patch(`/api/boards/post/${postId}`, postDto),
+  // 복합키 사용
+  updatePost: (boardId: number, postId: number, postDto: { title: string; content: string; tags: string }) =>
+    api.patch(`/api/boards/${boardId}/post/${postId}`, postDto),
 
-  deletePost: (postId: number) =>
-    api.delete(`/api/boards/post/${postId}`)
+  // 복합키 사용
+  deletePost: (boardId: number, postId: number) =>
+    api.delete(`/api/boards/${boardId}/post/${postId}`)
+}
+
+// Board Comment API
+export const boardCommentApi = {
+  getComments: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/comment`),
+
+  createComment: (boardId: number, postId: number, content: string) =>
+    api.post(`/api/boards/${boardId}/post/${postId}/comment`, { content }),
+
+  createReply: (boardId: number, postId: number, parentCommentId: number, content: string) =>
+    api.post(`/api/boards/${boardId}/post/${postId}/comment/${parentCommentId}/reply`, { content }),
+
+  deleteComment: (boardId: number, postId: number, commentId: number) =>
+    api.delete(`/api/boards/${boardId}/post/${postId}/comment/${commentId}`)
+}
+
+// Board Post Like API
+export const boardPostlikeApi = {
+  addPostLike: (boardId: number, postId: number) =>
+    api.post(`/api/boards/${boardId}/post/${postId}/like`),
+
+  removePostLike: (boardId: number, postId: number) =>
+    api.delete(`/api/boards/${boardId}/post/${postId}/like`),
+
+  getPostLikeCount: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/like/count`),
+
+  checkPostLike: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/like/check`),
+
+  getPostLikeList: (boardId: number, postId: number) =>
+    api.get(`/api/boards/${boardId}/post/${postId}/like`)
+
 }
 
 // Portfolio API

@@ -64,9 +64,9 @@
         </div>
         <div
           v-for="post in filteredPosts"
-          :key="post.id"
+          :key="post.post_id"
           class="post-item"
-          @click="goToDetail(post.id)"
+          @click="goToDetail(post.post_id)"
         >
           <div class="post-header">
             <span class="post-category" :class="post.tags">
@@ -78,15 +78,44 @@
             {{ truncateContent(post.content) }}
           </div>
           <div class="post-footer">
-            <span class="post-author">작성자 {{ post.userId }}</span>
-            <span class="post-date">{{ formatDate(post.createdAt) }}</span>
+            <span class="post-author">작성자 {{ post.nickname || post.user_id }}</span>
+            <span class="post-date">{{ formatDate(post.created_at) }}</span>
             <div class="post-stats">
-              <span>조회수 {{ post.view }}</span>
-              <span>좋아요 0</span>
-              <span>댓글 {{ getCommentCount(post.id) }}</span>
+              <span>조회수 {{ post.view_count }}</span>
+              <span>좋아요 {{ getLikeCount(post.board_id, post.post_id) }}</span>
+              <span>댓글 {{ getCommentCount(post) }}개</span>
             </div>
           </div>
         </div>
+      </div>
+      
+      <!-- 페이징 UI -->
+      <div v-if="boardStore.totalPages > 1" class="pagination">
+        <button 
+          class="pixel-button pagination-button"
+          :disabled="boardStore.currentPage === 1"
+          @click="goToPage(boardStore.currentPage - 1)"
+        >
+          이전
+        </button>
+        <div class="page-numbers">
+          <button
+            v-for="page in getPageNumbers()"
+            :key="page"
+            class="pixel-button page-button"
+            :class="{ active: page === boardStore.currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </div>
+        <button 
+          class="pixel-button pagination-button"
+          :disabled="boardStore.currentPage === boardStore.totalPages"
+          @click="goToPage(boardStore.currentPage + 1)"
+        >
+          다음
+        </button>
       </div>
     </div>
 
@@ -110,6 +139,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
+import {useBoardPostlikeStore } from '../stores/boardPostlike'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -117,13 +147,15 @@ import PixelMonster from '../components/PixelMonster.vue'
 const router = useRouter()
 const boardStore = useBoardStore2()
 const authStore = useAuthStore()
+const boardpostlikeStore = useBoardPostlikeStore()
 
 const selectedCategory = ref('all')
 
 // 게시글 목록 가져오기
 onMounted(async () => {
   try {
-    await boardStore.fetchAllPosts()
+    await boardStore.fetchAllPosts(1, 10)
+    await fetchAllLikeCounts()
   } catch (error) {
     console.error('게시글 목록 로드 실패:', error)
   }
@@ -132,11 +164,13 @@ onMounted(async () => {
 // 카테고리 변경 시 게시글 필터링
 watch(selectedCategory, async (newCategory) => {
   try {
+    // 카테고리 변경 시 첫 페이지로 리셋
     if (newCategory === 'all') {
-      await boardStore.fetchAllPosts()
+      await boardStore.fetchAllPosts(1, 10)
     } else {
-      await boardStore.fetchPostsByTags(newCategory)
+      await boardStore.fetchPostsByTags(newCategory, 1, 10)
     }
+    await fetchAllLikeCounts()
   } catch (error) {
     console.error('게시글 필터링 실패:', error)
   }
@@ -190,9 +224,78 @@ function formatDate(dateString: string) {
   return date.toLocaleDateString('ko-KR')
 }
 
-function getCommentCount(postId: number) {
-  // board2 스토어에는 아직 댓글 기능이 없으므로 0 반환
-  return 0
+function getCommentCount(post: any) {
+  return post.comment_count || 0
+}
+
+function getLikeCount(boardId: number, postId: number) {
+  const status = boardpostlikeStore.getLikeStatus(boardId, postId)
+  return status?.like_count ?? 0
+}
+
+async function fetchAllLikeCounts() {
+  const posts = boardStore.posts
+  if (posts.length === 0) return
+
+  try {
+    const promises = posts.map(post => 
+      boardpostlikeStore.getLikeCount(post.board_id, post.post_id)
+    )
+    await Promise.all(promises)
+  } catch (error) {
+    console.error('좋아요 개수 조회 실패:', error)
+  }
+}
+
+// 페이지 이동 함수
+async function goToPage(page: number) {
+  if (page < 1 || page > boardStore.totalPages) return
+  
+  try {
+    if (selectedCategory.value === 'all') {
+      await boardStore.fetchAllPosts(page, 10)
+    } else {
+      await boardStore.fetchPostsByTags(selectedCategory.value, page, 10)
+    }
+    await fetchAllLikeCounts()
+    // 페이지 상단으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (error) {
+    console.error('페이지 이동 실패:', error)
+  }
+}
+
+// 페이지 번호 배열 생성 (최대 5개 표시)
+function getPageNumbers() {
+  const current = boardStore.currentPage
+  const total = boardStore.totalPages
+  const pages: number[] = []
+  
+  if (total <= 5) {
+    // 전체 페이지가 5개 이하면 모두 표시
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // 현재 페이지 기준으로 앞뒤 2개씩 표시
+    let start = Math.max(1, current - 2)
+    let end = Math.min(total, current + 2)
+    
+    // 시작이나 끝에 가까우면 조정
+    if (end - start < 4) {
+      if (start === 1) {
+        end = Math.min(total, start + 4)
+      } else if (end === total) {
+        start = Math.max(1, end - 4)
+      }
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+  }
+  
+  return pages
 }
 </script>
 
@@ -404,6 +507,45 @@ function getCommentCount(postId: number) {
   color: #888;
   font-size: 16px;
   font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.pagination-button {
+  font-size: 14px;
+  padding: 10px 20px;
+  min-width: 80px;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.page-button {
+  font-size: 14px;
+  padding: 10px 16px;
+  min-width: 40px;
+}
+
+.page-button.active {
+  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+  box-shadow: 
+    0 0 20px rgba(74, 158, 255, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .stars-container {
