@@ -109,18 +109,19 @@ export const useGameStore = defineStore('game', () => {
       // 서버에 답안 제출 (채점 X)
       await battleApi.processTurn(battleId.value!, 1, selectedAnswer.value)
 
-      // 다음 문제로 이동
-      setTimeout(() => {
-        // 마지막 문제인지 확인
-        const isLastQuestion = currentQuestionIndex.value >= totalQuestions.value - 1
+      const isLastQuestion = currentQuestionIndex.value >= totalQuestions.value - 1
 
+      if (isLastQuestion) {
+        // 마지막 문제면 딜레이 없이 바로 채점/종료 프로세스로 이동
         nextQuestion()
-
-        // 마지막 문제가 아니면 로딩 해제, 마지막 문제면 finishBattle이 로딩 유지
-        if (!isLastQuestion) {
+        // isLoading은 finishGame에서 계속 true로 유지되거나 관리됨
+      } else {
+        // 다음 문제로 이동 (딜레이 둠)
+        setTimeout(() => {
+          nextQuestion()
           isLoading.value = false
-        }
-      }, 500)
+        }, 500)
+      }
 
       return true
     } catch (error: any) {
@@ -133,6 +134,14 @@ export const useGameStore = defineStore('game', () => {
   const battleId = ref<number | null>(null)
 
   async function loadBattleQuestions(id: number) {
+    // Reset game state for new battle
+    currentQuestionIndex.value = 0
+    score.value = 0
+    lives.value = 8
+    selectedAnswer.value = null
+    gameStatus.value = 'playing'
+    battleResult.value = null
+
     battleId.value = id
     isLoading.value = true
     try {
