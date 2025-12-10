@@ -64,6 +64,19 @@ public class BattleController {
         return ResponseEntity.ok(battleService.finishBattle(userDetails.getUserId(), id));
     }
 
+    @PostMapping("/{battleId}/details/{detailId}/bookmark")
+    @Operation(summary = "배틀 문제 북마크 (오답노트)")
+    public ResponseEntity<Void> bookmarkBattleDetail(
+            @PathVariable Long battleId,
+            @PathVariable Long detailId,
+            @RequestBody BookmarkRequest request,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        // memo is optional, pass null or empty string if not provided
+        String memo = (request != null) ? request.getMemo() : null;
+        battleService.bookmarkBattleDetail(userDetails.getUserId(), battleId, detailId, memo);
+        return ResponseEntity.ok().build();
+    }
+
     @Data
     public static class CreateBattleRequest {
         private Long stageId;
@@ -76,5 +89,10 @@ public class BattleController {
     public static class TurnRequest {
         // private Long userId; // Use Auth ID
         private String answer;
+    }
+
+    @Data
+    public static class BookmarkRequest {
+        private String memo;
     }
 }

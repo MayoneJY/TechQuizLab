@@ -177,7 +177,10 @@ export const battleApi = {
     api.post(`/api/battles/${id}/finish`, {}, { timeout: 120000 }), // 2분 타임아웃
 
   getBattleDetails: (id: number) =>
-    api.get(`/api/battles/${id}/details`)
+    api.get(`/api/battles/${id}/details`),
+
+  bookmarkBattleDetail: (battleId: number, detailId: number, memo?: string) =>
+    api.post(`/api/battles/${battleId}/details/${detailId}/bookmark`, { memo })
 }
 
 // Gamification API

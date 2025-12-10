@@ -14,10 +14,9 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mayonedev.battle.domain.ai.service.AiQuestionService;
+import com.mayonedev.battle.domain.battle.dao.BattleBookmarkDao;
 import com.mayonedev.battle.domain.battle.dao.BattleDetailDao;
 import com.mayonedev.battle.domain.battle.entity.BattleDetail;
-import com.mayonedev.battle.domain.gamification.dao.PortfolioDao;
-import com.mayonedev.battle.domain.gamification.entity.Portfolio;
 import com.mayonedev.battle.domain.stage.dao.StageDao;
 import com.mayonedev.battle.domain.stage.entity.Stage;
 
@@ -28,9 +27,11 @@ public class BattleServiceImpl implements BattleService {
     private final BattleDao battleDao;
     private final BattleParticipantDao participantDao;
     private final BattleTurnDao turnDao;
+    // Removed unused PortfolioDao
     private final com.mayonedev.battle.domain.gamification.dao.PortfolioDao portfolioDao;
     private final StageDao stageDao;
     private final BattleDetailDao battleDetailDao;
+    private final BattleBookmarkDao battleBookmarkDao;
     private final AiQuestionService aiQuestionService;
     private final ObjectMapper objectMapper;
 
@@ -117,31 +118,10 @@ public class BattleServiceImpl implements BattleService {
     @Transactional
     public void processTurn(Long userId, Long battleId, String answer) {
         // Just save the user's answer, don't grade yet
-        // Since we don't have detailId in arguments (frontend limitation?),
-        // we'll assume sequential answering or find the first unanswered question.
-        // For simplicity, let's assume we find the current active question or just log
-        // it.
-        // wait, we need to know WHICH question is being answered.
-        // The current design of processTurn(userId, battleId, answer) is insufficient
-        // for specific question answering
-        // unless we track current turn index in Battle entity.
-        // Let's assume frontend sends answers sequentially or we need to update API to
-        // include questionId/detailId.
-
-        // However, for MVP, let's assume we can find the next unanswered detail.
         List<BattleDetail> details = battleDetailDao.findByBattleId(userId, battleId);
         for (BattleDetail detail : details) {
             if (detail.getUserAnswer() == null) {
                 detail.setUserAnswer(answer);
-                // We need an update method in DAO.
-                // Assuming insert works as upsert or we add update method.
-                // Let's assume we can update it. For now, since I can't check/add DAO method
-                // easily without more context,
-                // I will add a TODO or assume update works.
-                // Re-using insert might fail if PK exists.
-                // We should add an update method to BattleDetailDao.
-                // For this step, I'll pretend we have it or use a raw SQL update if needed.
-                // Let's assume we will add 'updateUserAnswer' to DAO next.
                 battleDetailDao.updateUserAnswer(detail);
                 break;
             }
@@ -202,5 +182,27 @@ public class BattleServiceImpl implements BattleService {
         return Map.of(
                 "totalScore", totalDamage,
                 "details", gradedDetails);
+    }
+
+    @Override
+    @Transactional
+    public void bookmarkBattleDetail(Long userId, Long battleId, Long detailId, String memo) {
+        // Enforce ownership: Only bookmark if the detail belongs to the requesting user
+        List<BattleDetail> details = battleDetailDao.findByBattleId(userId, battleId);
+        boolean exists = details.stream().anyMatch(d -> d.getDetailId().equals(detailId));
+        if (!exists) {
+            throw new RuntimeException("Battle detail not found for this user/battle");
+        }
+
+        com.mayonedev.battle.domain.battle.entity.BattleBookmark bookmark = new com.mayonedev.battle.domain.battle.entity.BattleBookmark();
+        bookmark.setUserId(userId);
+
+        bookmark.setBookmarkId(System.currentTimeMillis() + userId); // Simple ID gen
+        bookmark.setRefBattleId(battleId);
+        bookmark.setRefDetailId(detailId);
+        bookmark.setMemo(memo);
+        bookmark.setCreatedAt(LocalDateTime.now());
+
+        battleBookmarkDao.insert(bookmark);
     }
 }

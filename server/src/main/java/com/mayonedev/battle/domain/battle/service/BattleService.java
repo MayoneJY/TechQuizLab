@@ -12,4 +12,6 @@ public interface BattleService {
     void processTurn(Long userId, Long battleId, String answer);
 
     java.util.Map<String, Object> finishBattle(Long userId, Long battleId);
+
+    void bookmarkBattleDetail(Long userId, Long battleId, Long detailId, String memo);
 }

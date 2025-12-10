@@ -1,10 +1,10 @@
 <template>
   <div class="result-screen">
     <div class="result-container glass-panel">
-      <h1 class="pixel-text victory-title glitch" data-text="미션 성공">미션 성공</h1>
       
       <!-- Skeleton Loading State -->
       <div v-if="loading" class="result-content skeleton-content">
+        <h1 class="pixel-text victory-title">결과 분석 중...</h1>
         <h2 class="final-score pixel-text skeleton-title">
             <div class="skeleton-text short"></div>
         </h2>
@@ -43,6 +43,7 @@
       </div>
       
       <div v-else-if="result" class="result-content">
+        <h1 class="pixel-text victory-title glitch" data-text="미션 성공">미션 성공</h1>
         <h2 class="final-score pixel-text">최종 점수: <span class="score-highlight">{{ result.totalScore }}</span></h2>
         
         <div class="grading-results-scroll">
@@ -83,7 +84,10 @@
       </div>
       
       <div v-else class="error-state">
-        <p class="pixel-text">결과를 찾을 수 없습니다.</p>
+        <h1 class="pixel-text victory-title error-title">접근 불가</h1>
+        <div class="error-content">
+            <p class="pixel-text error-msg">결과를 찾을 수 없거나<br>접근 권한이 없습니다.</p>
+        </div>
         <button class="pixel-button" @click="goHome">로비로 이동</button>
       </div>
     </div>
@@ -95,12 +99,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { battleApi } from '../services/api'
 import { useGameStore } from '../stores/game'
-import { useQuestionStore } from '../stores/question'
 
 const router = useRouter()
 const route = useRoute()
 const gameStore = useGameStore()
-const questionStore = useQuestionStore()
 
 const loading = ref(true)
 const result = ref<any>(null)
@@ -127,19 +129,11 @@ async function bookmarkQuestion(detailId: number) {
     // The previous implementation used questionStore.bookmarkQuestion(gameStore.currentQuiz.id). 
     // Here we have detail.detailId.
     // Let's try to pass the question text/answer to save? 
-    // Usually bookmarking implies saving the content. 
-    // Let's check `questionStore.bookmarkQuestion`. It takes an ID.
-    // If these are new questions, we might need a different API. 
-    // Let's assume for now we can bookmark it if we treat it as a question ID or if we update the store to handle text bookmarking.
-    // Given the constraints, I will add the UI and basic call, but log if it might fail.
-    // Actually, looking at `loadBattleQuestions` in `game.ts`: 
-    // `id: detail.detailId` is mapped to `question.id`. So `detailId` IS treated as `questionId` in frontend.
-    // So passing `detailId` to bookmark should be "correct" in terms of ID matching, BUT
-    // backend `bookmark` endpoint likely expects a real Question ID from `questions` table.
-    // BattleDetails are in `battle_details` table.
-    // This might be a logic gap. I will implement the UI call and let user know if it doesn't work backend-side later.
     try {
-        await questionStore.bookmarkQuestion(detailId)
+        const battleId = Number(route.params.id)
+        if (!battleId) return
+        
+        await battleApi.bookmarkBattleDetail(battleId, detailId)
         alert('북마크에 저장되었습니다!')
     } catch (e) {
         console.error(e)
@@ -160,6 +154,12 @@ onMounted(async () => {
         try {
            const response = await battleApi.getBattleDetails(Number(battleId))
            const details = response.data
+           
+           if (!details || details.length === 0) {
+               // Unauthorized access or invalid battle ID results in empty list
+               throw new Error('Access denied or battle not found')
+           }
+
            const totalScore = details.reduce((acc: number, cur: any) => acc + (cur.damage || 0), 0)
            
            result.value = {
@@ -422,5 +422,37 @@ onMounted(async () => {
 @keyframes loading {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    gap: 30px;
+}
+
+.error-title {
+    color: #ff6b6b;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    margin-bottom: 0;
+}
+
+.error-content {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+}
+
+.error-msg {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #eee;
+    margin: 0;
 }
 </style>
