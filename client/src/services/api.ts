@@ -50,7 +50,7 @@ api.interceptors.response.use(
     }
     return response
   },
-  (error) => {
+  async (error) => {
     // 개발 환경에서 API 에러 로깅
     if (import.meta.env.DEV) {
       console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
@@ -60,11 +60,48 @@ api.interceptors.response.use(
       })
     }
 
-    if (error.response?.status === 401) {
+    const originalRequest = error.config
+
+    // 401 Unauthorized Error Handling (Token Refresh)
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      try {
+        // Refresh Token Call (must send cookies)
+        const response = await axios.post(`${API_BASE_URL}/api/token/refresh`, {}, {
+          withCredentials: true
+        })
+
+        const { accessToken } = response.data
+
+        if (accessToken) {
+          // Update Token
+          localStorage.setItem('authToken', accessToken)
+          api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+          originalRequest.headers['Authorization'] = `Bearer ${accessToken}`
+
+          // Retry Original Request
+          return api(originalRequest)
+        }
+      } catch (refreshError) {
+        // Refresh Failed -> valid logout
+        console.error('[API] Token refresh failed:', refreshError)
+        localStorage.removeItem('authToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+        return Promise.reject(refreshError)
+      }
+    }
+
+    // 401 but already retried or other 401s that shouldn't initiate refresh
+    if (error.response?.status === 401 && originalRequest._retry) {
       localStorage.removeItem('authToken')
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('user')
-      // 로그인 페이지로 리다이렉트
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'
       }
