@@ -29,12 +29,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserById(Long userId) {
-        log.info("사용자 조회 - ID: {}", userId);
-        return userDao.findById(userId);
-    }
-
-    @Override
     public User getUserByEmail(String email) {
         log.info("사용자 조회 - 이메일: {}", email);
         return userDao.findByEmail(email);
@@ -118,6 +112,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User login(String email, String password) {
         log.info("로그인 시도 - 이메일: {}", email);
 
@@ -127,11 +122,41 @@ public class UserServiceImpl implements UserService {
         }
 
         // 실제로는 암호화된 비밀번호와 비교해야 함
-        if (!user.getPassword().equals(password)) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            // For older plain text passwords (if any)
+            if (!user.getPassword().equals(password)) {
+                throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            }
         }
+
+        // Daily Life Reset Check
+        checkAndResetLives(user);
 
         log.info("로그인 성공 - 사용자: {}", user.getNickname());
         return user;
+    }
+
+    @Override
+    @Transactional
+    public User getUserById(Long userId) {
+        log.info("사용자 조회 - ID: {}", userId);
+        User user = userDao.findById(userId);
+        if (user != null) {
+            checkAndResetLives(user);
+        }
+        return user;
+    }
+
+    private void checkAndResetLives(User user) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastReset = user.getLastLivesResetAt();
+
+        // If lastReset is null or not today
+        if (lastReset == null || !lastReset.toLocalDate().isEqual(now.toLocalDate())) {
+            log.info("Daily Life Reset for user: {}", user.getNickname());
+            user.setRemainingLives(5); // Reset to 5
+            user.setLastLivesResetAt(now);
+            userDao.update(user);
+        }
     }
 }

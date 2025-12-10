@@ -11,6 +11,11 @@
         <result property="refDetailId" column="ref_detail_id"/>
         <result property="memo" column="memo"/>
         <result property="createdAt" column="created_at"/>
+        <result property="questionText" column="question_text"/>
+        <result property="userAnswer" column="user_answer"/>
+        <result property="aiFeedback" column="ai_assessment"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="keywordTags" column="keyword_tags"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
@@ -23,10 +28,12 @@
     </insert>
 
     <select id="findByUserId" parameterType="long" resultMap="battleBookmarkResultMap">
-        SELECT *
-        FROM battle_bookmark
-        WHERE user_id = #{userId}
-        ORDER BY created_at DESC
+        SELECT b.*, bd.question_text, bd.user_answer, bd.ai_feedback as ai_assessment,
+               bd.difficulty, bd.keyword_tags
+        FROM battle_bookmark b
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
+        WHERE b.user_id = #{userId}
+        ORDER BY b.created_at DESC
     </select>
 
 </mapper>

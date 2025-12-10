@@ -15,4 +15,11 @@ public class BattleBookmark {
     private Long refDetailId;
     private String memo;
     private LocalDateTime createdAt;
+
+    // Display fields
+    private String questionText;
+    private String userAnswer;
+    private String aiFeedback;
+    private String difficulty;
+    private String keywordTags;
 }

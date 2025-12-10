@@ -15,4 +15,6 @@ public interface BattleDao {
     Long findMaxBattleIdByUserId(@Param("userId") Long userId);
 
     void updateTotalDamage(Battle battle);
+
+    java.util.List<Battle> findAllByUserId(Long userId);
 }

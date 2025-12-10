@@ -18,40 +18,42 @@
         <result property="currentStreak" column="current_streak"/>
         <result property="maxStreak" column="max_streak"/>
         <result property="lastLoginAt" column="last_login_at"/>
+        <result property="remainingLives" column="remaining_lives"/>
+        <result property="lastLivesResetAt" column="last_lives_reset_at"/>
     </resultMap>
 
     <select id="findAll" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
         FROM user
         ORDER BY created_at DESC
     </select>
 
     <select id="findById" parameterType="long" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
         FROM user
         WHERE user_id = #{id}
     </select>
 
     <select id="findByEmail" parameterType="string" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
         FROM user
         WHERE email = #{email}
     </select>
 
     <select id="findByNickname" parameterType="string" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
         FROM user
         WHERE nickname = #{nickname}
     </select>
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.user.entity.User" 
             useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO user (email, password, nickname, level, exp, role, enabled, solved_count, current_streak, max_streak, created_at)
-        VALUES (#{email}, #{password}, #{nickname}, 1, 0, 'USER', 1, 0, 0, 0, #{createdAt})
+        INSERT INTO user (email, password, nickname, level, exp, role, enabled, solved_count, current_streak, max_streak, created_at, remaining_lives, last_lives_reset_at)
+        VALUES (#{email}, #{password}, #{nickname}, 1, 0, 'USER', 1, 0, 0, 0, #{createdAt}, 5, NOW())
     </insert>
 
     <update id="update" parameterType="com.mayonedev.battle.domain.user.entity.User">
@@ -66,7 +68,9 @@
             solved_count = #{solvedCount},
             current_streak = #{currentStreak},
             max_streak = #{maxStreak},
-            last_login_at = #{lastLoginAt}
+            last_login_at = #{lastLoginAt},
+            remaining_lives = #{remainingLives},
+            last_lives_reset_at = #{lastLivesResetAt}
         WHERE user_id = #{userId}
     </update>
 

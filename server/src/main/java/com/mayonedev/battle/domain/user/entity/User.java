@@ -25,4 +25,8 @@ public class User {
     private Integer currentStreak; // 현재 연속 학습일
     private Integer maxStreak; // 최대 연속 학습일
     private LocalDateTime lastLoginAt; // 마지막 접속일
+
+    // Life System
+    private Integer remainingLives; // 남은 목숨
+    private LocalDateTime lastLivesResetAt; // 마지막 목숨 초기화 시간
 }

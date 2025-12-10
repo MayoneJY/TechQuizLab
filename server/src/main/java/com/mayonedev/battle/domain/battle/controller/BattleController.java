@@ -77,6 +77,27 @@ public class BattleController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping
+    @Operation(summary = "내 배틀 히스토리 조회")
+    public ResponseEntity<java.util.List<Battle>> getMyBattles(
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.getMyBattles(userDetails.getUserId()));
+    }
+
+    @GetMapping("/bookmarks")
+    @Operation(summary = "내 오답노트(북마크) 조회")
+    public ResponseEntity<java.util.List<com.mayonedev.battle.domain.battle.entity.BattleBookmark>> getMyBookmarks(
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.getMyBookmarks(userDetails.getUserId()));
+    }
+
+    @PostMapping("/practice/bookmarks")
+    @Operation(summary = "오답노트 기반 복습 배틀 생성")
+    public ResponseEntity<Battle> createPracticeBattle(
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.createPracticeBattle(userDetails.getUserId()));
+    }
+
     @Data
     public static class CreateBattleRequest {
         private Long stageId;

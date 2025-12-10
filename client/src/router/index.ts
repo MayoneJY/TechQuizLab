@@ -91,6 +91,24 @@ const router = createRouter({
       name: 'battle-result',
       component: () => import('../views/BattleResult.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/my-battles',
+      name: 'my-battles',
+      component: () => import('../views/MyBattles.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/my-bookmarks',
+      name: 'my-bookmarks',
+      component: () => import('../views/MyBookmarks.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/bookmarks/:id',
+      name: 'bookmark-detail',
+      component: () => import('../views/BookmarkDetail.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })

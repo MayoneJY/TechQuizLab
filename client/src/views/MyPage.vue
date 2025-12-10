@@ -44,9 +44,6 @@
             <button class="pixel-button primary" @click="startEditing">
               프로필 수정
             </button>
-            <button class="pixel-button warning" @click="handleLogout">
-              로그아웃
-            </button>
             <button class="pixel-button danger small" @click="handleDeleteAccount">
               회원 탈퇴
             </button>
@@ -135,10 +132,7 @@ function goHome() {
   router.push('/')
 }
 
-function handleLogout() {
-  authStore.logout()
-  router.push('/login')
-}
+
 
 function startEditing() {
   if (user.value) {

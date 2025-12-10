@@ -115,6 +115,8 @@ export interface User {
     currentStreak?: number
     maxStreak?: number
     lastLoginAt?: string
+    remainingLives?: number
+    lastLivesResetAt?: string
 }
 
 export interface UserAchievement {

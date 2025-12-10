@@ -180,7 +180,22 @@ export const battleApi = {
     api.get(`/api/battles/${id}/details`),
 
   bookmarkBattleDetail: (battleId: number, detailId: number, memo?: string) =>
-    api.post(`/api/battles/${battleId}/details/${detailId}/bookmark`, { memo })
+    api.post(`/api/battles/${battleId}/details/${detailId}/bookmark`, { memo }),
+
+  getMyBattles: () =>
+    api.get('/api/battles'),
+
+  getMyBookmarks: () =>
+    api.get('/api/battles/bookmarks'),
+
+  updateBookmark: (bookmarkId: number, memo: string) =>
+    api.patch(`/api/battles/bookmarks/${bookmarkId}`, { memo }),
+
+  deleteBookmark: (bookmarkId: number) =>
+    api.delete(`/api/battles/bookmarks/${bookmarkId}`),
+
+  createPracticeBattle: () =>
+    api.post('/api/battles/practice/bookmarks', {})
 }
 
 // Gamification API

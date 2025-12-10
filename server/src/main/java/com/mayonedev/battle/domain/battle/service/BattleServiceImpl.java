@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mayonedev.battle.domain.ai.service.AiQuestionService;
 import com.mayonedev.battle.domain.battle.dao.BattleBookmarkDao;
 import com.mayonedev.battle.domain.battle.dao.BattleDetailDao;
+import com.mayonedev.battle.domain.battle.entity.BattleBookmark;
 import com.mayonedev.battle.domain.battle.entity.BattleDetail;
 import com.mayonedev.battle.domain.stage.dao.StageDao;
 import com.mayonedev.battle.domain.stage.entity.Stage;
@@ -24,6 +25,7 @@ import com.mayonedev.battle.domain.stage.entity.Stage;
 @RequiredArgsConstructor
 public class BattleServiceImpl implements BattleService {
 
+    private final com.mayonedev.battle.domain.user.dao.UserDao userDao; // Injected
     private final BattleDao battleDao;
     private final BattleParticipantDao participantDao;
     private final BattleTurnDao turnDao;
@@ -34,10 +36,37 @@ public class BattleServiceImpl implements BattleService {
     private final BattleBookmarkDao battleBookmarkDao;
     private final AiQuestionService aiQuestionService;
     private final ObjectMapper objectMapper;
+    private final com.mayonedev.battle.domain.user.service.UserService userService; // Use Service to ensure consistency
+                                                                                    // if needed, or Dao direct update
 
     @Override
     @Transactional
     public Battle createBattle(Long stageId, Long userId) {
+        // [Life Check]
+        com.mayonedev.battle.domain.user.entity.User user = userDao.findById(userId);
+        // Ensure reset logic runs if it hasn't (though usually handled at login) - safe
+        // double check or rely on login
+        // But to be safe and atomic:
+        if (user.getRemainingLives() == null)
+            user.setRemainingLives(0);
+
+        // Reset check (Optional here if guaranteed by filter/login, but good for
+        // safety)
+        if (user.getLastLivesResetAt() == null
+                || !user.getLastLivesResetAt().toLocalDate().isEqual(java.time.LocalDate.now())) {
+            user.setRemainingLives(5);
+            user.setLastLivesResetAt(LocalDateTime.now());
+            userDao.update(user);
+        }
+
+        if (user.getRemainingLives() <= 0) {
+            throw new RuntimeException("오늘의 도전 횟수를 모두 소진했습니다. 내일 다시 도전해주세요!");
+        }
+
+        // Consume Life
+        user.setRemainingLives(user.getRemainingLives() - 1);
+        userDao.update(user);
+
         Battle battle = new Battle();
         battle.setUserId(userId);
 
@@ -187,22 +216,77 @@ public class BattleServiceImpl implements BattleService {
     @Override
     @Transactional
     public void bookmarkBattleDetail(Long userId, Long battleId, Long detailId, String memo) {
-        // Enforce ownership: Only bookmark if the detail belongs to the requesting user
-        List<BattleDetail> details = battleDetailDao.findByBattleId(userId, battleId);
-        boolean exists = details.stream().anyMatch(d -> d.getDetailId().equals(detailId));
-        if (!exists) {
-            throw new RuntimeException("Battle detail not found for this user/battle");
-        }
+        BattleDetail battleDetail = battleDetailDao.findByBattleId(userId, battleId).stream()
+                .filter(d -> d.getDetailId().equals(detailId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Battle detail not found"));
 
-        com.mayonedev.battle.domain.battle.entity.BattleBookmark bookmark = new com.mayonedev.battle.domain.battle.entity.BattleBookmark();
+        BattleBookmark bookmark = new BattleBookmark();
+        // Temporary ID gen
+        bookmark.setBookmarkId(System.currentTimeMillis() + userId);
         bookmark.setUserId(userId);
-
-        bookmark.setBookmarkId(System.currentTimeMillis() + userId); // Simple ID gen
         bookmark.setRefBattleId(battleId);
         bookmark.setRefDetailId(detailId);
         bookmark.setMemo(memo);
-        bookmark.setCreatedAt(LocalDateTime.now());
+        bookmark.setCreatedAt(java.time.LocalDateTime.now());
 
         battleBookmarkDao.insert(bookmark);
+    }
+
+    @Override
+    public java.util.List<Battle> getMyBattles(Long userId) {
+        return battleDao.findAllByUserId(userId);
+    }
+
+    @Override
+    public java.util.List<com.mayonedev.battle.domain.battle.entity.BattleBookmark> getMyBookmarks(Long userId) {
+        return battleBookmarkDao.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional
+    public Battle createPracticeBattle(Long userId) {
+        List<BattleBookmark> bookmarks = battleBookmarkDao.findByUserId(userId);
+        if (bookmarks == null || bookmarks.isEmpty()) {
+            throw new RuntimeException("북마크된 문제가 없습니다. 오답노트를 먼저 추가해주세요.");
+        }
+
+        // Shuffle and pick up to 5
+        java.util.Collections.shuffle(bookmarks);
+        List<BattleBookmark> selected = bookmarks.stream()
+                .limit(5)
+                .collect(java.util.stream.Collectors.toList());
+
+        Battle battle = new Battle();
+        battle.setUserId(userId);
+        battle.setStageId(null); // Practice mode has no real stage
+        battle.setStatus("IN_PROGRESS");
+        battle.setTotalDamage(0);
+        battle.setCreatedAt(LocalDateTime.now());
+        battle.setStageTitle("오답 복습 (Practice)"); // Virtual Title
+
+        // Generate battleId
+        Long maxBattleId = battleDao.findMaxBattleIdByUserId(userId);
+        Long nextBattleId = (maxBattleId == null) ? 1L : maxBattleId + 1;
+        battle.setBattleId(nextBattleId);
+
+        battleDao.insert(battle);
+
+        long detailIdCounter = 1;
+        for (BattleBookmark b : selected) {
+            BattleDetail detail = new BattleDetail();
+            detail.setUserId(userId);
+            detail.setBattleId(nextBattleId);
+            detail.setDetailId(detailIdCounter++);
+            detail.setQuestionText(b.getQuestionText());
+            detail.setDifficulty(b.getDifficulty() != null ? b.getDifficulty() : "Normal");
+            detail.setKeywordTags(b.getKeywordTags() != null ? b.getKeywordTags() : "Practice");
+            detail.setCreatedAt(LocalDateTime.now());
+            detail.setDamage(0);
+
+            battleDetailDao.insert(detail);
+        }
+
+        return battle;
     }
 }
