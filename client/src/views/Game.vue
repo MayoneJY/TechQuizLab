@@ -34,12 +34,14 @@
     </div>
     
     <!-- Deferred Grading Loading Screen -->
-    <div v-if="gameStore.isLoading && gameStore.gameStatus === 'victory'" class="loading-container glass-panel">
-      <h2 class="pixel-text glitch" data-text="AI 채점 중...">AI 채점 중...</h2>
-      <div class="loading-bar">
-        <div class="loading-progress"></div>
+    <div v-if="gameStore.gameStatus === 'grading'" class="loading-overlay">
+      <div class="loading-content">
+        <h2 class="pixel-text glitch" data-text="AI 채점 중...">AI 채점 중...</h2>
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+        <p class="pixel-text blink">잠시만 기다려주세요</p>
       </div>
-      <p class="pixel-text blink">잠시만 기다려주세요</p>
     </div>
 
     <!-- Victory Screen with Grading Results -->
@@ -147,6 +149,11 @@ function startTimer() {
   
   if (timerInterval.value === null) {
       timerInterval.value = window.setInterval(() => {
+        if (gameStore.gameStatus !== 'playing') {
+             stopTimer()
+             return
+        }
+
         if (timeLeft.value > 0) {
           timeLeft.value--
         } else {
@@ -232,7 +239,16 @@ watch(() => gameStore.currentQuestionIndex, () => {
 
 // Watch for game status change to redirect
 watch(() => gameStore.gameStatus, (newStatus) => {
+    if (newStatus === 'grading' || newStatus === 'victory' || newStatus === 'gameOver') {
+        stopTimer()
+    }
+
     if (newStatus === 'victory' && gameStore.battleId) {
+        // give it a moment to show "Grading Complete" or just redirect
+        // For now direct redirect as per previous code, but typically we might want to show result first?
+        // Actually, previous code redirected immediately on victory.
+        // If we want to show 'grading' screen, gameStatus will be 'grading' first.
+        // When it switches to 'victory', we redirect.
         router.push(`/battle-result/${gameStore.battleId}`)
     }
 })
@@ -682,5 +698,29 @@ onUnmounted(() => {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+
+/* Loading Overlay Styles (Full Screen) */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.loading-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
 </style>
 

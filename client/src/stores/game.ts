@@ -21,7 +21,7 @@ export const useGameStore = defineStore('game', () => {
   const score = ref(0)
   const lives = ref(8)
   const selectedAnswer = ref<string | null>(null)
-  const gameStatus = ref<'playing' | 'gameOver' | 'victory'>('playing')
+  const gameStatus = ref<'playing' | 'gameOver' | 'victory' | 'grading'>('playing')
   const topicId = ref<number | null>(null)
   const isLoading = ref(false)
 
@@ -158,13 +158,22 @@ export const useGameStore = defineStore('game', () => {
 
   async function finishGame() {
     if (!battleId.value) return
+    // 이미 완료되었거나 채점 중이면 중복 호출 방지
+    if (gameStatus.value === 'grading' || gameStatus.value === 'victory' || gameStatus.value === 'gameOver') return
+
+    // 채점 시작 상태로 변경
+    gameStatus.value = 'grading'
     isLoading.value = true
+
     try {
       const response = await battleApi.finishBattle(battleId.value)
       battleResult.value = response.data
-      gameStatus.value = 'victory' // 또는 결과 화면 상태
+      gameStatus.value = 'victory'
     } catch (e) {
       console.error(e)
+      // 에러 발생 시 처리 (일단 playing으로 되돌리거나 에러 상태로?)
+      // 여기서는 UI가 멈추지 않게 일단 playing으로 리셋하거나 알림
+      gameStatus.value = 'playing'
     } finally {
       isLoading.value = false
     }
