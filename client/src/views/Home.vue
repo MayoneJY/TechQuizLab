@@ -113,8 +113,8 @@
           <div class="dashboard-widget glass-panel clickable-card user-info-widget" @click="goToMyPage">
              <template v-if="isDashboardLoading">
                 <div class="user-profile-header">
-                  <div class="skeleton skeleton-text" style="width: 100px; height: 28px;"></div>
-                  <div class="skeleton skeleton-text" style="width: 50px; height: 28px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 100px; height: 33px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 50px; height: 33px;"></div>
                 </div>
                 <div class="exp-bar-container">
                    <div class="skeleton skeleton-bar" style="width: 100%; height: 12px; margin-bottom: 5px; border-radius: 6px;"></div>
@@ -201,10 +201,10 @@
             
             <template v-if="isDashboardLoading">
                <div class="skeleton-list">
-                 <div class="skeleton-item-card" v-for="i in 3" :key="i">
+                 <div class="skeleton-item-card" v-for="i in 3" :key="i" style="padding-top: 12px; padding-bottom: 12px;">
                     <div class="skeleton skeleton-circle" style="width: 40px; height: 40px; border-radius: 50%;"></div>
                     <div class="skeleton-content" style="flex: 1;">
-                        <div class="skeleton skeleton-text" style="width: 60%; height: 16px; margin-bottom: 5px;"></div>
+                        <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 5px;"></div>
                         <div class="skeleton skeleton-text" style="width: 40%; height: 12px;"></div>
                     </div>
                  </div>
@@ -497,7 +497,7 @@ async function startPractice() {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px;
+  padding: 10px 8px;
   background: rgba(255,255,255,0.05);
   border-radius: 8px;
 }
