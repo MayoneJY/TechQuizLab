@@ -35,4 +35,16 @@
         ORDER BY detail_id ASC
     </select>
 
+    <update id="updateUserAnswer" parameterType="com.mayonedev.battle.domain.battle.entity.BattleDetail">
+        UPDATE battle_detail
+        SET user_answer = #{userAnswer}
+        WHERE user_id = #{userId} AND battle_id = #{battleId} AND detail_id = #{detailId}
+    </update>
+
+    <update id="updateGrading" parameterType="com.mayonedev.battle.domain.battle.entity.BattleDetail">
+        UPDATE battle_detail
+        SET damage = #{damage}, ai_feedback = #{aiFeedback}
+        WHERE user_id = #{userId} AND battle_id = #{battleId} AND detail_id = #{detailId}
+    </update>
+
 </mapper>

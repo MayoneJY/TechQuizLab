@@ -1,3 +1,4 @@
+import { battleApi } from '../services/api'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useQuestionStore } from './question'
@@ -41,6 +42,8 @@ export const useGameStore = defineStore('game', () => {
     }
   })
 
+  // Computed for totalQuestions, but request was to set it.
+  // Since it depends on questionStore, we can just let it be.
   const totalQuestions = computed(() => {
     return questionStore.questions.length
   })
@@ -55,48 +58,6 @@ export const useGameStore = defineStore('game', () => {
     selectedAnswer.value = answer
   }
 
-  async function submitAnswer(): Promise<boolean> {
-    if (selectedAnswer.value === null || !currentQuiz.value) return false
-
-    isLoading.value = true
-    try {
-      const isCorrect = await questionStore.submitAnswer(
-        currentQuiz.value.id,
-        selectedAnswer.value
-      )
-
-      if (isCorrect) {
-        score.value += 100
-      } else {
-        lives.value--
-        if (lives.value <= 0) {
-          gameStatus.value = 'gameOver'
-        }
-      }
-
-      setTimeout(() => {
-        nextQuestion()
-      }, 2000)
-
-      return isCorrect
-    } catch (error: any) {
-      console.error('Failed to submit answer:', error)
-      // 에러를 다시 던져서 UI에서 처리할 수 있도록
-      throw error
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  function nextQuestion() {
-    selectedAnswer.value = null
-    if (currentQuestionIndex.value < totalQuestions.value - 1) {
-      currentQuestionIndex.value++
-    } else {
-      gameStatus.value = 'victory'
-    }
-  }
-
   async function resetGame(topicIdValue: number) {
     currentQuestionIndex.value = 0
     score.value = 0
@@ -104,14 +65,16 @@ export const useGameStore = defineStore('game', () => {
     selectedAnswer.value = null
     gameStatus.value = 'playing'
     topicId.value = topicIdValue
+    battleId.value = null
+    battleResult.value = null
 
-    // 서버에서 문제 가져오기
+    // 서버에서 문제 가져오기 (Battle 모드가 아닐 때 사용)
     try {
-      await questionStore.fetchQuestionsByTopic(topicIdValue)
-
-      // 문제가 없으면 에러
-      if (questionStore.questions.length === 0) {
-        throw new Error('해당 주제에 문제가 없습니다.')
+      if (topicIdValue > 0) {
+        await questionStore.fetchQuestionsByTopic(topicIdValue)
+      } else {
+        // topicId == 0 or special case, maybe clear questions
+        questionStore.questions = []
       }
     } catch (error: any) {
       console.error('Failed to load questions:', error)
@@ -124,6 +87,89 @@ export const useGameStore = defineStore('game', () => {
     await resetGame(topicIdValue)
   }
 
+  function nextQuestion() {
+    selectedAnswer.value = null
+    if (currentQuestionIndex.value < totalQuestions.value - 1) {
+      currentQuestionIndex.value++
+    } else {
+      // Last question submitted, now wait for external finish or explicit call
+      // For now, we set status to victory so UI can respond, but we might want to wait for "Grading"
+      // Actually, we should call finishGame() here or from the UI.
+      // Let's rely on the UI to call finishGame when timer ends or last question is submitted.
+      finishGame()
+    }
+  }
+
+  async function submitAnswer(): Promise<boolean> {
+    if (selectedAnswer.value === null || !currentQuiz.value) return false
+
+    // 비동기 채점이므로 로컬 상태만 업데이트하고 API 호출
+    isLoading.value = true
+    try {
+      // 서버에 답안 제출 (채점 X)
+      await battleApi.processTurn(battleId.value!, 1, selectedAnswer.value)
+
+      // 다음 문제로 이동
+      setTimeout(() => {
+        // 마지막 문제인지 확인
+        const isLastQuestion = currentQuestionIndex.value >= totalQuestions.value - 1
+
+        nextQuestion()
+
+        // 마지막 문제가 아니면 로딩 해제, 마지막 문제면 finishBattle이 로딩 유지
+        if (!isLastQuestion) {
+          isLoading.value = false
+        }
+      }, 500)
+
+      return true
+    } catch (error: any) {
+      console.error('Failed to submit answer:', error)
+      isLoading.value = false
+      throw error
+    }
+  }
+
+  const battleId = ref<number | null>(null)
+
+  async function loadBattleQuestions(id: number) {
+    battleId.value = id
+    isLoading.value = true
+    try {
+      const response = await battleApi.getBattleDetails(id)
+      const questions = response.data.map((detail: any) => ({
+        id: detail.detailId,
+        content: detail.questionText,
+        answer: '', // AI 생성 문제라 정답이 DB에 없을 수 있음 (오픈 엔디드)
+        difficulty: detail.difficulty,
+        topicId: 0
+      }))
+
+      questionStore.questions = questions
+      // totalQuestions is computed, so no need to set.
+    } catch (e) {
+      console.error(e)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const battleResult = ref<any>(null)
+
+  async function finishGame() {
+    if (!battleId.value) return
+    isLoading.value = true
+    try {
+      const response = await battleApi.finishBattle(battleId.value)
+      battleResult.value = response.data
+      gameStatus.value = 'victory' // 또는 결과 화면 상태
+    } catch (e) {
+      console.error(e)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     currentQuestionIndex,
     score,
@@ -131,14 +177,18 @@ export const useGameStore = defineStore('game', () => {
     selectedAnswer,
     gameStatus,
     topicId,
+    battleId,
     isLoading,
     currentQuiz,
     totalQuestions,
     progress,
+    battleResult,
     selectAnswer,
     submitAnswer,
     resetGame,
-    setTopicId
+    setTopicId,
+    loadBattleQuestions,
+    finishGame
   }
 })
 

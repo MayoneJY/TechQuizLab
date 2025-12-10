@@ -38,6 +38,14 @@ public class BattleController {
         return ResponseEntity.ok(battleService.getBattle(userDetails.getUserId(), id));
     }
 
+    @GetMapping("/{id}/details")
+    @Operation(summary = "배틀 문제 및 상세 조회")
+    public ResponseEntity<java.util.List<com.mayonedev.battle.domain.battle.entity.BattleDetail>> getBattleDetails(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.getBattleDetails(userDetails.getUserId(), id));
+    }
+
     @PostMapping("/{id}/turn")
     @Operation(summary = "턴 진행 (답안 제출)")
     public ResponseEntity<Void> processTurn(
@@ -49,12 +57,11 @@ public class BattleController {
     }
 
     @PostMapping("/{id}/finish")
-    @Operation(summary = "배틀 종료")
-    public ResponseEntity<Void> finishBattle(
+    @Operation(summary = "배틀 종료 및 채점")
+    public ResponseEntity<java.util.Map<String, Object>> finishBattle(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetailsDTO userDetails) {
-        battleService.finishBattle(userDetails.getUserId(), id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(battleService.finishBattle(userDetails.getUserId(), id));
     }
 
     @Data

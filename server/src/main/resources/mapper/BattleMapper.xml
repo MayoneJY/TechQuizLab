@@ -32,4 +32,14 @@
         WHERE user_id = #{userId} AND battle_id = #{battleId}
     </update>
 
+    <select id="findMaxBattleIdByUserId" resultType="java.lang.Long">
+        SELECT MAX(battle_id) FROM battle WHERE user_id = #{userId}
+    </select>
+
+    <update id="updateTotalDamage" parameterType="com.mayonedev.battle.domain.battle.entity.Battle">
+        UPDATE battle
+        SET total_damage = #{totalDamage}
+        WHERE user_id = #{userId} AND battle_id = #{battleId}
+    </update>
+
 </mapper>

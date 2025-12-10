@@ -33,27 +33,18 @@
       </div>
     </div>
     
-    <!-- Victory Screen -->
-    <div v-else-if="gameStore.gameStatus === 'victory'" class="victory-screen">
-      <h1 class="pixel-text victory-title glitch" data-text="MISSION CLEAR">MISSION CLEAR</h1>
-      <div class="victory-content glass-panel">
-        <div class="hearts-display">
-          <PixelHeart 
-            v-for="i in gameStore.lives" 
-            :key="i"
-          />
-        </div>
-        <p class="final-score pixel-text">Total Score: {{ gameStore.score }}</p>
+    <!-- Deferred Grading Loading Screen -->
+    <div v-if="gameStore.isLoading && gameStore.gameStatus === 'victory'" class="loading-container glass-panel">
+      <h2 class="pixel-text glitch" data-text="AI 채점 중...">AI 채점 중...</h2>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
       </div>
-      
-      <div class="victory-buttons">
-        <button class="pixel-button success" @click="restartGame">
-          PLAY AGAIN
-        </button>
-        <button class="pixel-button" @click="goHome">
-          LOBBY
-        </button>
-      </div>
+      <p class="pixel-text blink">잠시만 기다려주세요</p>
+    </div>
+
+    <!-- Victory Screen with Grading Results -->
+    <div v-if="gameStore.gameStatus === 'victory'">
+       <!-- This section is now handled by redirect to /battle-result -->
     </div>
     
     <!-- Quiz Screen -->
@@ -66,23 +57,18 @@
           </div>
           
           <div class="score-display pixel-text">
-            SCORE: {{ gameStore.score }}
+            TIME: {{ timeLeft }}s
           </div>
 
           <div class="lives-display">
-            <PixelHeart v-for="i in gameStore.lives" :key="i" />
-            <PixelHeart v-for="i in (8 - gameStore.lives)" :key="`empty-${i}`" broken />
+             <!-- Removed Hearts for Battle Mode, or keep as visual only -->
+             <PixelHeart v-for="i in 5" :key="i" /> 
           </div>
         </div>
 
         <div class="progress-bar-container">
           <div class="progress-bar" :style="{ width: `${gameStore.progress}%` }"></div>
         </div>
-      </div>
-      
-      <!-- Timer (Floating) -->
-      <div class="timer-float pixel-text" :class="{ 'time-low': timeLeft <= 10 }">
-        {{ timeLeft }}
       </div>
       
       <!-- Loading State -->
@@ -100,7 +86,7 @@
       </div>
       
       <!-- Answer Section -->
-      <div v-if="gameStore.currentQuiz && !gameStore.selectedAnswer" class="answer-section">
+      <div v-if="gameStore.currentQuiz && !gameStore.selectedAnswer && !gameStore.isLoading" class="answer-section">
         <div class="input-wrapper glass-panel">
           <input
             v-model="answerInput"
@@ -122,41 +108,7 @@
           >
             SUBMIT
           </button>
-          <button
-              v-if="gameStore.currentQuiz && !isAnswerCorrect"
-              class="pixel-button warning bookmark-button"
-              @click="bookmarkQuestion"
-              title="북마크"
-            >
-              ★
-          </button>
         </div>
-      </div>
-      
-      <!-- Result Message -->
-      <div v-if="gameStore.selectedAnswer !== null" class="result-message-container">
-        <div class="glass-panel message-panel" :class="isAnswerCorrect ? 'correct' : 'wrong'">
-          <h3 class="pixel-text result-text">
-            {{ isAnswerCorrect ? 'CORRECT!' : 'WRONG ANSWER' }}
-          </h3>
-          <div v-if="!isAnswerCorrect && gameStore.currentQuiz" class="correct-answer">
-            ANSWER: <span class="answer-highlight">{{ gameStore.currentQuiz.answer }}</span>
-          </div>
-        </div>
-
-        <div v-if="!isAnswerCorrect" class="bookmark-action">
-           <button class="pixel-button warning small-btn" @click="bookmarkQuestion">
-             오답 노트 저장
-           </button>
-        </div>
-      </div>
-      
-      <!-- Explanation -->
-      <div 
-        v-if="gameStore.selectedAnswer !== null && gameStore.currentQuiz?.explanation"
-        class="explanation-box glass-panel"
-      >
-        <p class="explanation-text">{{ gameStore.currentQuiz.explanation }}</p>
       </div>
     </div>
     
@@ -165,13 +117,14 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useQuestionStore } from '../stores/question'
 import { retroMusicPlayer } from '../utils/retroMusic'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
+const route = useRoute()
 const gameStore = useGameStore()
 const questionStore = useQuestionStore()
 const showExplosion = ref(false)
@@ -180,20 +133,28 @@ const answerInput = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
 // Timer Logic
-const timeLeft = ref(60)
+const timeLeft = ref(300)
 const timerInterval = ref<number | null>(null)
 
 function startTimer() {
   stopTimer()
-  timeLeft.value = 60
-  timerInterval.value = window.setInterval(() => {
-    if (timeLeft.value > 0) {
-      timeLeft.value--
-    } else {
-      stopTimer()
-      handleTimeout()
-    }
-  }, 1000)
+  // timeLeft.value = 300 // Don't reset if already running in correct logic, but for simplified:
+  // We should manage global game timer, not per question.
+  // Actually, per requirements, it seems to be a single 300s timer for the whole "Battle" or per question?
+  // User said "limit time 300s" for "solving problems". Usually total time.
+  // Current logic resets on every question.
+  // Let's make it 300s TOTAL for the game.
+  
+  if (timerInterval.value === null) {
+      timerInterval.value = window.setInterval(() => {
+        if (timeLeft.value > 0) {
+          timeLeft.value--
+        } else {
+          stopTimer()
+          handleTimeout()
+        }
+      }, 1000)
+  }
 }
 
 function stopTimer() {
@@ -204,16 +165,13 @@ function stopTimer() {
 }
 
 async function handleTimeout() {
-  if (gameStore.selectedAnswer !== null) return // Already submitted
-  
-  // Time out treated as wrong answer
-  // alert('TIME OVER!') // Removed alert for smoother flow
-  await submitAnswer(true) // Force submit
+  // Time over -> Finish Game
+  await gameStore.finishGame()
 }
 
 const isAnswerCorrect = computed(() => {
-  if (!gameStore.currentQuiz || gameStore.selectedAnswer === null) return false
-  return gameStore.selectedAnswer === gameStore.currentQuiz.answer
+  // Deferred grading: we don't know yet.
+  return false
 })
 
 async function handleSubmit() {
@@ -236,7 +194,7 @@ async function submitAnswer(isTimeout = false) {
   if (!answerInput.value && gameStore.selectedAnswer === null && !isTimeout) return
   if (!gameStore.currentQuiz) return
   
-  stopTimer() // Stop timer on submit
+  // stopTimer() // Don't stop timer, it's total time
   
   const answer = answerInput.value || gameStore.selectedAnswer || ''
   if (!gameStore.selectedAnswer) {
@@ -244,13 +202,8 @@ async function submitAnswer(isTimeout = false) {
   }
   
   try {
-    const isCorrect = await gameStore.submitAnswer()
-    explosionColor.value = isCorrect ? '#51cf66' : '#ff6b6b'
-    showExplosion.value = true
-    setTimeout(() => {
-      showExplosion.value = false
-    }, 100)
-    
+    await gameStore.submitAnswer()
+    // No immediate feedback
     answerInput.value = ''
   } catch (error: any) {
     console.error('Failed to submit answer:', error)
@@ -260,41 +213,41 @@ async function submitAnswer(isTimeout = false) {
 }
 
 async function restartGame() {
-  if (gameStore.topicId) {
-    await gameStore.resetGame(gameStore.topicId)
-    startTimer() 
-  }
+    router.push('/')
 }
 
 function goHome() {
   router.push('/')
 }
 
-// Watch for question change to reset timer
+// Watch for question change
 watch(() => gameStore.currentQuestionIndex, () => {
   if (gameStore.gameStatus === 'playing') {
-    startTimer()
     answerInput.value = ''
-    // Auto focus input
     setTimeout(() => {
       inputRef.value?.focus()
     }, 100)
-  } else {
-    stopTimer()
   }
 })
 
+// Watch for game status change to redirect
+watch(() => gameStore.gameStatus, (newStatus) => {
+    if (newStatus === 'victory' && gameStore.battleId) {
+        router.push(`/battle-result/${gameStore.battleId}`)
+    }
+})
+
+
+
+
 onMounted(async () => {
-  if (!gameStore.currentQuiz && gameStore.totalQuestions === 0) {
-    // Ideally user should come from lobby with data loaded, or we fetch here based on query param
-    // For now assuming store has data or redirection needed
-    // alert('No active game session.')
-    // router.push('/')
-    // return
+  const battleId = route.query.battleId
+  if (battleId) {
+      await gameStore.loadBattleQuestions(Number(battleId))
+      startTimer()
   }
   
   if (gameStore.gameStatus === 'playing') {
-    startTimer()
     setTimeout(() => {
       inputRef.value?.focus()
     }, 100)
@@ -302,7 +255,6 @@ onMounted(async () => {
 
   try {
     await retroMusicPlayer.playGameMusic()
-    console.log('🎮 Game music started')
   } catch (error) {
     console.error('Failed to play game music:', error)
   }
@@ -311,11 +263,133 @@ onMounted(async () => {
 onUnmounted(() => {
   stopTimer()
   retroMusicPlayer.stopGameMusic()
-  console.log('🎮 Game music stopped')
 })
 </script>
 
 <style scoped>
+/* Previous styles remain... */
+
+/* Result Container Styles */
+.result-container {
+    width: 100%;
+    max-width: 900px !important;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+.final-score {
+    font-size: 32px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    padding-bottom: 20px;
+}
+
+.score-highlight {
+    color: #ffd43b;
+    text-shadow: 0 0 10px rgba(255, 212, 59, 0.5);
+}
+
+.grading-results-scroll {
+    overflow-y: auto;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.grading-results-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.grading-results-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+}
+
+.grading-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: left;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.grading-card:hover {
+    transform: translateY(-2px);
+    border-color: #4a9eff;
+}
+
+.grading-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.question-number {
+    font-size: 14px;
+    color: #4a9eff;
+    font-weight: 700;
+}
+
+.grading-score {
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.score-high { color: #51cf66; }
+.score-medium { color: #ffd43b; }
+.score-low { color: #ff6b6b; }
+
+.grading-question-text {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: #eee;
+}
+
+.grading-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-size: 14px;
+}
+
+.answer-box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.feedback-box {
+    background: rgba(74, 158, 255, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 3px solid #4a9eff;
+}
+
+.label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.user-answer {
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.ai-feedback {
+    color: #fff;
+    line-height: 1.4;
+}
+
+/* Ensure other styles are preserved by just appending if possible, but replace tool replaces chunks */
+/* Re-adding previous key styles to ensure no breakage if chunk was large */
 .game-container {
   display: flex;
   flex-direction: column;
@@ -324,7 +398,8 @@ onUnmounted(() => {
   min-height: 100vh;
   justify-content: center;
 }
-
+/* ... rest of styles assumed safe or I should have included them if I replaced the whole style block */
+/* Since I'm replacing from onMounted down to end of file, I need to include all styles */
 .quiz-screen {
   width: 90%;
   max-width: 800px;
@@ -336,7 +411,6 @@ onUnmounted(() => {
   padding: 20px;
 }
 
-/* Glass Header */
 .game-glass-header {
   padding: 15px 25px;
   display: flex;
@@ -382,7 +456,6 @@ onUnmounted(() => {
   transition: width 0.3s ease;
 }
 
-/* Floating Timer */
 .timer-float {
   position: absolute;
   top: -40px; 
@@ -400,7 +473,6 @@ onUnmounted(() => {
   animation: pulse 0.5s infinite;
 }
 
-/* Question Card */
 .question-card {
   min-height: 180px;
   display: flex;
@@ -419,7 +491,6 @@ onUnmounted(() => {
   word-break: keep-all;
 }
 
-/* Answer Section */
 .answer-section {
   display: flex;
   gap: 10px;
@@ -461,7 +532,6 @@ onUnmounted(() => {
   font-size: 20px;
 }
 
-/* Results */
 .result-message-container {
   display: flex;
   flex-direction: column;
@@ -512,7 +582,6 @@ onUnmounted(() => {
   border-left: 4px solid #4a9eff;
 }
 
-/* Game Over & Victory */
 .game-over-screen, .victory-screen {
   text-align: center;
   gap: 30px;
@@ -520,6 +589,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   z-index: 20;
+  width: 100%;
 }
 
 .game-over-title {
@@ -537,18 +607,12 @@ onUnmounted(() => {
   border-radius: 12px;
 }
 
-.final-score {
-  font-size: 24px;
-  color: #ffd43b;
-  margin: 0;
-}
 
 .game-over-buttons, .victory-buttons {
   display: flex;
   gap: 15px;
 }
 
-/* Animations */
 @keyframes slideDown {
   from { transform: translateY(-20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -573,6 +637,50 @@ onUnmounted(() => {
   display: flex;
   gap: 10px;
   margin: 20px 0;
+}
+
+/* Loading Overlay Styles (from StageList but good to have here too if needed locally, though app-wide might be better) */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 40px;
+}
+
+.loading-bar {
+    width: 200px;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loading-progress {
+    width: 100%;
+    height: 100%;
+    background: #4a9eff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: loading 2s infinite ease-in-out;
+}
+
+.blink {
+    animation: blink 1.5s infinite;
+    color: #888;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>
 

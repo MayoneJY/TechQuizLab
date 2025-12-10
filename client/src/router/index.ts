@@ -85,6 +85,12 @@ const router = createRouter({
       name: 'board-edit',
       component: BoardWrite,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/battle-result/:id',
+      name: 'battle-result',
+      component: () => import('../views/BattleResult.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })

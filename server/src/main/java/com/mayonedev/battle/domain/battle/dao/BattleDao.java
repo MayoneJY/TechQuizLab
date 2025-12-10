@@ -11,4 +11,8 @@ public interface BattleDao {
     void insert(Battle battle);
 
     void updateStatus(Battle battle);
+
+    Long findMaxBattleIdByUserId(@Param("userId") Long userId);
+
+    void updateTotalDamage(Battle battle);
 }

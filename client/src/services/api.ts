@@ -13,7 +13,7 @@ const api = axios.create({
     'Accept': 'application/json; charset=utf-8',
     'Accept-Charset': 'utf-8'
   },
-  timeout: 10000, // 10초 타임아웃
+  timeout: 60000, // 60초 타임아웃
   withCredentials: false, // CORS를 위해 false로 설정
   responseType: 'json',
   responseEncoding: 'utf8'
@@ -174,7 +174,10 @@ export const battleApi = {
     api.post(`/api/battles/${id}/turn`, { userId, answer }),
 
   finishBattle: (id: number) =>
-    api.post(`/api/battles/${id}/finish`)
+    api.post(`/api/battles/${id}/finish`, {}, { timeout: 120000 }), // 2분 타임아웃
+
+  getBattleDetails: (id: number) =>
+    api.get(`/api/battles/${id}/details`)
 }
 
 // Gamification API

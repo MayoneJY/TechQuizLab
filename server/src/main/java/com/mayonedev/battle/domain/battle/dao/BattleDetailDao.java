@@ -10,4 +10,8 @@ public interface BattleDetailDao {
     void insert(BattleDetail battleDetail);
 
     List<BattleDetail> findByBattleId(@Param("userId") Long userId, @Param("battleId") Long battleId);
+
+    void updateUserAnswer(BattleDetail battleDetail);
+
+    void updateGrading(BattleDetail battleDetail);
 }

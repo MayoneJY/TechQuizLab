@@ -67,6 +67,17 @@
     <div class="monster monster-1">
       <PixelMonster type="alien" />
     </div>
+
+    <!-- Battle Creation Loading Overlay -->
+    <div v-if="isCreatingBattle" class="loading-overlay">
+      <div class="loading-content">
+        <h2 class="pixel-text glitch" data-text="AI 면접관 생성중...">AI 면접관 생성중...</h2>
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+        <p class="pixel-text blink">잠시만 기다려주세요</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -83,6 +94,7 @@ const authStore = useAuthStore()
 
 const stages = ref<Stage[]>([])
 const isLoading = ref(false)
+const isCreatingBattle = ref(false)
 
 onMounted(async () => {
   await fetchStages()
@@ -100,33 +112,33 @@ async function fetchStages() {
   }
 }
 
+
+
 async function startChallenge(stageId: number) {
   if (!authStore.isAuthenticated) {
-    if (confirm('로그인이 필요합니다. 로그인하시겠습니까?')) {
+    if (confirm('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?')) {
       router.push('/login')
     }
     return
   }
 
-  if (!authStore.user) return
-
+  isCreatingBattle.value = true
   try {
     // 배틀 생성 요청
-    await battleApi.createBattle({
+    const response = await battleApi.createBattle({
       stageId: stageId,
       userId: authStore.user.userId
     })
     
-    // 배틀 생성 후 게임 화면으로 이동 (배틀 ID 전달 필요 시 수정)
-    // 현재 Game.vue는 topicId 기반이므로, 배틀 모드에 맞게 수정 필요할 수 있음
-    // 우선은 알림만 표시하고 게임 화면으로 넘어가는 척 (실제 라우팅은 백엔드 응답 구조에 따라 다름)
-    alert('BATTLE START! (Simulation)')
-    // router.push(`/battle/${response.data.battleId}`) 
-    // For now, redirect to game with a query param or just game view
-    router.push('/game')
+    // 배틀 ID로 문제 로딩
+    const battleId = response.data.battleId
+    
+    // 성공 시 게임 화면으로 이동 (Query Param으로 battleId 전달)
+    router.push(`/game?battleId=${battleId}`)
   } catch (error: any) {
     console.error('Failed to create battle:', error)
     alert('배틀 생성에 실패했습니다.')
+    isCreatingBattle.value = false // Reset loading state on error
   }
 }
 
@@ -365,5 +377,69 @@ function isUrgent(dateString?: string) {
   100% {
     transform: translateX(100%);
   }
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Loading Overlay Styles */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.loading-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.loading-bar {
+  width: 300px;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress {
+  width: 100%;
+  height: 100%;
+  background: #4a9eff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: loading 2s infinite ease-in-out;
+}
+
+.blink {
+  animation: blink 1.5s infinite;
+  color: #888;
+  font-size: 14px;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>
