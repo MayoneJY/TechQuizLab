@@ -27,6 +27,26 @@
 		join board b on p.board_id = b.board_id
 		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
 		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
+    </select>
+    
+    <!-- 게시글 조회(All) - 페이징 -->
+    <select id="selectPostAllWithPaging" parameterType="map" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+               COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
+		limit #{size} offset #{offset}
+    </select>
+    
+    <!-- 게시글 총 개수 조회 -->
+    <select id="selectPostAllCount" resultType="int">
+        select count(distinct p.board_id, p.post_id)
+		from post p
     </select>
     
 	<!-- 게시글 조회(user id) -->
@@ -56,7 +76,30 @@
 		join user u on p.user_id = u.user_id
 		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
 		where b.board_name = #{tags}
-		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name;
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc;
+	</select>
+	
+	<!-- 게시글 조회(tags) - 페이징 -->
+	<select id="selectByPostTagsWithPaging" parameterType="map" resultMap="BoardPostDtoMap">
+		select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+		       COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join board b on p.board_id = b.board_id
+		join user u on p.user_id = u.user_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		where b.board_name = #{tags}
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
+		limit #{size} offset #{offset}
+	</select>
+	
+	<!-- 게시글 총 개수 조회(tags) -->
+	<select id="selectByPostTagsCount" parameterType="string" resultType="int">
+		select count(distinct p.board_id, p.post_id)
+		from post p
+		join board b on p.board_id = b.board_id
+		where b.board_name = #{tags}
 	</select>
 	
 	<!-- 게시글 조회(NickName) -->

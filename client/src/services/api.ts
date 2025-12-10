@@ -188,15 +188,23 @@ export const gamificationApi = {
 
 // Board API
 export const boardApi = {
-  getAllPosts: () =>
-    api.get('/api/boards/post'),
+  getAllPosts: (page?: number, size?: number) => {
+    if (page && size) {
+      return api.get('/api/boards/post', { params: { page, size } })
+    }
+    return api.get('/api/boards/post')
+  },
 
   // 복합키 사용: board_id와 post_id 모두 필요
   getPostByPostId: (boardId: number, postId: number) =>
     api.get(`/api/boards/${boardId}/post/${postId}`),
 
-  getPostbyTags: (tags: string) =>
-    api.get(`/api/boards/post/tags/${tags}`),
+  getPostbyTags: (tags: string, page?: number, size?: number) => {
+    if (page && size) {
+      return api.get(`/api/boards/post/tags/${tags}`, { params: { page, size } })
+    }
+    return api.get(`/api/boards/post/tags/${tags}`)
+  },
 
   createBoard: (postDto: { title: string; content: string; tags: string }) =>
     api.post('/api/boards/post', postDto),

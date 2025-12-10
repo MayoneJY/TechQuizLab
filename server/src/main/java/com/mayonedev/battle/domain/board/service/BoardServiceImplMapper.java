@@ -1,6 +1,8 @@
 package com.mayonedev.battle.domain.board.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,27 @@ public class BoardServiceImplMapper implements BoardService {
 	public List<BoardPostDto> selectPostAll() throws Exception {
 		return bDao.selectPostAll();
 	}
+	
+	@Override
+	public Map<String, Object> selectPostAllWithPaging(int page, int size) throws Exception {
+		Map<String, Object> params = new HashMap<>();
+		int offset = (page - 1) * size;
+		params.put("offset", offset);
+		params.put("size", size);
+		
+		List<BoardPostDto> posts = bDao.selectPostAllWithPaging(params);
+		int totalCount = bDao.selectPostAllCount();
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("posts", posts);
+		result.put("totalCount", totalCount);
+		result.put("totalPages", totalPages);
+		result.put("currentPage", page);
+		result.put("size", size);
+		
+		return result;
+	}
 
 	@Override
 	public List<BoardPostDto> selectPostByUserId(long userId) throws Exception {
@@ -26,7 +49,7 @@ public class BoardServiceImplMapper implements BoardService {
 	}
 
 	@Override
-	public BoardPostDto selectByPostId(java.util.Map<String, Object> params) throws Exception {
+	public BoardPostDto selectByPostId(Map<String, Object> params) throws Exception {
 		return bDao.selectByPostId(params);
 	}
 
@@ -46,6 +69,37 @@ public class BoardServiceImplMapper implements BoardService {
 
 		return bDao.selectByPostTags(tags);
 	}
+	
+	@Override
+	public Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size) throws Exception {
+		if (tags.equals("general"))
+			tags = "일반";
+		if (tags.equals("question"))
+			tags = "질문";
+		if (tags.equals("tip"))
+			tags = "팁";
+		if (tags.equals("free"))
+			tags = "자유";
+		
+		Map<String, Object> params = new HashMap<>();
+		int offset = (page - 1) * size;
+		params.put("offset", offset);
+		params.put("size", size);
+		params.put("tags", tags);
+		
+		List<BoardPostDto> posts = bDao.selectByPostTagsWithPaging(params);
+		int totalCount = bDao.selectByPostTagsCount(tags);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("posts", posts);
+		result.put("totalCount", totalCount);
+		result.put("totalPages", totalPages);
+		result.put("currentPage", page);
+		result.put("size", size);
+		
+		return result;
+	}
 
 	@Override
 	public List<BoardPostDto> selectPostByNickName(String nickname) throws Exception {
@@ -60,26 +114,24 @@ public class BoardServiceImplMapper implements BoardService {
 	@Override
 	public BoardPostDto updatePost(Post Post) throws Exception {
 		bDao.updatePost(Post);
-		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		Map<String, Object> params = new HashMap<>();
 		params.put("board_id", Post.getBoard_id());
 		params.put("post_id", Post.getPost_id());
 		return bDao.selectByPostId(params);
 	}
 
 	@Override
-	public void deletePost(java.util.Map<String, Object> params) throws Exception {
+	public void deletePost(Map<String, Object> params) throws Exception {
 		bDao.deletePost(params);
 	}
 
 	@Override
-	public void increaseViewCount(java.util.Map<String, Object> params) throws Exception {
+	public void increaseViewCount(Map<String, Object> params) throws Exception {
 		bDao.increaseViewCount(params);
 	}
 
 	@Override
 	public long selectBoardId(String tags) {
-		// 이거 여쭤보기 .. --> 여기 들어가는 게 맞을지
-
 		if (tags.equals("general"))
 			tags = "일반";
 		if (tags.equals("question"))
