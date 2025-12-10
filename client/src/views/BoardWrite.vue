@@ -74,6 +74,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -82,6 +83,7 @@ const router = useRouter()
 const route = useRoute()
 const boardStore = useBoardStore2()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const isEdit = computed(() => route.name === 'board-edit')
 const postId = computed(() => isEdit.value ? Number(route.params.id) : null)
@@ -92,23 +94,24 @@ const form = ref({
   content: ''
 })
 
-onMounted(() => {
+onMounted(async () => {
   if (!authStore.isAuthenticated) {
-    alert('로그인이 필요합니다.')
+    await modalStore.openAlert('로그인이 필요합니다.')
     router.push('/login')
     return
   }
 
   if (isEdit.value && postId.value) {
-    const post = boardStore.getPost(postId.value)
+    await boardStore.fetchPostById(postId.value)
+    const post = boardStore.currentPost
     if (!post) {
-      alert('게시글을 찾을 수 없습니다.')
+      modalStore.openAlert('게시글을 찾을 수 없습니다.')
       router.push('/board')
       return
     }
 
-    if (post.authorId !== authStore.user?.id) {
-      alert('수정 권한이 없습니다.')
+    if (post.userId !== authStore.user?.userId) {
+      await modalStore.openAlert('수정 권한이 없습니다.')
       router.push('/board')
       return
     }
@@ -119,9 +122,10 @@ onMounted(() => {
       content: post.content
     }
     form.value = {
-    category: (post.tags as 'general' | 'question' | 'tip' | 'free') || 'general',
-    content: post.content,
-  }
+      category: (post.tags as 'general' | 'question' | 'tip' | 'free') || 'general',
+      title: post.title,
+      content: post.content
+    }
   }
 })
 
@@ -135,12 +139,12 @@ function goBack() {
 
 async function handleSubmit() {
   if (!form.value.title.trim()) {
-    alert('제목을 입력해주세요.')
+    await modalStore.openAlert('제목을 입력해주세요.')
     return
   }
 
   if (!form.value.content.trim()) {
-    alert('내용을 입력해주세요.')
+    await modalStore.openAlert('내용을 입력해주세요.')
     return
   }
 
@@ -152,21 +156,21 @@ try {
         form.value.content,
         form.value.category,
       )
-      alert('게시글이 수정되었습니다.')
+      await modalStore.openAlert('게시글이 수정되었습니다.')
       router.push(`/board/${postId.value}`)
     } else {
 
-      const newPost = await boardStore.createPost(
+      await boardStore.createPost(
         form.value.title,
         form.value.content,
         form.value.category,
       )
-      alert('게시글이 작성되었습니다.')
+      await modalStore.openAlert('게시글이 작성되었습니다.')
 
       router.push('/board')
     }
   } catch (error: any) {
-    alert(error.message || '작성에 실패했습니다.')
+    await modalStore.openAlert(error.message || '작성에 실패했습니다.')
   }
 }
 </script>

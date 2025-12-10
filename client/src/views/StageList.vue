@@ -87,10 +87,12 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { stageApi, battleApi } from '../services/api'
 import type { Stage } from '../types/schema'
+import { useModalStore } from '../stores/modal'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const stages = ref<Stage[]>([])
 const isLoading = ref(false)
@@ -116,7 +118,7 @@ async function fetchStages() {
 
 async function startChallenge(stageId: number) {
   if (!authStore.isAuthenticated) {
-    if (confirm('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?')) {
+    if (await modalStore.openConfirm('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?')) {
       router.push('/login')
     }
     return
@@ -137,7 +139,7 @@ async function startChallenge(stageId: number) {
     router.push(`/game?battleId=${battleId}`)
   } catch (error: any) {
     console.error('Failed to create battle:', error)
-    alert('배틀 생성에 실패했습니다.')
+    await modalStore.openAlert('배틀 생성에 실패했습니다.')
     isCreatingBattle.value = false // Reset loading state on error
   }
 }

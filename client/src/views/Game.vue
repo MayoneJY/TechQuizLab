@@ -129,6 +129,7 @@ import { onMounted, ref, computed, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useQuestionStore } from '../stores/question'
+import { useModalStore } from '../stores/modal'
 import { retroMusicPlayer } from '../utils/retroMusic'
 import PixelMonster from '../components/PixelMonster.vue'
 
@@ -136,6 +137,7 @@ const router = useRouter()
 const route = useRoute()
 const gameStore = useGameStore()
 const questionStore = useQuestionStore()
+const modalStore = useModalStore()
 const showExplosion = ref(false)
 const explosionColor = ref('#ffd43b')
 const answerInput = ref('')
@@ -183,26 +185,12 @@ async function handleTimeout() {
   await gameStore.finishGame()
 }
 
-const isAnswerCorrect = computed(() => {
-  // Deferred grading: we don't know yet.
-  return false
-})
-
 async function handleSubmit() {
   if (!answerInput.value || !gameStore.currentQuiz) return
   await submitAnswer()
 }
 
-async function bookmarkQuestion() {
-  if (!gameStore.currentQuiz) return
-  
-  try {
-    await questionStore.bookmarkQuestion(gameStore.currentQuiz.id)
-    alert('SAVED TO BOOKMARK!')
-  } catch (error) {
-    console.error('Failed to bookmark:', error)
-  }
-}
+// function bookmarkQuestion() ... removed
 
 async function submitAnswer(isTimeout = false) {
   if (!answerInput.value && gameStore.selectedAnswer === null && !isTimeout) return
@@ -222,7 +210,7 @@ async function submitAnswer(isTimeout = false) {
   } catch (error: any) {
     console.error('Failed to submit answer:', error)
     const errorMsg = error.serverMessage || error.message || 'Error occurred.'
-    alert(errorMsg)
+    await modalStore.openAlert(errorMsg)
   }
 }
 
@@ -235,7 +223,7 @@ function goHome() {
 }
 
 async function handleGiveUp() {
-  if (confirm('도전 포기시 채점이 진행되지 않습니다.\n정말 포기하시겠습니까?')) {
+  if (await modalStore.openConfirm('도전 포기시 채점이 진행되지 않습니다.\n정말 포기하시겠습니까?')) {
     // Stop timer immediately to prevent background ticking
     stopTimer()
     if (gameStore.battleId) {

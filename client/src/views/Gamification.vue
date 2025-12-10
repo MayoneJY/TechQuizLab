@@ -220,11 +220,13 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGamificationStore } from '../stores/gamification'
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
 const gamificationStore = useGamificationStore()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const activeTab = ref<'missions' | 'ranking' | 'friends'>('missions')
 const isPageLoading = ref(true)
@@ -248,11 +250,11 @@ async function submitAddFriend() {
   isAddingFriend.value = true
   try {
     await gamificationStore.addFriend(targetNickname.value)
-    alert('친구가 추가되었습니다!')
+    await modalStore.openAlert('친구가 추가되었습니다!')
     closeAddFriendModal()
   } catch (error: any) {
     const msg = error.response?.data?.message || error.message || '실패했습니다.'
-    alert(msg)
+    await modalStore.openAlert(msg)
   } finally {
     isAddingFriend.value = false
   }
@@ -290,7 +292,7 @@ async function claimMission(missionId: number) {
                         error.response?.data?.error || 
                         error.message ||
                         'Failed to claim reward.'
-    alert(errorMessage)
+    await modalStore.openAlert(errorMessage)
   }
 }
 </script>

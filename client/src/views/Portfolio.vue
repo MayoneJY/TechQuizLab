@@ -112,12 +112,14 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import { portfolioApi } from '../services/api'
 import type { Portfolio } from '../types/schema'
 
 
 const router = useRouter()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const portfolios = ref<Portfolio[]>([])
 const isLoading = ref(false)
@@ -174,7 +176,7 @@ function backToList() {
 async function savePortfolio() {
   if (!authStore.user) return
   if (!editorTitle.value.trim()) {
-    alert('Please enter a title.')
+    await modalStore.openAlert('Please enter a title.')
     return
   }
 
@@ -196,12 +198,12 @@ async function savePortfolio() {
     backToList()
   } catch (error: any) {
     console.error('Failed to save portfolio:', error)
-    alert('Failed to save.')
+    await modalStore.openAlert('Failed to save.')
   }
 }
 
 async function deletePortfolio(pfId: number) {
-  if (!confirm('Area you sure you want to delete this project?')) return
+  if (!await modalStore.openConfirm('Area you sure you want to delete this project?')) return
 
   try {
     await portfolioApi.deletePortfolio(pfId)
@@ -209,7 +211,7 @@ async function deletePortfolio(pfId: number) {
     backToList()
   } catch (error) {
     console.error('Failed to delete portfolio:', error)
-    alert('Failed to delete.')
+    await modalStore.openAlert('Failed to delete.')
   }
 }
 

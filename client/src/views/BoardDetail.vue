@@ -8,7 +8,7 @@
         <button class="pixel-button back-button" @click="goBack">
           ← 목록으로
         </button>
-        <div v-if="post && authStore.user && post.id === authStore.user.id" class="post-actions">
+        <div v-if="post && authStore.user && post.userId === authStore.user.userId" class="post-actions">
           <button class="pixel-button edit-button" @click="goToEdit">
             수정
           </button>
@@ -81,7 +81,7 @@
                 <span class="comment-author">{{ comment.author }}</span>
                 <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
                 <button
-                  v-if="authStore.user && comment.authorId === authStore.user.id"
+                  v-if="authStore.user && comment.authorId === authStore.user.userId"
                   class="comment-delete"
                   @click="handleDeleteComment(comment.id)"
                 >
@@ -117,6 +117,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -125,6 +126,7 @@ const router = useRouter()
 const route = useRoute()
 const boardStore = useBoardStore2()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const postId = computed(() => Number(route.params.id))
 const post = computed(() => boardStore.currentPost)
@@ -135,7 +137,7 @@ const newComment = ref('')
 onMounted(async () => {
   await boardStore.fetchPostById(postId.value)
   if (!post.value) {
-    alert('게시글을 찾을 수 없습니다.')
+    await modalStore.openAlert('게시글을 찾을 수 없습니다.')
     goBack()
   }
 })
@@ -153,28 +155,28 @@ function goToLogin() {
 }
 
 async function handleDelete() {
-  if (!confirm('정말 삭제하시겠습니까?')) return
+  if (!await modalStore.openConfirm('정말 삭제하시겠습니까?')) return
 
   try {
     await boardStore.deletePost(postId.value)
-    alert('게시글이 삭제되었습니다.')
+    await modalStore.openAlert('게시글이 삭제되었습니다.')
     goBack()
   } catch (error: any) {
-    alert(error.message || '삭제에 실패했습니다.')
+    await modalStore.openAlert(error.message || '삭제에 실패했습니다.')
   }
 }
 
 function handleLike() {
   // boardStore.toggleLike(postId.value) // 아직 미구현
-  alert('준비 중인 기능입니다.')
+  modalStore.openAlert('준비 중인 기능입니다.')
 }
 
 function handleAddComment() {
   if (!newComment.value.trim()) {
-    alert('댓글을 입력해주세요.')
+    modalStore.openAlert('댓글을 입력해주세요.')
     return
   }
-  alert('준비 중인 기능입니다.')
+  modalStore.openAlert('준비 중인 기능입니다.')
 
   /*
   try {
@@ -186,9 +188,9 @@ function handleAddComment() {
   */
 }
 
-function handleDeleteComment(commentId: number) {
-  if (!confirm('댓글을 삭제하시겠습니까?')) return
-  alert('준비 중인 기능입니다.')
+async function handleDeleteComment(commentId: number) {
+  if (!await modalStore.openConfirm('댓글을 삭제하시겠습니까?')) return
+  await modalStore.openAlert('준비 중인 기능입니다.')
 
   /*
   try {

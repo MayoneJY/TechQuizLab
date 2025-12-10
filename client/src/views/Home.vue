@@ -323,6 +323,7 @@ import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useGamificationStore } from '../stores/gamification'
+import { useModalStore } from '../stores/modal'
 import { battleApi } from '../services/api'
 import PixelMonster from '../components/PixelMonster.vue'
 import PixelPlanet from '../components/PixelPlanet.vue'
@@ -330,6 +331,7 @@ import PixelPlanet from '../components/PixelPlanet.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 const gamificationStore = useGamificationStore()
+const modalStore = useModalStore()
 
 // Interfaces for Dashboard Data
 interface DashboardBattle {
@@ -405,15 +407,19 @@ onMounted(async () => {
 
 // Navigation
 function goToLogin() { router.push('/login') }
-function handleLogout() { 
-  if (confirm('정말 로그아웃 하시겠습니까?')) {
+async function handleLogout() { 
+  if (await modalStore.openConfirm('정말 로그아웃 하시겠습니까?')) {
     authStore.logout() 
     router.push('/login')
   }
 } 
 function goToStages() { 
   if ((authStore.user?.remainingLives ?? 0) <= 0) {
-    alert('오늘의 도전 횟수를 모두 소진했습니다. 내일 다시 도전해주세요!');
+    // Alert is synchronous, modal is async but we just return here anyway. 
+    // Ideally we should await it if we wanted to block code, but here we just show and return.
+    // However, best practice is to await to ensure it opens before navigation logic (though here it returns).
+    // Marking async to be safe.
+    modalStore.openAlert('오늘의 도전 횟수를 모두 소진했습니다. 내일 다시 도전해주세요!');
     return;
   }
   router.push('/stages');
@@ -424,13 +430,13 @@ function goToBoard() { router.push('/board') }
 function goToMyPage() { router.push('/mypage') }
 
 async function startPractice() {
-  if (confirm('오답노트에 저장된 문제로 연습 게임을 시작하시겠습니까?')) {
+  if (await modalStore.openConfirm('오답노트에 저장된 문제로 연습 게임을 시작하시겠습니까?')) {
     try {
       const response = await battleApi.createPracticeBattle()
       router.push(`/game?battleId=${response.data.battleId}`)
     } catch (error: any) {
       console.error(error)
-      alert(error.response?.data?.message || '연습 게임 생성에 실패했습니다. 북마크된 문제가 있는지 확인해주세요.')
+      await modalStore.openAlert(error.response?.data?.message || '연습 게임 생성에 실패했습니다. 북마크된 문제가 있는지 확인해주세요.')
     }
   }
 }

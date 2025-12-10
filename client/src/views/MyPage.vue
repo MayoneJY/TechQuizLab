@@ -105,10 +105,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import { userApi } from '../services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const user = computed(() => authStore.user)
 const isLoading = ref(false)
@@ -151,7 +153,7 @@ async function saveProfile() {
   if (!user.value) return
 
   if (editForm.value.password && editForm.value.password !== editForm.value.confirmPassword) {
-    alert('Passwords do not match!')
+    await modalStore.openAlert('Passwords do not match!')
     return
   }
 
@@ -169,18 +171,18 @@ async function saveProfile() {
     // Update store with new data
     authStore.user = { ...authStore.user, ...response.data }
     
-    alert('Profile updated successfully!')
+    await modalStore.openAlert('Profile updated successfully!')
     isEditing.value = false
   } catch (error: any) {
     console.error('Failed to update profile:', error)
-    alert(error.response?.data?.message || 'Failed to update profile.')
+    await modalStore.openAlert(error.response?.data?.message || 'Failed to update profile.')
   } finally {
     isLoading.value = false
   }
 }
 
 async function handleDeleteAccount() {
-  if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return
+  if (!await modalStore.openConfirm('Are you sure you want to delete your account? This action cannot be undone.')) return
   if (!user.value) return
 
   isLoading.value = true
@@ -188,10 +190,10 @@ async function handleDeleteAccount() {
     await userApi.deleteUser(user.value.userId)
     authStore.logout()
     router.push('/login')
-    alert('Account deleted successfully.')
+    await modalStore.openAlert('Account deleted successfully.')
   } catch (error: any) {
     console.error('Failed to delete account:', error)
-    alert('Failed to delete account.')
+    await modalStore.openAlert('Failed to delete account.')
   } finally {
     isLoading.value = false
   }

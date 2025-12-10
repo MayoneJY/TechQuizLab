@@ -73,6 +73,7 @@ import { useRouter } from 'vue-router'
 import { useTopicStore } from '../stores/topic'
 import { useGameStore } from '../stores/game'
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -81,6 +82,7 @@ const router = useRouter()
 const topicStore = useTopicStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 const selectedTopicId = ref<number | null>(null)
 
@@ -105,14 +107,14 @@ function selectTopic(topicId: number) {
 
 async function startGame() {
   if (!authStore.isAuthenticated) {
-    if (confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')) {
+    if (await modalStore.openConfirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')) {
       router.push('/login')
     }
     return
   }
 
   if (!selectedTopicId.value) {
-    alert('주제를 선택해주세요.')
+    await modalStore.openAlert('주제를 선택해주세요.')
     return
   }
 
@@ -121,7 +123,7 @@ async function startGame() {
 
     // 문제가 로드되었는지 확인
     if (gameStore.totalQuestions === 0) {
-      alert('해당 주제에 문제가 없습니다.')
+      await modalStore.openAlert('해당 주제에 문제가 없습니다.')
       return
     }
 
@@ -129,7 +131,7 @@ async function startGame() {
   } catch (error: any) {
     console.error('Failed to start game:', error)
     const errorMsg = error.serverMessage || error.message || '게임을 시작할 수 없습니다.'
-    alert(errorMsg)
+    await modalStore.openAlert(errorMsg)
   }
 }
 </script>

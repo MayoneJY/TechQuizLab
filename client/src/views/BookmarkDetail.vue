@@ -70,9 +70,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { battleApi } from '../services/api'
+import { useModalStore } from '../stores/modal'
 
 const route = useRoute()
 const router = useRouter()
+const modalStore = useModalStore()
 const bookmarkId = Number(route.params.id)
 
 const loading = ref(true)
@@ -123,18 +125,18 @@ async function saveMemo() {
         if (bookmark.value) bookmark.value.memo = editMemoText.value
         isEditingMemo.value = false
     } catch (e) {
-        alert('메모 저장 실패')
+        await modalStore.openAlert('메모 저장 실패')
     }
 }
 
 async function deleteBookmark() {
-    if (!confirm('정말 삭제하시겠습니까?')) return
+    if (!await modalStore.openConfirm('정말 삭제하시겠습니까?')) return
     try {
         // Assume API exists: deleteBookmark(id)
         await battleApi.deleteBookmark(bookmarkId)
         router.replace('/my-bookmarks')
     } catch (e) {
-        alert('삭제 실패')
+        await modalStore.openAlert('삭제 실패')
     }
 }
 

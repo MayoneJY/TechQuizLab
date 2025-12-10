@@ -99,10 +99,12 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { battleApi } from '../services/api'
 import { useGameStore } from '../stores/game'
+import { useModalStore } from '../stores/modal'
 
 const router = useRouter()
 const route = useRoute()
 const gameStore = useGameStore()
+const modalStore = useModalStore()
 
 const loading = ref(true)
 const result = ref<any>(null)
@@ -134,10 +136,10 @@ async function bookmarkQuestion(detailId: number) {
         if (!battleId) return
         
         await battleApi.bookmarkBattleDetail(battleId, detailId)
-        alert('북마크에 저장되었습니다!')
+        await modalStore.openAlert('북마크에 저장되었습니다!')
     } catch (e) {
         console.error(e)
-        alert('북마크 저장에 실패했습니다.')
+        await modalStore.openAlert('북마크 저장에 실패했습니다.')
     }
 }
 
