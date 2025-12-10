@@ -47,4 +47,8 @@
         WHERE user_id = #{userId} AND battle_id = #{battleId} AND detail_id = #{detailId}
     </update>
 
+    <delete id="deleteByBattleId">
+        DELETE FROM battle_detail WHERE user_id = #{userId} AND battle_id = #{battleId}
+    </delete>
+
 </mapper>

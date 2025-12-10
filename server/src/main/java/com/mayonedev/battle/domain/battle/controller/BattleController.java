@@ -98,6 +98,15 @@ public class BattleController {
         return ResponseEntity.ok(battleService.createPracticeBattle(userDetails.getUserId()));
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "배틀 삭제 (포기)")
+    public ResponseEntity<Void> deleteBattle(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        battleService.deleteBattle(userDetails.getUserId(), id);
+        return ResponseEntity.ok().build();
+    }
+
     @Data
     public static class CreateBattleRequest {
         private Long stageId;

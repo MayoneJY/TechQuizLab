@@ -188,6 +188,15 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  async function giveUp() {
+    if (!battleId.value) return
+    try {
+      await battleApi.deleteBattle(battleId.value)
+    } catch (e) {
+      console.error('Failed to delete battle on give up:', e)
+    }
+  }
+
   return {
     currentQuestionIndex,
     score,
@@ -206,7 +215,8 @@ export const useGameStore = defineStore('game', () => {
     resetGame,
     setTopicId,
     loadBattleQuestions,
-    finishGame
+    finishGame,
+    giveUp
   }
 })
 

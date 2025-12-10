@@ -14,4 +14,6 @@ public interface BattleDetailDao {
     void updateUserAnswer(BattleDetail battleDetail);
 
     void updateGrading(BattleDetail battleDetail);
+
+    void deleteByBattleId(@Param("userId") Long userId, @Param("battleId") Long battleId);
 }

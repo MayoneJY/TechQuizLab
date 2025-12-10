@@ -51,6 +51,13 @@
     
     <!-- Quiz Screen -->
     <div v-else class="quiz-screen">
+      <!-- Top Controls -->
+      <div class="top-controls">
+         <button class="pixel-button ghost-btn small-btn" @click="handleGiveUp">
+           포기
+         </button>
+      </div>
+
       <!-- Unified Glass Header -->
       <div class="game-glass-header glass-panel">
         <div class="header-top">
@@ -59,12 +66,12 @@
           </div>
           
           <div class="score-display pixel-text">
-            TIME: {{ timeLeft }}s
+             <span>TIME: {{ timeLeft }}s</span>
           </div>
 
           <div class="lives-display">
              <!-- Removed Hearts for Battle Mode, or keep as visual only -->
-             <PixelHeart v-for="i in 5" :key="i" /> 
+             <PixelHeart v-for="i in 5" :key="i" />
           </div>
         </div>
 
@@ -225,6 +232,17 @@ async function restartGame() {
 
 function goHome() {
   router.push('/')
+}
+
+async function handleGiveUp() {
+  if (confirm('도전 포기시 채점이 진행되지 않습니다.\n정말 포기하시겠습니까?')) {
+    // Stop timer immediately to prevent background ticking
+    stopTimer()
+    if (gameStore.battleId) {
+        await gameStore.giveUp()
+    }
+    router.push('/')
+  }
 }
 
 // Watch for question change
@@ -546,6 +564,32 @@ onUnmounted(() => {
   width: 50px;
   padding: 0;
   font-size: 20px;
+}
+
+.small-btn {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.ghost-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+
+.top-controls {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .result-message-container {

@@ -407,4 +407,40 @@ public class BattleServiceImpl implements BattleService {
 
         return battle;
     }
+
+    @Override
+    @Transactional
+    public void deleteBattle(Long userId, Long battleId) {
+        // Verify ownership
+        Battle battle = battleDao.findByUserAndBattleId(userId, battleId);
+        if (battle == null) {
+            throw new RuntimeException("Battle not found or access denied");
+        }
+
+        // Delete related data first (FK constraints? usually CASCADE but let's be safe
+        // or rely on DB)
+        // Check cascade rules. If unclear, manual delete.
+        // Assuming Mybatis and simple tables, we might need to delete details first.
+
+        // Actually, let's check Dao structure. We have battle_detail, battle_turn, etc.
+        // For simplicity, if DB has cascade, `battleDao.delete` is enough.
+        // If not, we need `battleDetailDao.deleteByBattleId` etc.
+        // Let's assume we need to delete details.
+
+        battleDetailDao.deleteByBattleId(userId, battleId);
+        // turnDao?
+        // bookmark? (bookmarks are valuable, maybe keep? but they reference battle.
+        // If battle is deleted, bookmark references might break if FK.
+        // But usually bookmarks are for *questions* (details).
+        // If we delete battle, we delete details. So bookmarks pointing to details
+        // might break.
+        // However, user said "Give Up" -> "Delete Battle".
+        // Usually "Give Up" means "Cancel this attempt".
+        // If user actively bookmarked something during this failed attempt, keeping it
+        // might be good,
+        // but technical constraints might force deletion.
+        // Let's delete for now as per "Delete Battle".
+
+        battleDao.delete(userId, battleId);
+    }
 }

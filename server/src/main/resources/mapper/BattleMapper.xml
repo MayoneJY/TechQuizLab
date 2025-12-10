@@ -52,4 +52,8 @@
         LIMIT 5
     </select>
 
+    <delete id="delete">
+        DELETE FROM battle WHERE user_id = #{userId} AND battle_id = #{battleId}
+    </delete>
+
 </mapper>

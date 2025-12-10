@@ -17,4 +17,6 @@ public interface BattleDao {
     void updateTotalDamage(Battle battle);
 
     java.util.List<Battle> findAllByUserId(Long userId);
+
+    void delete(@Param("userId") Long userId, @Param("battleId") Long battleId);
 }
