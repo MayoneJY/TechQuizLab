@@ -51,4 +51,9 @@
           AND practice_id = #{practiceId}
     </update>
 
+    <delete id="deleteByPracticeId">
+        DELETE FROM bookmark_practice
+        WHERE user_id = #{userId} AND practice_id = #{practiceId}
+    </delete>
+
 </mapper>

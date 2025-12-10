@@ -427,6 +427,7 @@ public class BattleServiceImpl implements BattleService {
         // If not, we need `battleDetailDao.deleteByBattleId` etc.
         // Let's assume we need to delete details.
 
+        bookmarkPracticeDao.deleteByPracticeId(userId, battleId);
         battleDetailDao.deleteByBattleId(userId, battleId);
         // turnDao?
         // bookmark? (bookmarks are valuable, maybe keep? but they reference battle.

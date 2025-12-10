@@ -14,4 +14,6 @@ public interface BookmarkPracticeDao {
     List<BookmarkPractice> findByPracticeId(@Param("userId") Long userId, @Param("practiceId") Long practiceId);
 
     void updateResult(BookmarkPractice bookmarkPractice);
+
+    void deleteByPracticeId(@Param("userId") Long userId, @Param("practiceId") Long practiceId);
 }

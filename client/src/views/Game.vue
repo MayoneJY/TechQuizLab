@@ -76,7 +76,7 @@
         </div>
 
         <div class="progress-bar-container">
-          <div class="progress-bar" :style="{ width: `${gameStore.progress}%` }"></div>
+          <div class="progress-bar" :style="{ width: `${(timeLeft / 300) * 100}%` }"></div>
         </div>
       </div>
       
@@ -486,8 +486,8 @@ onUnmounted(() => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #51cf66, #4a9eff);
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #ff6b6b, #ff8787);
+  transition: width 1s linear;
 }
 
 .timer-float {
