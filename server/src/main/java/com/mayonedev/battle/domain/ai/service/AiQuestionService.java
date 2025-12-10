@@ -51,7 +51,7 @@ public class AiQuestionService {
                 %s
                 """, stageContent, portfolioContent);
 
-        return callAi(systemPrompt, userPrompt, "gpt-5-mini");
+        return callAi(systemPrompt, userPrompt, "gpt-5-nano");
     }
 
     public Map<String, Object> evaluateAnswer(String question, String userAnswer) {
@@ -74,7 +74,7 @@ public class AiQuestionService {
                 %s
                 """, question, userAnswer);
 
-        String jsonResponse = callAi(systemPrompt, userPrompt, "gpt-5-mini");
+        String jsonResponse = callAi(systemPrompt, userPrompt, "gpt-5-nano");
 
         try {
             return new com.fasterxml.jackson.databind.ObjectMapper().readValue(jsonResponse, Map.class);

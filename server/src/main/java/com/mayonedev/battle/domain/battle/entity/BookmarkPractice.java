@@ -16,4 +16,9 @@ public class BookmarkPractice {
     private String aiFeedback;
     private Integer damage;
     private LocalDateTime createdAt;
+
+    // Display fields from join
+    private String questionText;
+    private String difficulty;
+    private String keywordTags;
 }

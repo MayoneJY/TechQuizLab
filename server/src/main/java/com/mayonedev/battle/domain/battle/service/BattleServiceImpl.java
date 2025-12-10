@@ -34,6 +34,7 @@ public class BattleServiceImpl implements BattleService {
     private final StageDao stageDao;
     private final BattleDetailDao battleDetailDao;
     private final BattleBookmarkDao battleBookmarkDao;
+    private final com.mayonedev.battle.domain.battle.dao.BookmarkPracticeDao bookmarkPracticeDao;
     private final AiQuestionService aiQuestionService;
     private final ObjectMapper objectMapper;
     private final com.mayonedev.battle.domain.user.service.UserService userService; // Use Service to ensure consistency
@@ -140,12 +141,56 @@ public class BattleServiceImpl implements BattleService {
 
     @Override
     public List<BattleDetail> getBattleDetails(Long userId, Long battleId) {
+        Battle battle = battleDao.findByUserAndBattleId(userId, battleId);
+        if (battle != null && battle.getStageId() != null && battle.getStageId() == 0) {
+            List<com.mayonedev.battle.domain.battle.entity.BookmarkPractice> practices = bookmarkPracticeDao
+                    .findByPracticeId(userId, battleId);
+            return practices.stream().map(p -> {
+                BattleDetail d = new BattleDetail();
+                d.setUserId(p.getUserId());
+                d.setBattleId(p.getPracticeId());
+                d.setDetailId(p.getBookmarkId()); // Use bookmarkId as detailId or just map it
+                // Actually DetailId in BattleDetail is usually sequential 1..N.
+                // Here we can use appropriate mapping.
+                // Let's use bookmarkId as ID for now since we don't have sequential detail_id
+                // in bookmark_practice without extra logic.
+                d.setQuestionText(p.getQuestionText());
+                d.setDifficulty(p.getDifficulty());
+                d.setKeywordTags(p.getKeywordTags());
+                d.setUserAnswer(p.getUserAnswer());
+                d.setAiFeedback(p.getAiFeedback());
+                d.setDamage(p.getDamage());
+                d.setCreatedAt(p.getCreatedAt());
+                return d;
+            }).collect(java.util.stream.Collectors.toList());
+        }
         return battleDetailDao.findByBattleId(userId, battleId);
     }
 
     @Override
     @Transactional
     public void processTurn(Long userId, Long battleId, String answer) {
+        Battle battle = battleDao.findByUserAndBattleId(userId, battleId);
+        if (battle != null && battle.getStageId() != null && battle.getStageId() == 0) {
+            List<com.mayonedev.battle.domain.battle.entity.BookmarkPractice> practices = bookmarkPracticeDao
+                    .findByPracticeId(userId, battleId);
+            // Find first unanswered
+            // Note: findByPracticeId might sort by bookmarkId or practiceId sequence.
+            // We need consistent order. The mapper sorts by practice_id (which is
+            // battle_id) which is constant?
+            // Ah, BookmarkPractice doesn't store 'order'. We rely on `findByPracticeId`
+            // return order.
+            // We should find the first one where userAnswer is null.
+            for (com.mayonedev.battle.domain.battle.entity.BookmarkPractice p : practices) {
+                if (p.getUserAnswer() == null) {
+                    p.setUserAnswer(answer);
+                    bookmarkPracticeDao.updateResult(p);
+                    break;
+                }
+            }
+            return;
+        }
+
         // Just save the user's answer, don't grade yet
         List<BattleDetail> details = battleDetailDao.findByBattleId(userId, battleId);
         for (BattleDetail detail : details) {
@@ -165,7 +210,69 @@ public class BattleServiceImpl implements BattleService {
             throw new RuntimeException("Battle not found");
         }
 
+        if (battle.getStageId() != null && battle.getStageId() == 0) {
+            List<com.mayonedev.battle.domain.battle.entity.BookmarkPractice> practices = bookmarkPracticeDao
+                    .findByPracticeId(userId, battleId);
+
+            List<com.mayonedev.battle.domain.battle.entity.BookmarkPractice> gradedPractices = practices
+                    .parallelStream()
+                    .map(p -> {
+                        if (p.getUserAnswer() != null) {
+                            try {
+                                Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
+                                        p.getUserAnswer());
+                                int score = (int) evaluation.get("score");
+                                String feedback = (String) evaluation.get("feedback");
+
+                                p.setDamage(score);
+                                p.setAiFeedback(feedback);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                p.setDamage(0);
+                                p.setAiFeedback("채점 중 오류가 발생했습니다.");
+                            }
+                        }
+                        return p;
+                    }).collect(java.util.stream.Collectors.toList());
+
+            int totalDamage = 0;
+            for (com.mayonedev.battle.domain.battle.entity.BookmarkPractice p : gradedPractices) {
+                if (p.getUserAnswer() != null) {
+                    totalDamage += (p.getDamage() == null ? 0 : p.getDamage());
+                    bookmarkPracticeDao.updateResult(p);
+                }
+            }
+
+            battle.setTotalDamage(totalDamage);
+            battle.setStatus("COMPLETED");
+            battleDao.updateStatus(battle);
+            battleDao.updateTotalDamage(battle);
+
+            // Convert to format expected by frontend (BattleDetail list?)
+            // finishBattle returns Map with "details"
+            List<BattleDetail> details = gradedPractices.stream().map(p -> {
+                BattleDetail d = new BattleDetail();
+                d.setUserId(p.getUserId());
+                d.setBattleId(p.getPracticeId());
+                d.setDetailId(p.getBookmarkId());
+                d.setQuestionText(p.getQuestionText());
+                d.setDifficulty(p.getDifficulty());
+                d.setKeywordTags(p.getKeywordTags());
+                d.setUserAnswer(p.getUserAnswer());
+                d.setAiFeedback(p.getAiFeedback());
+                d.setDamage(p.getDamage());
+                d.setCreatedAt(p.getCreatedAt());
+                return d;
+            }).collect(java.util.stream.Collectors.toList());
+
+            return Map.of(
+                    "totalScore", totalDamage,
+                    "details", details);
+        }
+
         List<BattleDetail> details = battleDetailDao.findByBattleId(userId, battleId);
+
+        // ... Normal logic ...
 
         // Parallelize AI grading
         // Note: We do AI calls in parallel, but DB updates should ideally remain in
@@ -259,11 +366,26 @@ public class BattleServiceImpl implements BattleService {
 
         Battle battle = new Battle();
         battle.setUserId(userId);
-        battle.setStageId(null); // Practice mode has no real stage
+
+        // Retrieve user's portfolios and select the latest one
+        List<com.mayonedev.battle.domain.gamification.entity.Portfolio> portfolios = portfolioDao
+                .findAllByUserId(userId);
+        if (portfolios != null && !portfolios.isEmpty()) {
+            battle.setPfId(portfolios.get(0).getPfId());
+        } else {
+            // For practice, if they have no portfolio but have bookmarks (unlikely but
+            // possible if portfolio deleted?),
+            // we might need a fallback or fail.
+            // Given bookmarks exist, they probably had a portfolio.
+            // If portfolio is missing, maybe set 0 or fail. Let's fail for consistency.
+            throw new RuntimeException("Portfolio not found. Please create a portfolio first.");
+        }
+
+        battle.setStageId(0L); // Practice mode uses 0
         battle.setStatus("IN_PROGRESS");
         battle.setTotalDamage(0);
         battle.setCreatedAt(LocalDateTime.now());
-        battle.setStageTitle("오답 복습 (Practice)"); // Virtual Title
+        battle.setStageTitle("오답 복습 (Practice)");
 
         // Generate battleId
         Long maxBattleId = battleDao.findMaxBattleIdByUserId(userId);
@@ -272,19 +394,15 @@ public class BattleServiceImpl implements BattleService {
 
         battleDao.insert(battle);
 
-        long detailIdCounter = 1;
         for (BattleBookmark b : selected) {
-            BattleDetail detail = new BattleDetail();
-            detail.setUserId(userId);
-            detail.setBattleId(nextBattleId);
-            detail.setDetailId(detailIdCounter++);
-            detail.setQuestionText(b.getQuestionText());
-            detail.setDifficulty(b.getDifficulty() != null ? b.getDifficulty() : "Normal");
-            detail.setKeywordTags(b.getKeywordTags() != null ? b.getKeywordTags() : "Practice");
-            detail.setCreatedAt(LocalDateTime.now());
-            detail.setDamage(0);
+            com.mayonedev.battle.domain.battle.entity.BookmarkPractice practice = new com.mayonedev.battle.domain.battle.entity.BookmarkPractice();
+            practice.setUserId(userId);
+            practice.setBookmarkId(b.getBookmarkId());
+            practice.setPracticeId(nextBattleId); // Use BattleId as PracticeId
+            practice.setCreatedAt(LocalDateTime.now());
+            practice.setDamage(0);
 
-            battleDetailDao.insert(detail);
+            bookmarkPracticeDao.insert(practice);
         }
 
         return battle;

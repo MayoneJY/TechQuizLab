@@ -12,6 +12,9 @@
         <result property="aiFeedback" column="ai_feedback"/>
         <result property="damage" column="damage"/>
         <result property="createdAt" column="created_at"/>
+        <result property="questionText" column="question_text"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="keywordTags" column="keyword_tags"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BookmarkPractice">
@@ -29,5 +32,23 @@
         WHERE user_id = #{userId} AND bookmark_id = #{bookmarkId}
         ORDER BY practice_id DESC
     </select>
+
+    <select id="findByPracticeId" resultMap="bookmarkPracticeResultMap">
+        SELECT bp.*, bd.question_text, bd.difficulty, bd.keyword_tags
+        FROM bookmark_practice bp
+        JOIN battle_bookmark bb ON bp.bookmark_id = bb.bookmark_id
+        JOIN battle_detail bd ON bb.ref_battle_id = bd.battle_id AND bb.ref_detail_id = bd.detail_id
+        WHERE bp.user_id = #{userId} AND bp.practice_id = #{practiceId}
+    </select>
+
+    <update id="updateResult" parameterType="com.mayonedev.battle.domain.battle.entity.BookmarkPractice">
+        UPDATE bookmark_practice
+        SET user_answer = #{userAnswer},
+            ai_feedback = #{aiFeedback},
+            damage = #{damage}
+        WHERE user_id = #{userId} 
+          AND bookmark_id = #{bookmarkId}
+          AND practice_id = #{practiceId}
+    </update>
 
 </mapper>
