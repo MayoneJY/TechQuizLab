@@ -49,7 +49,7 @@
 		from post p
     </select>
     
-	<!-- 게시글 조회(user id) -->
+    <!-- 게시글 조회(user id) -->
     <select id="selectPostByUserId" parameterType="long" resultMap="BoardPostDtoMap">
         select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
 		from post p
@@ -153,5 +153,7 @@
 		from board
 		where board_name = #{tags};
 	</select>
+    
+
 
 </mapper>

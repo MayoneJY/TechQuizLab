@@ -1,9 +1,9 @@
 package com.mayonedev.battle.domain.board.dao;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.mayonedev.battle.domain.board.dto.BoardPostlikeDto;
 import com.mayonedev.battle.domain.board.entity.PostLike;
@@ -16,6 +16,9 @@ public interface BoardPostlikeDao {
 
 	// 좋아요 삭제
 	void deletePostLike(BoardPostlikeDto postlikeParm) throws Exception;
+
+	// 게시글의 좋아요 일괄 삭제
+	void deleteLikesByPostId(@Param("boardId") long boardId, @Param("postId") long postId) throws Exception;
 
 	// 게시글의 좋아요 개수 조회
 	int countPostLike(BoardPostlikeDto postlikeParm) throws Exception;

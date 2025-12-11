@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.mayonedev.battle.domain.board.dto.BoardPostDto;
 import com.mayonedev.battle.domain.board.entity.Post;
@@ -16,7 +17,7 @@ public interface BoardPostDao {
 
     // 게시글 조회(All 페이징)
     List<BoardPostDto> selectPostAllWithPaging(Map<String, Object> params) throws Exception;
-    
+
     // 게시글 총 개수 조회
     int selectPostAllCount() throws Exception;
 
@@ -28,10 +29,10 @@ public interface BoardPostDao {
 
     // 게시글 조회(tags)
     List<BoardPostDto> selectByPostTags(String tags) throws Exception;
-    
+
     // 게시글 조회(tags)
     List<BoardPostDto> selectByPostTagsWithPaging(Map<String, Object> params) throws Exception;
-    
+
     // 게시글 총 개수 조회(tags)
     int selectByPostTagsCount(String tags) throws Exception;
 

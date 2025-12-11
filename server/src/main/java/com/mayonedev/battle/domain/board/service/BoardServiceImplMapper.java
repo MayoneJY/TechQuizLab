@@ -6,8 +6,11 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.mayonedev.battle.domain.board.dao.BoardCommentDao;
 import com.mayonedev.battle.domain.board.dao.BoardPostDao;
+import com.mayonedev.battle.domain.board.dao.BoardPostlikeDao;
 import com.mayonedev.battle.domain.board.dto.BoardPostDto;
 import com.mayonedev.battle.domain.board.entity.Post;
 
@@ -16,6 +19,12 @@ public class BoardServiceImplMapper implements BoardService {
 
 	@Autowired
 	public BoardPostDao bDao;
+
+	@Autowired
+	public BoardCommentDao commentDao;
+
+	@Autowired
+	public BoardPostlikeDao likeDao;
 
 	@Override
 	public List<BoardPostDto> selectPostAll() throws Exception {
@@ -64,8 +73,6 @@ public class BoardServiceImplMapper implements BoardService {
 			tags = "팁";
 		if (tags.equals("free"))
 			tags = "자유";
-
-		System.out.println(tags + "=======================");
 
 		return bDao.selectByPostTags(tags);
 	}
@@ -121,7 +128,26 @@ public class BoardServiceImplMapper implements BoardService {
 	}
 
 	@Override
+	@Transactional
 	public void deletePost(Map<String, Object> params) throws Exception {
+		Object boardIdObj = params.get("boardId");
+		Object postIdObj = params.get("postId");
+
+		long boardId = boardIdObj instanceof Number ? ((Number) boardIdObj).longValue()
+				: Long.parseLong(boardIdObj.toString());
+		long postId = postIdObj instanceof Number ? ((Number) postIdObj).longValue()
+				: Long.parseLong(postIdObj.toString());
+
+		// 1. 대댓글의 부모 참조를 먼저 끊는다 (순환 참조 회피)
+		commentDao.disconnectComments(boardId, postId);
+
+		// 2. 모든 댓글 삭제
+		commentDao.deleteCommentsByPostId(boardId, postId);
+
+		// 3. 좋아요 삭제
+		likeDao.deleteLikesByPostId(boardId, postId);
+
+		// 4. 게시글 삭제
 		bDao.deletePost(params);
 	}
 
@@ -140,8 +166,6 @@ public class BoardServiceImplMapper implements BoardService {
 			tags = "팁";
 		if (tags.equals("free"))
 			tags = "자유";
-
-		System.out.println(tags + "=======================");
 
 		return bDao.selectBoardId(tags);
 	}

@@ -88,5 +88,18 @@
         DELETE FROM comment
         WHERE comment_id = #{commentId}
     </delete>
+    
+    <!-- 댓글 부모 참조 해제 (NULL로 업데이트) - 순환 참조 회피 -->
+    <update id="disconnectComments">
+        UPDATE comment
+        SET parent_comment_id = NULL
+        WHERE board_id = #{boardId} AND post_id = #{postId}
+    </update>
+
+    <!-- 게시글의 모든 댓글 일괄 삭제 -->
+    <delete id="deleteCommentsByPostId">
+        DELETE FROM comment 
+        WHERE board_id = #{boardId} AND post_id = #{postId}
+    </delete>
 
 </mapper>
