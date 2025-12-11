@@ -52,8 +52,8 @@
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.user.entity.User" 
             useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO user (email, password, nickname, level, exp, role, enabled, solved_count, current_streak, max_streak, created_at, remaining_lives, last_lives_reset_at)
-        VALUES (#{email}, #{password}, #{nickname}, 1, 0, 'USER', 1, 0, 0, 0, #{createdAt}, 5, NOW())
+        INSERT INTO user (email, password, nickname, level, exp, role, enabled, solved_count, current_streak, max_streak, remaining_lives, last_lives_reset_at)
+        VALUES (#{email}, #{password}, #{nickname}, 1, 0, 'USER', 1, 0, 0, 0, 5, NOW())
     </insert>
 
     <update id="update" parameterType="com.mayonedev.battle.domain.user.entity.User">

@@ -5,23 +5,23 @@ import { boardApi } from '../services/api'
 
 //보여줄 게시글 
 export interface Post {
-    id: number              // 게시글 ID (post_id)
-    userId: number          // 작성자 ID
-    title: string           // 게시글 제목
-    content: string         // 게시글 내용
-    createdAt: string      // 작성 시간 (LocalDateTime -> string으로 변환됨)
-    updatedAt: string      // 수정 시간
-    view: number            // 조회수
-    tags: string            // 태그 (쉼표로 구분된 문자열)
+    post_id: number              // 게시글 ID (post_id)
+    board_id: number             // 게시판 ID
+    user_id: number              // 작성자 ID
+    title: string                // 게시글 제목
+    content: string              // 게시글 내용
+    view_count: number           // 조회수
+    created_at: string           // 작성 시간 (LocalDateTime -> string으로 변환됨)
+    nickname: string             // 작성자 닉네임
+    tags: string                 // 태그 (쉼표로 구분된 문자열)
+    comment_count?: number       // 댓글 개수
 }
 
 //게시글 작성 및 수정 (클라->백엔)
 export interface PostCreateAndUpdateDto {
-    //id : URL 로 이동 
-    userId: number          // 작성자 ID
     title: string           // 게시글 제목
     content: string         // 게시글 내용
-    tags: string
+    tags: string            // 태그
 }
 
 export const useBoardStore2 = defineStore('board2', () => {
@@ -34,26 +34,41 @@ export const useBoardStore2 = defineStore('board2', () => {
 
     const isLoading = ref(false) // 서버에 요청을 보내는 중이라는 표시용 (로딩바)
 
-    const error = ref<string | null>(null) // 에러 
+    const error = ref<string | null>(null) // 에러
+    
+    // 페이징 관련 상태
+    const currentPage = ref(1) // 현재 페이지
+    const pageSize = ref(10) // 페이지당 게시글 수
+    const totalPages = ref(1) // 전체 페이지 수
+    const totalCount = ref(0) // 전체 게시글 수 
 
     //모든 게시글 전체 조회
-    async function fetchAllPosts() {
+    async function fetchAllPosts(page?: number, size?: number) {
         isLoading.value = true
         error.value = null
 
         try {
-            // boardApi.getAllPosts() 호출 -> GET /api/boards/post
-            const response = await boardApi.getAllPosts()
+            // 페이징 파라미터가 있으면 페이징 조회, 없으면 전체 조회
+            const response = await boardApi.getAllPosts(page, size)
 
             // 서버 응답 데이터 유효성 검사
             if (Array.isArray(response.data)) {
-                // 서버에서 받은 데이터를 posts에 저장
+                // 페이징 없이 전체 조회한 경우
                 posts.value = response.data
+                currentPage.value = 1
+                totalPages.value = 1
+                totalCount.value = response.data.length
                 console.log('게시글 목록 조회 성공:', posts.value.length, '개')
+            } else if (response.data && typeof response.data === 'object' && response.data.posts) {
+                // 페이징 조회한 경우
+                posts.value = response.data.posts
+                currentPage.value = response.data.currentPage || 1
+                totalPages.value = response.data.totalPages || 1
+                totalCount.value = response.data.totalCount || 0
+                console.log('게시글 목록 조회 성공 (페이징):', posts.value.length, '개 / 전체:', totalCount.value, '개 / 페이지:', currentPage.value, '/', totalPages.value)
             } else {
-                console.error('게시글 목록 조회 실패: 응답 데이터가 배열이 아닙니다.', response.data)
+                console.error('게시글 목록 조회 실패: 응답 데이터가 올바르지 않습니다.', response.data)
                 posts.value = [] // 빈 배열로 초기화하여 화면 깨짐 방지
-                // 에러 메시지 설정 (선택 사항)
                 error.value = '서버에서 올바르지 않은 데이터를 반환했습니다.'
             }
 
@@ -78,23 +93,38 @@ export const useBoardStore2 = defineStore('board2', () => {
     }
 
     //게시글 태그 조회
-    async function fetchPostsByTags(tags: string) {
+    async function fetchPostsByTags(tags: string, page?: number, size?: number) {
         isLoading.value = true
         error.value = null
 
         try {
             // boardApi.getPostByTags(tags) -> GET /api/boards/post/tags/{tags}
-            const response = await boardApi.getPostbyTags(tags)
+            const response = await boardApi.getPostbyTags(tags, page, size)
 
-            const list = response.data?.resvalue ?? response.data  // 유연하게 처리
-
-            if (Array.isArray(list)) {
-                posts.value = list
-                console.log('게시글 태그 조회 성공:', posts.value.length, '개')
+            // 페이징 응답인지 확인
+            if (response.data?.resvalue && typeof response.data.resvalue === 'object' && response.data.resvalue.posts) {
+                // 페이징 조회한 경우
+                const result = response.data.resvalue
+                posts.value = result.posts || []
+                currentPage.value = result.currentPage || 1
+                totalPages.value = result.totalPages || 1
+                totalCount.value = result.totalCount || 0
+                console.log('게시글 태그 조회 성공 (페이징):', posts.value.length, '개 / 전체:', totalCount.value, '개 / 페이지:', currentPage.value, '/', totalPages.value)
             } else {
-                console.error('게시글 태그 조회 실패: 응답 데이터가 배열이 아닙니다.', response.data)
-                posts.value = []
-                error.value = '서버에서 올바르지 않은 데이터를 반환했습니다.'
+                // 페이징 없이 전체 조회한 경우
+                const list = response.data?.resvalue ?? response.data  // 유연하게 처리
+
+                if (Array.isArray(list)) {
+                    posts.value = list
+                    currentPage.value = 1
+                    totalPages.value = 1
+                    totalCount.value = list.length
+                    console.log('게시글 태그 조회 성공:', posts.value.length, '개')
+                } else {
+                    console.error('게시글 태그 조회 실패: 응답 데이터가 배열이 아닙니다.', response.data)
+                    posts.value = []
+                    error.value = '서버에서 올바르지 않은 데이터를 반환했습니다.'
+                }
             }
 
             return posts.value
@@ -117,14 +147,14 @@ export const useBoardStore2 = defineStore('board2', () => {
     }
 
 
-    //게시글 상세 조회
-    async function fetchPostById(postId: number) {
+    //게시글 상세 조회 - 복합키 사용
+    async function fetchPostById(boardId: number, postId: number) {
         isLoading.value = true
         error.value = null
 
         try {
-            // boardApi.getPostByPostId(postId) 호출 -> GET /api/boards/post/{id}
-            const response = await boardApi.getPostByPostId(postId)
+            // boardApi.getPostByPostId(boardId, postId) 호출 -> GET /api/boards/{board_id}/post/{post_id}
+            const response = await boardApi.getPostByPostId(boardId, postId)
 
             // 백엔드 응답 구조: { resmsg: string, resvalue: Board }
             if (response.data && response.data.resvalue) {
@@ -167,7 +197,6 @@ export const useBoardStore2 = defineStore('board2', () => {
         try {
             // 서버로 보낼 데이터 구성
             const postDto: PostCreateAndUpdateDto = {
-                userId: authStore.user.id,
                 title,
                 content,
                 tags: tags || ''
@@ -199,8 +228,8 @@ export const useBoardStore2 = defineStore('board2', () => {
         }
     }
 
-    //게시글 수정
-    async function updatePost(postId: number, title: string, content: string, tags?: string) {
+    //게시글 수정 - 복합키 사용
+    async function updatePost(boardId: number, postId: number, title: string, content: string, tags?: string) {
         // 로그인 체크
         if (!authStore.user) {
             error.value = '로그인이 필요합니다.'
@@ -213,14 +242,13 @@ export const useBoardStore2 = defineStore('board2', () => {
         try {
             // 서버로 보낼 데이터 구성
             const postDto: PostCreateAndUpdateDto = {
-                userId: authStore.user.id,
                 title,
                 content,
                 tags: tags || ''
             }
 
-            // boardApi.updatePost(postId) 호출 -> PATCH /api/boards/post/{id}
-            const response = await boardApi.updatePost(postId, postDto)
+            // boardApi.updatePost(boardId, postId, postDto) 호출 -> PATCH /api/boards/{board_id}/post/{post_id}
+            const response = await boardApi.updatePost(boardId, postId, postDto)
 
             console.log('게시글 수정 성공:', response.data)
 
@@ -228,8 +256,8 @@ export const useBoardStore2 = defineStore('board2', () => {
             await fetchAllPosts()
 
             // 현재 보고 있던 게시글이면 상세도 새로고침
-            if (currentPost.value?.id === postId) {
-                await fetchPostById(postId)
+            if (currentPost.value?.post_id === postId) {
+                await fetchPostById(boardId, postId)
             }
 
             return response.data
@@ -249,8 +277,8 @@ export const useBoardStore2 = defineStore('board2', () => {
         }
     }
 
-    //게시글 삭제
-    async function deletePost(postId: number) {
+    //게시글 삭제 - 복합키 사용
+    async function deletePost(boardId: number, postId: number) {
 
         // 로그인 체크
         if (!authStore.user) {
@@ -262,8 +290,8 @@ export const useBoardStore2 = defineStore('board2', () => {
         error.value = null
 
         try {
-            // boardApi.deletePost(postId) 호출 -> DELETE /api/boards/post/{id}
-            const response = await boardApi.deletePost(postId)
+            // boardApi.deletePost(boardId, postId) 호출 -> DELETE /api/boards/{board_id}/post/{post_id}
+            const response = await boardApi.deletePost(boardId, postId)
 
             console.log('게시글 삭제 성공:', response.data)
 
@@ -271,7 +299,7 @@ export const useBoardStore2 = defineStore('board2', () => {
             await fetchAllPosts()
 
             // 현재 보고 있던 게시글이면 null로 초기화
-            if (currentPost.value?.id === postId) {
+            if (currentPost.value?.post_id === postId) {
                 currentPost.value = null
             }
 
@@ -310,6 +338,12 @@ export const useBoardStore2 = defineStore('board2', () => {
         currentPost,
         isLoading,
         error,
+        
+        // 페이징 State
+        currentPage,
+        pageSize,
+        totalPages,
+        totalCount,
 
         // Actions
         fetchAllPosts,

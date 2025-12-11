@@ -1,78 +1,149 @@
 package com.mayonedev.battle.domain.board.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mayonedev.battle.domain.board.dao.BoardPostDao;
-import com.mayonedev.battle.domain.board.entity.Board;
+import com.mayonedev.battle.domain.board.dto.BoardPostDto;
+import com.mayonedev.battle.domain.board.entity.Post;
 
 @Service("BoardServiceImplMapper")
 public class BoardServiceImplMapper implements BoardService {
 
-    @Autowired
-    public BoardPostDao bDao;
+	@Autowired
+	public BoardPostDao bDao;
 
-    @Override
-    public List<Board> selectPostAll() throws Exception {
-        System.out.println("서비스 까지 들어옴");
-        try {
-            return bDao.selectPostAll();
-        } catch (Exception e) {
-            e.printStackTrace(); // 🔥 여기서 콘솔에 SQL / NPE 원인 다 나옴
-            throw e;
-        }
+	@Override
+	public List<BoardPostDto> selectPostAll() throws Exception {
+		return bDao.selectPostAll();
+	}
+	
+	@Override
+	public Map<String, Object> selectPostAllWithPaging(int page, int size) throws Exception {
+		Map<String, Object> params = new HashMap<>();
+		int offset = (page - 1) * size;
+		params.put("offset", offset);
+		params.put("size", size);
+		
+		List<BoardPostDto> posts = bDao.selectPostAllWithPaging(params);
+		int totalCount = bDao.selectPostAllCount();
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("posts", posts);
+		result.put("totalCount", totalCount);
+		result.put("totalPages", totalPages);
+		result.put("currentPage", page);
+		result.put("size", size);
+		
+		return result;
+	}
 
-    }
+	@Override
+	public List<BoardPostDto> selectPostByUserId(long userId) throws Exception {
+		return bDao.selectPostByUserId(userId);
+	}
 
-    @Override
-    public List<Board> selectpostbyuserid(long userId) throws Exception {
-        return bDao.selectpostbyuserid(userId);
-    }
+	@Override
+	public BoardPostDto selectByPostId(Map<String, Object> params) throws Exception {
+		return bDao.selectByPostId(params);
+	}
 
-    @Override
-    public Board selectByPostId(int id) throws Exception {
-        return bDao.selectByPostId(id);
-    }
+	@Override
+	public List<BoardPostDto> selectByPostTags(String tags) throws Exception {
 
-    @Override
-    public List<Board> selectpostByTags(String tags) throws Exception {
-        System.out.println("태그 서비스 까지 들어옴");
-        try {
-            return bDao.selectByPostTags(tags);
-        } catch (Exception e) {
-            e.printStackTrace(); // 🔥 여기서 콘솔에 SQL / NPE 원인 다 나옴
-            throw e;
-        }
+		if (tags.equals("general"))
+			tags = "일반";
+		if (tags.equals("question"))
+			tags = "질문";
+		if (tags.equals("tip"))
+			tags = "팁";
+		if (tags.equals("free"))
+			tags = "자유";
 
-    }
+		System.out.println(tags + "=======================");
 
-    @Override
-    public List<Board> selectPostByNickName(String nickname) throws Exception {
+		return bDao.selectByPostTags(tags);
+	}
+	
+	@Override
+	public Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size) throws Exception {
+		if (tags.equals("general"))
+			tags = "일반";
+		if (tags.equals("question"))
+			tags = "질문";
+		if (tags.equals("tip"))
+			tags = "팁";
+		if (tags.equals("free"))
+			tags = "자유";
+		
+		Map<String, Object> params = new HashMap<>();
+		int offset = (page - 1) * size;
+		params.put("offset", offset);
+		params.put("size", size);
+		params.put("tags", tags);
+		
+		List<BoardPostDto> posts = bDao.selectByPostTagsWithPaging(params);
+		int totalCount = bDao.selectByPostTagsCount(tags);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("posts", posts);
+		result.put("totalCount", totalCount);
+		result.put("totalPages", totalPages);
+		result.put("currentPage", page);
+		result.put("size", size);
+		
+		return result;
+	}
 
-        return bDao.selectPostByNickName(nickname);
-    }
+	@Override
+	public List<BoardPostDto> selectPostByNickName(String nickname) throws Exception {
+		return bDao.selectPostByNickName(nickname);
+	}
 
-    @Override
-    public void insertPost(Board board) throws Exception {
+	@Override
+	public void insertPost(Post Post) throws Exception {
+		bDao.insertPost(Post);
+	}
 
-        bDao.insertPost(board);
-    }
+	@Override
+	public BoardPostDto updatePost(Post Post) throws Exception {
+		bDao.updatePost(Post);
+		Map<String, Object> params = new HashMap<>();
+		params.put("board_id", Post.getBoard_id());
+		params.put("post_id", Post.getPost_id());
+		return bDao.selectByPostId(params);
+	}
 
-    @Override
-    public void updatePost(Board board) throws Exception {
-        bDao.updatePost(board);
-    }
+	@Override
+	public void deletePost(Map<String, Object> params) throws Exception {
+		bDao.deletePost(params);
+	}
 
-    @Override
-    public void deletePost(int id) throws Exception {
-        bDao.deletePost(id);
-    }
+	@Override
+	public void increaseViewCount(Map<String, Object> params) throws Exception {
+		bDao.increaseViewCount(params);
+	}
 
-    @Override
-    public int increaseViewCount(int id) throws Exception {
-        return bDao.increaseViewCount(id);
-    }
+	@Override
+	public long selectBoardId(String tags) {
+		if (tags.equals("general"))
+			tags = "일반";
+		if (tags.equals("question"))
+			tags = "질문";
+		if (tags.equals("tip"))
+			tags = "팁";
+		if (tags.equals("free"))
+			tags = "자유";
+
+		System.out.println(tags + "=======================");
+
+		return bDao.selectBoardId(tags);
+	}
 
 }

@@ -3,58 +3,155 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.mayonedev.battle.domain.board.dao.BoardPostDao">
+	
+	<!-- ResultMap for BoardPostDto -->
+	<resultMap id="BoardPostDtoMap" type="com.mayonedev.battle.domain.board.dto.BoardPostDto">
+		<id property="board_id" column="board_id"/>
+		<id property="post_id" column="post_id"/>
+		<result property="user_id" column="user_id"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="view_count" column="view_count"/>
+		<result property="created_at" column="created_at"/>
+		<result property="nickname" column="nickname"/>
+		<result property="tags" column="tags"/>
+		<result property="comment_count" column="comment_count"/>
+	</resultMap>
+	
 	<!-- 게시글 조회(All) -->
-    <select id="selectPostAll" parameterType="board" resultType="com.mayonedev.battle.domain.board.entity.Board">
-        select * from board
+    <select id="selectPostAll" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+               COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
     </select>
-	<!-- 게시글 조회(user id) -->
-    <select id="selectpostbyuserid" parameterType="int" resultType="com.mayonedev.battle.domain.board.entity.Board">
-        select * from board where user_id = #{id}
-    </select>
-	<!-- 게시글 조회(post id) -->
-    <select id="selectByPostId" parameterType="int" resultType="com.mayonedev.battle.domain.board.entity.Board">
-        select * from board where id = #{id}
-    </select>
-    <!-- 게시글 조회(tags) -->
-	<select id="selectByPostTags" parameterType="board" resultType="com.mayonedev.battle.domain.board.entity.Board">
-		select * from board where tags=#{tags}
-	</select>    
-	<!-- 게시글 조회(NickName) -->
-    <select id="selectPostByNickName" parameterType="string" resultType="com.mayonedev.battle.domain.board.entity.Board">
     
-        select * 
-        from board
-        where user_id = (
-            select id
-            from user
-            where nickname = #{nickname}
-        )
+    <!-- 게시글 조회(All) - 페이징 -->
+    <select id="selectPostAllWithPaging" parameterType="map" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+               COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
+		limit #{size} offset #{offset}
     </select>
+    
+    <!-- 게시글 총 개수 조회 -->
+    <select id="selectPostAllCount" resultType="int">
+        select count(distinct p.board_id, p.post_id)
+		from post p
+    </select>
+    
+	<!-- 게시글 조회(user id) -->
+    <select id="selectPostByUserId" parameterType="long" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		where p.user_id = #{user_id};
+    </select>
+    
+	<!-- 게시글 조회(post id) -->
+    <select id="selectByPostId" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		where p.board_id = #{board_id} AND p.post_id = #{post_id};
+    </select>
+    
+    <!-- 게시글 조회(tags) -->
+	<select id="selectByPostTags" parameterType="string" resultMap="BoardPostDtoMap">
+		select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+		       COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join board b on p.board_id = b.board_id
+		join user u on p.user_id = u.user_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		where b.board_name = #{tags}
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc;
+	</select>
+	
+	<!-- 게시글 조회(tags) - 페이징 -->
+	<select id="selectByPostTagsWithPaging" parameterType="map" resultMap="BoardPostDtoMap">
+		select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+		       COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join board b on p.board_id = b.board_id
+		join user u on p.user_id = u.user_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		where b.board_name = #{tags}
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
+		limit #{size} offset #{offset}
+	</select>
+	
+	<!-- 게시글 총 개수 조회(tags) -->
+	<select id="selectByPostTagsCount" parameterType="string" resultType="int">
+		select count(distinct p.board_id, p.post_id)
+		from post p
+		join board b on p.board_id = b.board_id
+		where b.board_name = #{tags}
+	</select>
+	
+	<!-- 게시글 조회(NickName) -->
+    <select id="selectPostByNickName" parameterType="string" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		where u.nickname = #{nickname};
+    </select>
+    
     <!-- 게시글 작성 -->
-    <insert id="insertPost" parameterType="com.mayonedev.battle.domain.board.entity.Board">
-        insert into board (user_id, title, content, view, tags)
-        VALUES (#{userId}, #{title}, #{content}, 0, #{tags})
+    <insert id="insertPost" parameterType="com.mayonedev.battle.domain.board.entity.Post">
+    
+        <selectKey keyProperty="post_id" resultType="long" order="BEFORE">
+            SELECT IFNULL(MAX(post_id) + 1, 1)
+            FROM post
+            WHERE board_id = #{board_id}
+            FOR UPDATE
+        </selectKey>
+        
+        INSERT INTO post (board_id, post_id, title, content, user_id, created_at)
+        VALUES (#{board_id}, #{post_id}, #{title}, #{content}, #{user_id}, NOW());
     </insert>
     
 	<!-- 게시글 수정 -->
-    <update id="updatePost" parameterType="com.mayonedev.battle.domain.board.entity.Board">
-        update board set 
-            title      = #{title},
-            content    = #{content},
-            view       = #{view},
-            tags       = #{tags}
-        where id 	   = #{id}
+    <update id="updatePost" parameterType="com.mayonedev.battle.domain.board.entity.Post">
+		update post
+		set
+		board_id = #{board_id},
+		title = #{title},
+		content = #{content}
+		where post_id = #{post_id};
     </update>
     
 	<!--게시글 삭제-->
-    <delete id="deletePost" parameterType="int">
-        delete from board where id = #{id}
+    <delete id="deletePost">
+        delete from post where board_id = #{board_id} AND post_id = #{post_id}
     </delete>
     
 	<!-- 게시글 조회수 저장 -->
-	<update id="increaseViewCount" parameterType="int">
-		update board
-		SET view = view +1
-		WHERE id = #{id}
+	<update id="increaseViewCount">
+		update post
+		SET view_count = view_count +1
+		WHERE board_id = #{board_id} AND post_id = #{post_id}
 	</update>
+
+	<!-- 게시판 카테고리 가져오기 -->
+	<select id="selectBoardId" parameterType="string" resultType="long">
+		select board_id
+		from board
+		where board_name = #{board_name};
+	</select>
+
 </mapper>

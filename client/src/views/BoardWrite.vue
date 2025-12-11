@@ -102,29 +102,46 @@ onMounted(async () => {
   }
 
   if (isEdit.value && postId.value) {
-    await boardStore.fetchPostById(postId.value)
-    const post = boardStore.currentPost
-    if (!post) {
-      modalStore.openAlert('게시글을 찾을 수 없습니다.')
-      router.push('/board')
-      return
-    }
+    try {
+      await boardStore.fetchAllPosts()
+      const foundPost = boardStore.posts.find(p => p.post_id === postId.value)
+      
+      if (!foundPost) {
+        modalStore.openAlert('게시글을 찾을 수 없습니다.')
+        router.push('/board')
+        return
+      }
+      
+      await boardStore.fetchPostById(foundPost.board_id, postId.value)
+      const post = boardStore.currentPost
+      
+      
+      if (!post) {
+        modalStore.openAlert('게시글을 찾을 수 없습니다.')
+        router.push('/board')
+        return
+      }
 
-    if (post.userId !== authStore.user?.userId) {
-      await modalStore.openAlert('수정 권한이 없습니다.')
+      if (post.user_id !== authStore.user?.userId) {
+        modalStore.openAlert('수정 권한이 없습니다.')
+        router.push('/board')
+        return
+      }
+      
+      const categoryMap: Record<string, 'general' | 'question' | 'tip' | 'free'> = {
+          '일반': 'general',
+          '질문': 'question',
+          '팁': 'tip',
+          '자유': 'free'
+        }
+      form.value = {
+        category: categoryMap[post.tags] || post.tags as any || 'general',
+        title: post.title,
+        content: post.content
+      }
+    } catch (error) {
+      modalStore.openAlert('게시글을 불러오는데 실패했습니다.')
       router.push('/board')
-      return
-    }
-
-    form.value = {
-      category: post.category,
-      title: post.title,
-      content: post.content
-    }
-    form.value = {
-      category: (post.tags as 'general' | 'question' | 'tip' | 'free') || 'general',
-      title: post.title,
-      content: post.content
     }
   }
 })
@@ -148,9 +165,17 @@ async function handleSubmit() {
     return
   }
 
-try {
+  try {
     if (isEdit.value && postId.value) {
+      const post = boardStore.currentPost
+      if (!post) {
+        alert('게시글 정보를 찾을 수 없습니다.')
+        return
+      }
+      
+      // 복합키 사용
       await boardStore.updatePost(
+        post.board_id,
         postId.value,
         form.value.title,
         form.value.content,
@@ -159,8 +184,7 @@ try {
       await modalStore.openAlert('게시글이 수정되었습니다.')
       router.push(`/board/${postId.value}`)
     } else {
-
-      await boardStore.createPost(
+      const newPost = await boardStore.createPost(
         form.value.title,
         form.value.content,
         form.value.category,
@@ -361,5 +385,3 @@ try {
   text-transform: none !important;
 }
 </style>
-
-
