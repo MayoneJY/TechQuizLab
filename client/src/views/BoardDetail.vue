@@ -276,7 +276,7 @@ async function handleDelete() {
   }
   try {
     await boardStore.deletePost(post.value.boardId, post.value.postId)
-    await modalStore.openAlert('게시글이 삭제되었습니다.')
+    await modalStore.openSuccess('게시글이 삭제되었습니다.')
     goBack()
   } catch (error: any) {
     await modalStore.openAlert(error.message || '삭제에 실패했습니다.')

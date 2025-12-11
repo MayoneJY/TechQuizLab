@@ -22,6 +22,12 @@
               class="pixel-icon"
             />
             <img 
+              v-else-if="modalStore.type === 'success'" 
+              src="/assets/icons/icon-pixel-check.png" 
+              alt="Success" 
+              class="pixel-icon"
+            />
+            <img 
               v-else 
               src="/assets/icons/icon-pixel-alert.png" 
               alt="Alert" 
@@ -60,6 +66,7 @@ import { useModalStore } from '../stores/modal'
 const modalStore = useModalStore()
 
 const modalTitle = computed(() => {
+  if (modalStore.type === 'success') return 'SUCCESS'
   return modalStore.type === 'confirm' ? 'CONFIRMATION' : 'SYSTEM NOTICE'
 })
 </script>

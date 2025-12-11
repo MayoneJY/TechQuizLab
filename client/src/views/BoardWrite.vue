@@ -181,15 +181,15 @@ async function handleSubmit() {
         form.value.content,
         form.value.category,
       )
-      await modalStore.openAlert('게시글이 수정되었습니다.')
+      await modalStore.openSuccess('게시글이 수정되었습니다.')
       router.push(`/board/${postId.value}`)
     } else {
-      const newPost = await boardStore.createPost(
+      await boardStore.createPost(
         form.value.title,
         form.value.content,
         form.value.category,
       )
-      await modalStore.openAlert('게시글이 작성되었습니다.')
+      await modalStore.openSuccess('게시글이 작성되었습니다.')
 
       router.push('/board')
     }

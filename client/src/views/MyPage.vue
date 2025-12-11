@@ -171,7 +171,7 @@ async function saveProfile() {
     // Update store with new data
     authStore.user = { ...authStore.user, ...response.data }
     
-    await modalStore.openAlert('Profile updated successfully!')
+    await modalStore.openSuccess('Profile updated successfully!')
     isEditing.value = false
   } catch (error: any) {
     console.error('Failed to update profile:', error)
