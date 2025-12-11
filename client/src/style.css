@@ -120,6 +120,56 @@ body::-webkit-scrollbar-thumb:hover {
   transform: translateY(0);
 }
 
+/* Skeleton Loading Styles */
+.skeleton {
+  background-color: rgba(255, 255, 255, 0.15);
+  /* Increased opacity */
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  /* Fixed gradient */
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Specific Skeleton Shapes */
+.skeleton-text {
+  height: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  display: block;
+  /* Ensure it takes space */
+}
+
+.skeleton-title {
+  height: 24px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  display: block;
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .pixel-button::before {
   content: '';
   position: absolute;
@@ -135,7 +185,7 @@ body::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #5bb0ff 0%, #4a9eff 100%);
   transform: translateY(-4px) scale(1.05);
   box-shadow:
-    0 0 0 2px #fff,
+    0 0 0 2px rgba(255, 255, 255, 0.4),
     0 0 0 4px #000,
     12px 12px 0 0 #000,
     0 0 30px rgba(74, 158, 255, 0.6);
@@ -148,7 +198,7 @@ body::-webkit-scrollbar-thumb:hover {
 .pixel-button:active {
   transform: translateY(2px) scale(0.98);
   box-shadow:
-    0 0 0 2px #fff,
+    0 0 0 2px rgba(255, 255, 255, 0.4),
     0 0 0 4px #000,
     4px 4px 0 0 #000,
     0 0 15px rgba(74, 158, 255, 0.4);

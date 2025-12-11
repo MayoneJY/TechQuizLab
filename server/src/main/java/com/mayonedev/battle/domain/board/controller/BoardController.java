@@ -42,7 +42,9 @@ public class BoardController {
     @Operation(summary = "모든 게시글 조회", description = "모든 게시글 목록을 조회합니다. 페이징 파라미터(page, size)를 선택적으로 받을 수 있습니다.")
     public ResponseEntity<?> getAllPosts(
             @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "0") int size) throws Exception {
+            @RequestParam(required = false, defaultValue = "0") int size,
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false, defaultValue = "") String sort) throws Exception {
         if (page == 0 && size == 0) {
             List<BoardPostDto> posts = boardService.selectPostAll();
             return ResponseEntity.ok(posts);
@@ -51,7 +53,7 @@ public class BoardController {
             page = 1;
         if (size < 1)
             size = 10;
-        Map<String, Object> result = boardService.selectPostAllWithPaging(page, size);
+        Map<String, Object> result = boardService.selectPostAllWithPaging(page, size, search, sort);
         return ResponseEntity.ok(result);
     }
 
@@ -74,7 +76,9 @@ public class BoardController {
     public ResponseEntity<?> getPostByTags(
             @PathVariable String tags,
             @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "0") int size) throws Exception {
+            @RequestParam(required = false, defaultValue = "0") int size,
+            @RequestParam(required = false, defaultValue = "") String keyWord,
+            @RequestParam(required = false, defaultValue = "") String sort) throws Exception {
         if (page == 0 && size == 0) {
             List<BoardPostDto> posts = boardService.selectByPostTags(tags);
             Map<String, Object> map = Map.of("resmsg", "게시글 태그 조회", "resvalue", posts);
@@ -84,7 +88,7 @@ public class BoardController {
             page = 1;
         if (size < 1)
             size = 10;
-        Map<String, Object> result = boardService.selectByPostTagsWithPaging(tags, page, size);
+        Map<String, Object> result = boardService.selectByPostTagsWithPaging(tags, page, size, keyWord, sort);
         Map<String, Object> map = Map.of("resmsg", "게시글 태그 조회", "resvalue", result);
         return ResponseEntity.ok(map);
     }

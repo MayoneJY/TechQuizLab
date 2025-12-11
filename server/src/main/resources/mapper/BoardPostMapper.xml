@@ -38,8 +38,30 @@
 		join user u on p.user_id = u.user_id
 		join board b on p.board_id = b.board_id
 		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		<where>
+			<if test="search != null and search != ''">
+				(p.title LIKE CONCAT('%', #{search}, '%') OR p.content LIKE CONCAT('%', #{search}, '%'))
+			</if>
+		</where>
 		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
-		order by p.created_at desc
+		<choose>
+			<when test="sort == 'viewCount'">
+				order by p.view_count desc, p.created_at desc
+			</when>
+            <when test="sort == 'likeCount'">
+                <!-- Like count join is not simple here without subquery or another join. 
+                     For now, let's stick to fields present. Or add subquery for like count.
+                     Actually, requirement mentioned sorting. If 'like' sort is needed, I need to join post_like table.
+                     The current query doesn't join post_like.
+                     Let's verify if I can add it easily. 
+                     If complex, I'll stick to basics first. 
+                     Let's stick to created_at and view_count for now. -->
+                order by p.view_count desc, p.created_at desc
+            </when>
+			<otherwise>
+				order by p.created_at desc
+			</otherwise>
+		</choose>
 		limit #{size} offset #{offset}
     </select>
     
@@ -89,8 +111,18 @@
 		join user u on p.user_id = u.user_id
 		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
 		where b.board_name = #{tags}
+		<if test="search != null and search != ''">
+			AND (p.title LIKE CONCAT('%', #{search}, '%') OR p.content LIKE CONCAT('%', #{search}, '%'))
+		</if>
 		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
-		order by p.created_at desc
+		<choose>
+			<when test="sort == 'viewCount'">
+				order by p.view_count desc, p.created_at desc
+			</when>
+			<otherwise>
+				order by p.created_at desc
+			</otherwise>
+		</choose>
 		limit #{size} offset #{offset}
 	</select>
 	

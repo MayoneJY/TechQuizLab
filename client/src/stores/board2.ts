@@ -15,6 +15,7 @@ export interface Post {
     nickname: string
     tags: string
     commentCount?: number
+    level?: number
 }
 
 //게시글 작성 및 수정 (클라->백엔)
@@ -42,6 +43,10 @@ export const useBoardStore2 = defineStore('board2', () => {
     const totalPages = ref(1) // 전체 페이지 수
     const totalCount = ref(0) // 전체 게시글 수 
 
+    // 검색 및 정렬 상태
+    const currentSearch = ref('')
+    const currentSort = ref('latest') // 'latest', 'viewCount' 
+
     //모든 게시글 전체 조회
     async function fetchAllPosts(page?: number, size?: number) {
         isLoading.value = true
@@ -49,7 +54,8 @@ export const useBoardStore2 = defineStore('board2', () => {
 
         try {
             // 페이징 파라미터가 있으면 페이징 조회, 없으면 전체 조회
-            const response = await boardApi.getAllPosts(page, size)
+            // search, sort 추가
+            const response = await boardApi.getAllPosts(page, size, currentSearch.value, currentSort.value)
 
             // 서버 응답 데이터 유효성 검사
             if (Array.isArray(response.data)) {
@@ -99,7 +105,7 @@ export const useBoardStore2 = defineStore('board2', () => {
 
         try {
             // boardApi.getPostByTags(tags) -> GET /api/boards/post/tags/{tags}
-            const response = await boardApi.getPostbyTags(tags, page, size)
+            const response = await boardApi.getPostbyTags(tags, page, size, currentSearch.value, currentSort.value)
 
             // 페이징 응답인지 확인
             if (response.data?.resvalue && typeof response.data.resvalue === 'object' && response.data.resvalue.posts) {
@@ -356,6 +362,10 @@ export const useBoardStore2 = defineStore('board2', () => {
         updatePost,
         deletePost,
         clearError,
-        clearCurrentPost
+        clearCurrentPost,
+
+        // Search/Sort State
+        currentSearch,
+        currentSort
     }
 })

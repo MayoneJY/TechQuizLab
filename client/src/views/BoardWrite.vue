@@ -3,23 +3,28 @@
     <ParticleBackground />
     <div class="stars-container"></div>
     
-    <div class="board-write-container">
-      <div class="header">
-        <h1 class="pixel-text title">{{ isEdit ? '게시글 수정' : '게시글 작성' }}</h1>
-        <button class="pixel-button back-button" @click="goBack">
-          ← 목록으로
-        </button>
-      </div>
+    <div class="board-write-container dashboard-screen">
+       <!-- HEADER: Title -->
+      <header class="dashboard-header">
+        <h1 class="game-title pixel-text">
+          <span class="title-main glitch" :data-text="isEdit ? 'EDIT POST' : 'WRITE POST'">
+            {{ isEdit ? 'EDIT POST' : 'WRITE POST' }}
+          </span>
+        </h1>
+      </header>
 
-      <div class="write-form">
+      <div class="write-card glass-panel">
         <div class="form-group">
           <label class="pixel-text form-label">카테고리</label>
-          <select v-model="form.category" class="pixel-input form-select">
-            <option value="general">일반</option>
-            <option value="question">질문</option>
-            <option value="tip">팁</option>
-            <option value="free">자유</option>
-          </select>
+          <div class="select-wrapper">
+             <select v-model="form.category" class="glass-input form-select">
+                <option value="general">일반</option>
+                <option value="question">질문</option>
+                <option value="tip">팁</option>
+                <option value="free">자유</option>
+             </select>
+             <div class="select-arrow">▼</div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -27,7 +32,7 @@
           <input
             v-model="form.title"
             type="text"
-            class="pixel-input form-input"
+            class="glass-input form-input"
             placeholder="제목을 입력하세요"
             maxlength="100"
           />
@@ -37,7 +42,7 @@
           <label class="pixel-text form-label">내용</label>
           <textarea
             v-model="form.content"
-            class="pixel-input form-textarea"
+            class="glass-input form-textarea"
             placeholder="내용을 입력하세요"
             rows="15"
           ></textarea>
@@ -47,8 +52,8 @@
           <button class="pixel-button cancel-button" @click="goBack">
             취소
           </button>
-          <button class="pixel-button submit-button" @click="handleSubmit">
-            {{ isEdit ? '수정' : '작성' }}
+          <button class="pixel-button primary submit-button" @click="handleSubmit">
+            {{ isEdit ? '수정 완료' : '작성 완료' }}
           </button>
         </div>
       </div>
@@ -103,19 +108,24 @@ onMounted(async () => {
 
   if (isEdit.value && postId.value) {
     try {
-      await boardStore.fetchAllPosts()
-      const foundPost = boardStore.posts.find(p => p.postId === postId.value)
+      // Try to get post from store first
+      let post = boardStore.posts.find(p => p.postId === postId.value) || boardStore.currentPost;
       
-      if (!foundPost) {
-        modalStore.openAlert('게시글을 찾을 수 없습니다.')
-        router.push('/board')
-        return
+      // If not in simple list or currentPost, fetch it
+      if (!post || post.postId !== postId.value) {
+           // We might not know boardId here without finding it in a list first if our API requires boardId for fetchPostById.
+           // Assuming we can find it in global list or we just fetch list.
+           // Since we can't easily guess boardId, let's fetch list.
+           if (boardStore.posts.length === 0) {
+               await boardStore.fetchAllPosts();
+           }
+           post = boardStore.posts.find(p => p.postId === postId.value);
+           if (post) {
+               await boardStore.fetchPostById(post.boardId, post.postId);
+               post = boardStore.currentPost;
+           }
       }
-      
-      await boardStore.fetchPostById(foundPost.boardId, postId.value)
-      const post = boardStore.currentPost
-      
-      
+
       if (!post) {
         modalStore.openAlert('게시글을 찾을 수 없습니다.')
         router.push('/board')
@@ -128,14 +138,19 @@ onMounted(async () => {
         return
       }
       
+      // Mapping korean tags back to keys if necessary, or just using tag if it matches
       const categoryMap: Record<string, 'general' | 'question' | 'tip' | 'free'> = {
           '일반': 'general',
           '질문': 'question',
           '팁': 'tip',
           '자유': 'free'
         }
+        
+      // If tag is already 'general', map returns undefined, so we fallback to tag as is.
+      const mappedCategory = categoryMap[post.tags] || post.tags;
+      
       form.value = {
-        category: categoryMap[post.tags] || post.tags as any || 'general',
+        category: mappedCategory as any || 'general',
         title: post.title,
         content: post.content
       }
@@ -203,51 +218,39 @@ async function handleSubmit() {
 .board-write-screen {
   min-height: 100vh;
   position: relative;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: screen-enter 0.8s ease-out;
+  /* padding: 40px 20px; */
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* align-items: center; */
 }
 
 .board-write-container {
-  width: 100%;
-  max-width: 900px;
-  z-index: 10;
-  position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 40px;
+    z-index: 10;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-  gap: 20px;
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
-.title {
-  font-size: 32px;
-  font-weight: 700;
+.title-main {
+  font-size: 48px;
   color: #ffd43b;
-  text-shadow: 
-    4px 4px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000;
-  margin: 0;
+  text-shadow: 4px 4px 0 #000;
+  font-weight: 900;
 }
 
-.back-button {
-  font-size: 14px;
-  padding: 12px 24px;
-}
-
-.write-form {
-  background: rgba(0, 0, 0, 0.7);
-  border: 4px solid #fff;
-  border-radius: 8px;
-  padding: 30px;
+.write-card {
+  padding: 40px;
+  border-radius: 12px;
 }
 
 .form-group {
@@ -257,33 +260,47 @@ async function handleSubmit() {
 .form-label {
   display: block;
   font-size: 16px;
-  font-weight: 700;
   color: #fff;
   margin-bottom: 10px;
 }
 
-.form-select,
-.form-input,
-.form-textarea {
-  width: 100%;
-  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+.select-wrapper {
+    position: relative;
+    width: 200px;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    pointer-events: none;
+    font-size: 12px;
 }
 
 .form-select {
-  padding: 12px;
-  font-size: 14px;
+  width: 100%;
+  appearance: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-select option {
+    background: #1a0a2e;
+    color: #fff;
 }
 
 .form-input {
-  padding: 12px;
-  font-size: 16px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .form-textarea {
-  padding: 12px;
-  font-size: 16px;
-  resize: vertical;
-  line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.6;
+    background: rgba(255, 255, 255, 0.1);
+    resize: vertical;
 }
 
 .form-actions {
@@ -296,28 +313,23 @@ async function handleSubmit() {
 .cancel-button,
 .submit-button {
   font-size: 16px;
-  padding: 15px 30px;
+  padding: 12px 30px;
   min-width: 120px;
 }
 
 .cancel-button {
-  background: linear-gradient(135deg, #666 0%, #555 100%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #666;
+  color: #ccc;
 }
 
-.submit-button {
-  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+.cancel-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
 }
 
-.stars-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-}
 
+/* Animations & Decorations */
 .spaceship {
   position: fixed;
   bottom: 50px;
@@ -344,28 +356,17 @@ async function handleSubmit() {
   animation-delay: 1s;
 }
 
-@keyframes screen-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
 }
 
 @media (max-width: 768px) {
-  .title {
-    font-size: 24px;
+  .title-main {
+    font-size: 32px;
   }
   
-  .write-form {
+  .write-card {
     padding: 20px;
   }
   
@@ -377,11 +378,9 @@ async function handleSubmit() {
   .submit-button {
     width: 100%;
   }
-}
-
-/* Override text-transform for Korean text */
-.pixel-text,
-.pixel-button {
-  text-transform: none !important;
+  
+  .select-wrapper {
+      width: 100%;
+  }
 }
 </style>

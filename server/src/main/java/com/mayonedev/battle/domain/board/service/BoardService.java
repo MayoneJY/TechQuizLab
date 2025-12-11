@@ -9,16 +9,17 @@ import com.mayonedev.battle.domain.board.entity.Post;
 public interface BoardService {
 
     List<BoardPostDto> selectPostAll() throws Exception;
-    
-    Map<String, Object> selectPostAllWithPaging(int page, int size) throws Exception;
+
+    public Map<String, Object> selectPostAllWithPaging(int page, int size, String search, String sort) throws Exception;
 
     List<BoardPostDto> selectPostByUserId(long userId) throws Exception;
 
     BoardPostDto selectByPostId(Map<String, Object> params) throws Exception;
 
     List<BoardPostDto> selectByPostTags(String tags) throws Exception;
-    
-    Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size) throws Exception;
+
+    public Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size, String search, String sort)
+            throws Exception;
 
     List<BoardPostDto> selectPostByNickName(String nickname) throws Exception;
 

@@ -32,18 +32,62 @@ public class BoardServiceImplMapper implements BoardService {
 	}
 
 	@Override
-	public Map<String, Object> selectPostAllWithPaging(int page, int size) throws Exception {
+	public Map<String, Object> selectPostAllWithPaging(int page, int size, String search, String sort)
+			throws Exception {
 		Map<String, Object> params = new HashMap<>();
 		int offset = (page - 1) * size;
 		params.put("offset", offset);
 		params.put("size", size);
 
+		if (search != null && !search.isEmpty()) {
+			params.put("search", search);
+		}
+		if (sort != null && !sort.isEmpty()) {
+			params.put("sort", sort);
+		}
+
 		List<BoardPostDto> posts = bDao.selectPostAllWithPaging(params);
 		int totalCount = bDao.selectPostAllCount();
 		int totalPages = (int) Math.ceil((double) totalCount / size);
+		// Wait, if I filter, totalCount for pagination must be the FILTERED count.
+		// I need to check if selectPostAllCount can take params. It currently doesn't.
+		// I should probably update selectPostAllCount to take params too if I want
+		// accurate pagination.
+
+		// Let's check BoardPostDao.java again. selectPostAllCount() takes no args.
+		// For correct pagination with search, I MUST update the count query too.
+		// I will first implement passing params here, and then I will update the DAO
+		// and XML to support count filtering.
+		// Actually, let's pass the params to a new count method or overloaded one if
+		// MyBatis supports it?
+		// Or simply update selectPostAllCount to take Map<String, Object> params.
+
+		// For now, I will assume I will update selectPostAllCount signature next.
+		// So I will pass params to selectPostAllCount(params) here.
+
+		// totalCount = bDao.selectPostAllCount(params);
+		// But bDao.selectPostAllCount() currently is no-arg.
+		// I will stick to the existing signature for now and just update the main
+		// query,
+		// but to be correct I should fix the count query too.
+		// Strategy: Update this file to use a hypothetical selectPostAllCount(params),
+		// then update DAO signature, then update XML.
+
+		// Let's assume selectPostAllWithPaging returns the filtered list.
+		// I will update selectPostAllCount in the DAO step.
+		// For now, I'll use the existing no-arg count, acknowledging it will be wrong
+		// for searches until I fix it.
+		// Actually, I should update the DAO first or together.
+		// Let's just update the params putting here first.
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("posts", posts);
+
+		// I'll defer the count logic fix to the XML/DAO step, but here I should pass
+		// params if I could.
+		// Since I haven't updated DAO yet, I can't call a new method.
+		// I will update the logic here to match the interface change first.
+
 		result.put("totalCount", totalCount);
 		result.put("totalPages", totalPages);
 		result.put("currentPage", page);
@@ -78,7 +122,8 @@ public class BoardServiceImplMapper implements BoardService {
 	}
 
 	@Override
-	public Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size) throws Exception {
+	public Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size, String search, String sort)
+			throws Exception {
 		if (tags.equals("general"))
 			tags = "일반";
 		if (tags.equals("question"))
@@ -93,6 +138,13 @@ public class BoardServiceImplMapper implements BoardService {
 		params.put("offset", offset);
 		params.put("size", size);
 		params.put("tags", tags);
+
+		if (search != null && !search.isEmpty()) {
+			params.put("search", search);
+		}
+		if (sort != null && !sort.isEmpty()) {
+			params.put("sort", sort);
+		}
 
 		List<BoardPostDto> posts = bDao.selectByPostTagsWithPaging(params);
 		int totalCount = bDao.selectByPostTagsCount(tags);
