@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.domain.battle.dao.BattleBookmarkDao">
+
+    <resultMap id="battleBookmarkResultMap" type="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
+        <id property="userId" column="user_id"/>
+        <id property="bookmarkId" column="bookmark_id"/>
+        <result property="refBattleId" column="ref_battle_id"/>
+        <result property="refDetailId" column="ref_detail_id"/>
+        <result property="memo" column="memo"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="questionText" column="question_text"/>
+        <result property="userAnswer" column="user_answer"/>
+        <result property="aiFeedback" column="ai_assessment"/>
+        <result property="difficulty" column="difficulty"/>
+        <result property="keywordTags" column="keyword_tags"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
+        INSERT INTO battle_bookmark (
+            user_id, bookmark_id, ref_battle_id, ref_detail_id, memo, created_at
+        )
+        VALUES (
+            #{userId}, #{bookmarkId}, #{refBattleId}, #{refDetailId}, #{memo}, #{createdAt}
+        )
+    </insert>
+
+    <select id="findByUserId" parameterType="long" resultMap="battleBookmarkResultMap">
+        SELECT b.*, bd.question_text, bd.user_answer, bd.ai_feedback as ai_assessment,
+               bd.difficulty, bd.keyword_tags
+        FROM battle_bookmark b
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
+        WHERE b.user_id = #{userId}
+        ORDER BY b.created_at DESC
+    </select>
+
+</mapper>

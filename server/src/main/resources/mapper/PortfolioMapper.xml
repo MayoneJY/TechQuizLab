@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.domain.gamification.dao.PortfolioDao">
+
+    <resultMap id="portfolioResultMap" type="com.mayonedev.battle.domain.gamification.entity.Portfolio">
+        <id property="userId" column="user_id"/>
+        <id property="pfId" column="pf_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.gamification.entity.Portfolio">
+        INSERT INTO portfolio (user_id, pf_id, title, content, created_at)
+        VALUES (#{userId}, #{pfId}, #{title}, #{content}, #{createdAt})
+    </insert>
+
+    <select id="findAllByUserId" parameterType="long" resultMap="portfolioResultMap">
+        SELECT *
+        FROM portfolio
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByUserAndPfId" resultMap="portfolioResultMap">
+        SELECT *
+        FROM portfolio
+        WHERE user_id = #{userId} AND pf_id = #{pfId}
+    </select>
+    
+    <update id="update" parameterType="com.mayonedev.battle.domain.gamification.entity.Portfolio">
+        UPDATE portfolio
+        SET title = #{title},
+            content = #{content}
+        WHERE user_id = #{userId} AND pf_id = #{pfId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM portfolio
+        WHERE user_id = #{userId} AND pf_id = #{pfId}
+    </delete>
+
+    <select id="findMaxPfIdByUserId" parameterType="long" resultType="long">
+        SELECT COALESCE(MAX(pf_id), 0)
+        FROM portfolio
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

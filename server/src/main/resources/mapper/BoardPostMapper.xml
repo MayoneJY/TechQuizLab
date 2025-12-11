@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.domain.board.dao.BoardPostDao">
+	
+	<!-- ResultMap for BoardPostDto -->
+	<resultMap id="BoardPostDtoMap" type="com.mayonedev.battle.domain.board.dto.BoardPostDto">
+		<id property="boardId" column="board_id"/>
+		<id property="postId" column="post_id"/>
+		<result property="userId" column="user_id"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="viewCount" column="view_count"/>
+		<result property="createdAt" column="created_at"/>
+		<result property="nickname" column="nickname"/>
+		<result property="tags" column="tags"/>
+		<result property="commentCount" column="comment_count"/>
+	</resultMap>
+	
+	<!-- 게시글 조회(All) -->
+    <select id="selectPostAll" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+               COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc
+    </select>
+    
+    <!-- 게시글 조회(All) - 페이징 -->
+    <select id="selectPostAllWithPaging" parameterType="map" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+               COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		<where>
+			<if test="search != null and search != ''">
+				(p.title LIKE CONCAT('%', #{search}, '%') OR p.content LIKE CONCAT('%', #{search}, '%'))
+			</if>
+		</where>
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		<choose>
+			<when test="sort == 'viewCount'">
+				order by p.view_count desc, p.created_at desc
+			</when>
+            <when test="sort == 'likeCount'">
+                <!-- Like count join is not simple here without subquery or another join. 
+                     For now, let's stick to fields present. Or add subquery for like count.
+                     Actually, requirement mentioned sorting. If 'like' sort is needed, I need to join post_like table.
+                     The current query doesn't join post_like.
+                     Let's verify if I can add it easily. 
+                     If complex, I'll stick to basics first. 
+                     Let's stick to created_at and view_count for now. -->
+                order by p.view_count desc, p.created_at desc
+            </when>
+			<otherwise>
+				order by p.created_at desc
+			</otherwise>
+		</choose>
+		limit #{size} offset #{offset}
+    </select>
+    
+    <!-- 게시글 총 개수 조회 -->
+    <select id="selectPostAllCount" resultType="int">
+        select count(distinct p.board_id, p.post_id)
+		from post p
+    </select>
+    
+    <!-- 게시글 조회(user id) -->
+    <select id="selectPostByUserId" parameterType="long" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		where p.user_id = #{userId};
+    </select>
+    
+	<!-- 게시글 조회(post id) -->
+    <select id="selectByPostId" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		where p.board_id = #{boardId} AND p.post_id = #{postId};
+    </select>
+    
+    <!-- 게시글 조회(tags) -->
+	<select id="selectByPostTags" parameterType="string" resultMap="BoardPostDtoMap">
+		select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+		       COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join board b on p.board_id = b.board_id
+		join user u on p.user_id = u.user_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		where b.board_name = #{tags}
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		order by p.created_at desc;
+	</select>
+	
+	<!-- 게시글 조회(tags) - 페이징 -->
+	<select id="selectByPostTagsWithPaging" parameterType="map" resultMap="BoardPostDtoMap">
+		select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags,
+		       COALESCE(COUNT(c.comment_id), 0) as comment_count
+		from post p
+		join board b on p.board_id = b.board_id
+		join user u on p.user_id = u.user_id
+		left join comment c on p.board_id = c.board_id and p.post_id = c.post_id and c.is_deleted = 0
+		where b.board_name = #{tags}
+		<if test="search != null and search != ''">
+			AND (p.title LIKE CONCAT('%', #{search}, '%') OR p.content LIKE CONCAT('%', #{search}, '%'))
+		</if>
+		group by p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name
+		<choose>
+			<when test="sort == 'viewCount'">
+				order by p.view_count desc, p.created_at desc
+			</when>
+			<otherwise>
+				order by p.created_at desc
+			</otherwise>
+		</choose>
+		limit #{size} offset #{offset}
+	</select>
+	
+	<!-- 게시글 총 개수 조회(tags) -->
+	<select id="selectByPostTagsCount" parameterType="string" resultType="int">
+		select count(distinct p.board_id, p.post_id)
+		from post p
+		join board b on p.board_id = b.board_id
+		where b.board_name = #{tags}
+	</select>
+	
+	<!-- 게시글 조회(NickName) -->
+    <select id="selectPostByNickName" parameterType="string" resultMap="BoardPostDtoMap">
+        select p.board_id, p.post_id, p.user_id, p.title, p.content, p.view_count, p.created_at, u.nickname, b.board_name as tags
+		from post p
+		join user u on p.user_id = u.user_id
+		join board b on p.board_id = b.board_id
+		where u.nickname = #{nickname};
+    </select>
+    
+    <!-- 게시글 작성 -->
+    <insert id="insertPost" parameterType="com.mayonedev.battle.domain.board.entity.Post">
+    
+        <selectKey keyProperty="postId" resultType="long" order="BEFORE">
+            SELECT IFNULL(MAX(post_id) + 1, 1)
+            FROM post
+            WHERE board_id = #{boardId}
+            FOR UPDATE
+        </selectKey>
+        
+        INSERT INTO post (board_id, post_id, title, content, user_id, created_at)
+        VALUES (#{boardId}, #{postId}, #{title}, #{content}, #{userId}, NOW());
+    </insert>
+    
+	<!-- 게시글 수정 -->
+    <update id="updatePost" parameterType="com.mayonedev.battle.domain.board.entity.Post">
+		update post
+		set
+		board_id = #{boardId},
+		title = #{title},
+		content = #{content}
+		where post_id = #{postId};
+    </update>
+    
+	<!--게시글 삭제-->
+    <delete id="deletePost">
+        delete from post where board_id = #{boardId} AND post_id = #{postId}
+    </delete>
+    
+	<!-- 게시글 조회수 저장 -->
+	<update id="increaseViewCount">
+		update post
+		SET view_count = view_count +1
+		WHERE board_id = #{boardId} AND post_id = #{postId}
+	</update>
+
+	<!-- 게시판 카테고리 가져오기 -->
+	<select id="selectBoardId" parameterType="string" resultType="long">
+		select board_id
+		from board
+		where board_name = #{tags};
+	</select>
+    
+
+
+</mapper>

@@ -2,41 +2,57 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mayonedev.battle.dao.UserDailyMissionDao">
+<mapper namespace="com.mayonedev.battle.domain.gamification.dao.UserDailyMissionDao">
 
-    <resultMap id="userDailyMissionResultMap" type="com.mayonedev.battle.entity.UserDailyMission">
-        <id property="id" column="id"/>
-        <result property="userId" column="user_id"/>
-        <result property="dailyMissionId" column="daily_mission_id"/>
-        <result property="progress" column="progress"/>
+    <resultMap id="userDailyMissionResultMap" type="com.mayonedev.battle.domain.gamification.entity.UserDailyMission">
+        <id property="userId" column="user_id"/>
+    <id property="missionDate" column="mission_date" javaType="java.time.LocalDate" jdbcType="DATE"/>
+        <id property="missionId" column="mission_id"/>
+        <result property="currentCount" column="current_count"/>
         <result property="isCompleted" column="is_completed"/>
-        <result property="isClaimed" column="is_claimed"/>
-        <result property="assignedDate" column="assigned_date"/>
+        <result property="isRewarded" column="is_rewarded"/>
+        <result property="createdAt" column="created_at"/>
+        
+        <association property="mission" javaType="com.mayonedev.battle.domain.gamification.entity.DailyMission">
+            <id property="missionId" column="dm_mission_id"/>
+            <result property="title" column="dm_title"/>
+            <result property="missionType" column="dm_mission_type"/>
+            <result property="goalCount" column="dm_goal_count"/>
+            <result property="rewardExp" column="dm_reward_exp"/>
+        </association>
     </resultMap>
 
-    <select id="findByUserIdAndDate" resultMap="userDailyMissionResultMap">
-        SELECT id, user_id, daily_mission_id, progress, is_completed, is_claimed, assigned_date
-        FROM user_daily_mission
-        WHERE user_id = #{userId} AND assigned_date = #{date}
-    </select>
-
-    <insert id="insert" parameterType="com.mayonedev.battle.entity.UserDailyMission" 
-            useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user_daily_mission (user_id, daily_mission_id, progress, is_completed, is_claimed, assigned_date)
-        VALUES (#{userId}, #{dailyMissionId}, #{progress}, #{isCompleted}, #{isClaimed}, #{assignedDate})
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.gamification.entity.UserDailyMission">
+        INSERT INTO user_daily_mission (user_id, mission_date, mission_id, current_count, is_completed, is_rewarded)
+        VALUES (#{userId}, #{missionDate}, #{missionId}, #{currentCount}, #{isCompleted}, #{isRewarded})
     </insert>
 
-    <update id="updateProgress" parameterType="com.mayonedev.battle.entity.UserDailyMission">
+    <select id="findByUserIdAndDate" resultMap="userDailyMissionResultMap">
+        SELECT 
+            udm.user_id, udm.mission_date, udm.mission_id, udm.current_count, udm.is_completed, udm.is_rewarded, udm.created_at,
+            dm.mission_id as dm_mission_id, dm.title as dm_title, dm.mission_type as dm_mission_type, 
+            dm.goal_count as dm_goal_count, dm.reward_exp as dm_reward_exp
+        FROM user_daily_mission udm
+        JOIN daily_mission dm ON udm.mission_id = dm.mission_id
+        WHERE udm.user_id = #{userId} AND udm.mission_date = #{date}
+    </select>
+    
+    <select id="findByCompositeKey" resultMap="userDailyMissionResultMap">
+        SELECT * FROM user_daily_mission
+        WHERE user_id = #{userId} AND mission_date = #{date} AND mission_id = #{missionId}
+    </select>
+
+    <update id="updateProgress">
         UPDATE user_daily_mission
-        SET progress = #{progress},
+        SET current_count = #{currentCount},
             is_completed = #{isCompleted}
-        WHERE id = #{id}
+        WHERE user_id = #{userId} AND mission_date = #{missionDate} AND mission_id = #{missionId}
     </update>
 
-    <update id="updateClaimed" parameterType="long">
+    <update id="updateRewardStatus">
         UPDATE user_daily_mission
-        SET is_claimed = true
-        WHERE id = #{id}
+        SET is_rewarded = #{isRewarded}
+        WHERE user_id = #{userId} AND mission_date = #{missionDate} AND mission_id = #{missionId}
     </update>
 
 </mapper>

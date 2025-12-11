@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.domain.auth.dao.RefreshTokenDao">
+    
+    <resultMap id="refreshTokenResultMap" type="com.mayonedev.battle.domain.auth.entity.RefreshToken">
+        <id property="userId" column="user_id"/>
+        <id property="tokenId" column="token_id"/>
+        <result property="tokenValue" column="token_value"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.auth.entity.RefreshToken">
+        INSERT INTO refresh_token (user_id, token_id, token_value, expires_at, created_at)
+        VALUES (#{userId}, #{tokenId}, #{tokenValue}, #{expiresAt}, #{createdAt})
+    </insert>
+    
+    <select id="findByTokenValue" resultMap="refreshTokenResultMap">
+        SELECT user_id, token_id, token_value, expires_at, created_at
+        FROM refresh_token
+        WHERE token_value = #{tokenValue}
+    </select>
+    
+    <delete id="deleteByTokenValue">
+        DELETE FROM refresh_token
+        WHERE token_value = #{tokenValue}
+    </delete>
+
+</mapper>
