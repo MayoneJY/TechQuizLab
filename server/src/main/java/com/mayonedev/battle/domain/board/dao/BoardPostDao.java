@@ -1,4 +1,4 @@
-﻿package com.mayonedev.battle.domain.board.dao;
+package com.mayonedev.battle.domain.board.dao;
 
 import java.util.List;
 import java.util.Map;

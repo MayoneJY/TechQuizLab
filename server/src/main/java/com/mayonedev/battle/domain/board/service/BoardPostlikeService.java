@@ -1,4 +1,4 @@
-﻿package com.mayonedev.battle.domain.board.service;
+package com.mayonedev.battle.domain.board.service;
 
 import java.util.List;
 import java.util.Map;
@@ -27,4 +27,3 @@ public interface BoardPostlikeService {
 	List<PostLike> selectPostLikeByUser(long user_id) throws Exception;
 
 }
-
