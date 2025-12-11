@@ -15,8 +15,8 @@
         
         <!-- Toolbar: Search, Sort, Write -->
         <div class="board-toolbar glass-panel">
-            <button class="pixel-button link-button home-toolbar-btn" @click="goHome">
-                <span class="btn-icon">🏡</span> 메인
+            <button class="pixel-button link-button home-toolbar-btn" @click="goHome" style="padding: 12px 12px;">
+                <img :src="iconHome" class="btn-icon" /> 메인
             </button>
             <div class="search-container">
                 <!-- <span class="search-icon">🔍</span> -->
@@ -84,7 +84,7 @@
             </button>
             <!-- <div class="divider-vertical"></div> -->
             <button class="pixel-button transparent-write-btn" @click="goToWrite">
-                <span class="btn-icon">✨</span> 글쓰기
+                <img :src="iconWrite" class="btn-icon" /> 글쓰기
             </button>
         </div>
 
@@ -138,7 +138,7 @@
                 <p class="empty-desc">새로운 이야기를 시작해보세요!</p>
                 <div class="empty-actions">
                      <button class="pixel-button premium-write-btn" @click="goToWrite">
-                        <span class="btn-icon">✨</span> 첫 게시글 작성하기
+                        <img :src="iconWrite" class="btn-icon" /> 첫 게시글 작성하기
                      </button>
                      <button v-if="searchKeyword" class="pixel-button secondary" @click="handleResetSearch">
                         🔄 검색 초기화
@@ -169,13 +169,13 @@
               <div class="post-footer">
                 <div class="post-stats">
                   <div class="stat-item">
-                     <span class="stat-icon">👁</span> {{ post.viewCount }}
+                     <span class="stat-icon"><img :src="iconView" class="btn-icon-small" /></span> {{ post.viewCount }}
                   </div>
                   <div class="stat-item">
-                     <span class="stat-icon">❤️</span> {{ getLikeCount(post.boardId, post.postId) }}
+                     <span class="stat-icon"><img :src="iconLike" class="btn-icon-small" /></span> {{ getLikeCount(post.boardId, post.postId) }}
                   </div>
                   <div class="stat-item">
-                     <span class="stat-icon">💬</span> {{ getCommentCount(post) }}
+                     <span class="stat-icon"><img :src="iconComment" class="btn-icon-small" /></span> {{ getCommentCount(post) }}
                   </div>
                 </div>
               </div>
@@ -243,7 +243,13 @@ import {useBoardPostlikeStore } from '../stores/boardPostlike'
 import { useModalStore } from '../stores/modal'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
+
 import PixelMonster from '../components/PixelMonster.vue'
+import iconHome from '../assets/images/icon_home.png'
+import iconWrite from '../assets/images/icon_write.png'
+import iconView from '../assets/images/icon_view.png'
+import iconLike from '../assets/images/icon_heart_filled.png'
+import iconComment from '../assets/images/icon_comment.png'
 
 const router = useRouter()
 const boardStore = useBoardStore2()
@@ -536,8 +542,22 @@ function getPageNumbers() {
     border: 1px solid rgba(255,255,255,0.2);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     height: 46px; /* Explicit height to match inputs */
+}
+
+.btn-icon {
+    width: auto;
+    height: 25px;
+    image-rendering: pixelated;
+    display: block;
+}
+
+.btn-icon-small {
+    width: auto;
+    height: 15px;
+    image-rendering: pixelated;
+    display: block;
 }
 
 .search-btn {

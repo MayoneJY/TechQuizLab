@@ -76,7 +76,9 @@
 
                 <div class="post-footer-actions">
                     <div class="stats-display">
-                        <span>👁 {{ post.viewCount }}</span>
+                        <span class="view-count-container">
+                            <img :src="iconView" class="view-icon" /> {{ post.viewCount }}
+                        </span>
                     </div>
                     <button 
                       class="pixel-button like-button" 
@@ -84,7 +86,9 @@
                       @click="handleLike"
                       :disabled="!authStore.isAuthenticated || isLoadingLike"
                     >
-                      <span class="like-icon">{{ isLiked ? '❤️' : '🤍' }}</span>
+                      <span class="like-icon-container">
+                          <img :src="isLiked ? iconHeartFilled : iconHeartEmpty" class="like-heart-icon" />
+                      </span>
                       <span class="like-label">LIKE</span>
                       <span class="like-count">{{ likeCount }}</span>
                     </button>
@@ -206,18 +210,20 @@
 
         <!-- Right Column: Sidebar Widgets -->
         <div class="widget-column">
-             <div class="dashboard-widget glass-panel action-widget">
+             <div class="action-widget">
                  <button class="pixel-button back-btn" @click="goBack">
-                    ← 목록으로
+                    <img :src="btnList" class="btn-icon" /> 목록으로
                  </button>
                  
                  <template v-if="post && authStore.user && post.userId === authStore.user.userId">
-                     <button class="pixel-button warning edit-btn" @click="goToEdit">
-                        🔨 수정하기
-                     </button>
-                     <button class="pixel-button primary delete-btn" @click="handleDelete">
-                        🗑 삭제하기
-                     </button>
+                     <div class="owner-actions">
+                        <button class="pixel-button warning edit-btn" @click="goToEdit">
+                            <img :src="btnEdit" class="btn-icon" /> 수정하기
+                        </button>
+                        <button class="pixel-button primary delete-btn" @click="handleDelete">
+                            <img :src="btnDelete" class="btn-icon" /> 삭제하기
+                        </button>
+                     </div>
                  </template>
              </div>
 
@@ -274,6 +280,12 @@ import { useModalStore } from '../stores/modal'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
 import PixelMonster from '../components/PixelMonster.vue'
+import btnList from '../assets/images/btn_list.png'
+import btnEdit from '../assets/images/btn_edit.png'
+import btnDelete from '../assets/images/btn_delete.png'
+import iconView from '../assets/images/icon_view.png'
+import iconHeartFilled from '../assets/images/icon_heart_filled.png'
+import iconHeartEmpty from '../assets/images/icon_heart_empty.png'
 
 const router = useRouter()
 const route = useRoute()
@@ -673,6 +685,25 @@ function formatDate(dateString: string) {
     font-size: 14px;
 }
 
+.view-count-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.view-icon {
+    width: auto;
+    height: 20px;
+    image-rendering: pixelated;
+}
+
+.like-heart-icon {
+    width: auto;
+    height: 20px;
+    vertical-align: middle;
+    image-rendering: pixelated;
+}
+
 .like-button {
     display: flex;
     align-items: center;
@@ -710,13 +741,35 @@ function formatDate(dateString: string) {
 .action-widget {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    align-items: center;
+}
+
+
+
+.btn-icon {
+    width: auto;
+    height: 24px;
+    margin-right: 8px;
+    vertical-align: middle;
+    image-rendering: pixelated;
 }
 
 .back-btn, .edit-btn, .delete-btn {
     width: 100%;
     font-size: 14px;
     padding: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.owner-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
 }
 
 .author-widget {
