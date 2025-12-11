@@ -104,7 +104,7 @@ onMounted(async () => {
   if (isEdit.value && postId.value) {
     try {
       await boardStore.fetchAllPosts()
-      const foundPost = boardStore.posts.find(p => p.post_id === postId.value)
+      const foundPost = boardStore.posts.find(p => p.postId === postId.value)
       
       if (!foundPost) {
         modalStore.openAlert('게시글을 찾을 수 없습니다.')
@@ -112,7 +112,7 @@ onMounted(async () => {
         return
       }
       
-      await boardStore.fetchPostById(foundPost.board_id, postId.value)
+      await boardStore.fetchPostById(foundPost.boardId, postId.value)
       const post = boardStore.currentPost
       
       
@@ -122,7 +122,7 @@ onMounted(async () => {
         return
       }
 
-      if (post.user_id !== authStore.user?.userId) {
+      if (post.userId !== authStore.user?.userId) {
         modalStore.openAlert('수정 권한이 없습니다.')
         router.push('/board')
         return
@@ -175,7 +175,7 @@ async function handleSubmit() {
       
       // 복합키 사용
       await boardStore.updatePost(
-        post.board_id,
+        post.boardId,
         postId.value,
         form.value.title,
         form.value.content,

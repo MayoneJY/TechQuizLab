@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class CommentDto {
-    private Long comment_id;
-    private Integer board_id;
-    private Long post_id;
-    private Long user_id;
-    private Long parent_comment_id;
+    private Long commentId;
+    private Integer boardId;
+    private Long postId;
+    private Long userId;
+    private Long parentCommentId;
     private String content;
-    private LocalDateTime created_at;
-    private Integer is_deleted;
+    private LocalDateTime createdAt;
+    private Integer isDeleted;
 
     private String nickname;
 }

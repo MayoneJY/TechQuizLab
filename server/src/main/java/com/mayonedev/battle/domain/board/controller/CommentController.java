@@ -51,12 +51,12 @@ public class CommentController {
             @RequestBody Comment comment, @AuthenticationPrincipal UserDetailsDTO loginuser) {
 
         try {
-            comment.setBoard_id(boardId);
-            comment.setPost_id(postId);
-            comment.setUser_id(loginuser.getUserId());
+            comment.setBoardId(boardId);
+            comment.setPostId(postId);
+            comment.setUserId(loginuser.getUserId());
 
             commentService.createComment(comment);
-            
+
             Map<String, Object> map = Map.of("resmsg", "댓글이 등록되었습니다.", "resvalue", comment);
             return ResponseEntity.status(HttpStatus.CREATED).body(map);
         } catch (Exception e) {
@@ -74,10 +74,10 @@ public class CommentController {
             @RequestBody Comment comment, @AuthenticationPrincipal UserDetailsDTO loginuser) {
 
         try {
-            comment.setBoard_id(boardId);
-            comment.setPost_id(postId);
-            comment.setUser_id(loginuser.getUserId());
-            comment.setParent_comment_id(parentCommentId);
+            comment.setBoardId(boardId);
+            comment.setPostId(postId);
+            comment.setUserId(loginuser.getUserId());
+            comment.setParentCommentId(parentCommentId);
 
             commentService.createComment(comment);
 
@@ -97,16 +97,16 @@ public class CommentController {
             @PathVariable("commentId") Long commentId, @AuthenticationPrincipal UserDetailsDTO loginuser) {
 
         try {
-            
+
             Comment comment = commentService.selectByCommentId(boardId, postId, commentId);
 
-            if (!Long.valueOf(loginuser.getUserId()).equals(comment.getUser_id())) {
+            if (!Long.valueOf(loginuser.getUserId()).equals(comment.getUserId())) {
                 Map<String, Object> map = Map.of("resmsg", "댓글 삭제에 실패했습니다.", "resvalue", "삭제 권한이 없습니다.");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(map);
             }
 
             commentService.deleteComment(commentId);
-            
+
             Map<String, Object> map = Map.of("resmsg", "댓글이 삭제되었습니다.", "resvalue", commentId);
             return ResponseEntity.ok(map);
         } catch (Exception e) {

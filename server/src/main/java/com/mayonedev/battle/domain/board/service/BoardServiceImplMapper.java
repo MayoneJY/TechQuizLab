@@ -21,25 +21,25 @@ public class BoardServiceImplMapper implements BoardService {
 	public List<BoardPostDto> selectPostAll() throws Exception {
 		return bDao.selectPostAll();
 	}
-	
+
 	@Override
 	public Map<String, Object> selectPostAllWithPaging(int page, int size) throws Exception {
 		Map<String, Object> params = new HashMap<>();
 		int offset = (page - 1) * size;
 		params.put("offset", offset);
 		params.put("size", size);
-		
+
 		List<BoardPostDto> posts = bDao.selectPostAllWithPaging(params);
 		int totalCount = bDao.selectPostAllCount();
 		int totalPages = (int) Math.ceil((double) totalCount / size);
-		
+
 		Map<String, Object> result = new HashMap<>();
 		result.put("posts", posts);
 		result.put("totalCount", totalCount);
 		result.put("totalPages", totalPages);
 		result.put("currentPage", page);
 		result.put("size", size);
-		
+
 		return result;
 	}
 
@@ -69,7 +69,7 @@ public class BoardServiceImplMapper implements BoardService {
 
 		return bDao.selectByPostTags(tags);
 	}
-	
+
 	@Override
 	public Map<String, Object> selectByPostTagsWithPaging(String tags, int page, int size) throws Exception {
 		if (tags.equals("general"))
@@ -80,24 +80,24 @@ public class BoardServiceImplMapper implements BoardService {
 			tags = "팁";
 		if (tags.equals("free"))
 			tags = "자유";
-		
+
 		Map<String, Object> params = new HashMap<>();
 		int offset = (page - 1) * size;
 		params.put("offset", offset);
 		params.put("size", size);
 		params.put("tags", tags);
-		
+
 		List<BoardPostDto> posts = bDao.selectByPostTagsWithPaging(params);
 		int totalCount = bDao.selectByPostTagsCount(tags);
 		int totalPages = (int) Math.ceil((double) totalCount / size);
-		
+
 		Map<String, Object> result = new HashMap<>();
 		result.put("posts", posts);
 		result.put("totalCount", totalCount);
 		result.put("totalPages", totalPages);
 		result.put("currentPage", page);
 		result.put("size", size);
-		
+
 		return result;
 	}
 
@@ -115,8 +115,8 @@ public class BoardServiceImplMapper implements BoardService {
 	public BoardPostDto updatePost(Post Post) throws Exception {
 		bDao.updatePost(Post);
 		Map<String, Object> params = new HashMap<>();
-		params.put("board_id", Post.getBoard_id());
-		params.put("post_id", Post.getPost_id());
+		params.put("boardId", Post.getBoardId());
+		params.put("postId", Post.getPostId());
 		return bDao.selectByPostId(params);
 	}
 

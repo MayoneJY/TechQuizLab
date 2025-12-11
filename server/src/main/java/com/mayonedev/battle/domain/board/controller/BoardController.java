@@ -47,18 +47,21 @@ public class BoardController {
             List<BoardPostDto> posts = boardService.selectPostAll();
             return ResponseEntity.ok(posts);
         }
-        if (page < 1) page = 1;
-        if (size < 1) size = 10;
+        if (page < 1)
+            page = 1;
+        if (size < 1)
+            size = 10;
         Map<String, Object> result = boardService.selectPostAllWithPaging(page, size);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{board_id}/post/{post_id}")
     @Operation(summary = "게시글 상세 조회", description = "board_id와 post_id를 이용해 게시글을 상세 조회합니다.")
-    public ResponseEntity<?> getPostByPostId(@PathVariable("board_id") long board_id, @PathVariable("post_id") long post_id) throws Exception {
+    public ResponseEntity<?> getPostByPostId(@PathVariable("board_id") long board_id,
+            @PathVariable("post_id") long post_id) throws Exception {
         Map<String, Object> params = new HashMap<>();
-        params.put("board_id", board_id);
-        params.put("post_id", post_id);
+        params.put("boardId", board_id);
+        params.put("postId", post_id);
 
         boardService.increaseViewCount(params);
         BoardPostDto post = boardService.selectByPostId(params);
@@ -77,8 +80,10 @@ public class BoardController {
             Map<String, Object> map = Map.of("resmsg", "게시글 태그 조회", "resvalue", posts);
             return ResponseEntity.ok(map);
         }
-        if (page < 1) page = 1;
-        if (size < 1) size = 10;
+        if (page < 1)
+            page = 1;
+        if (size < 1)
+            size = 10;
         Map<String, Object> result = boardService.selectByPostTagsWithPaging(tags, page, size);
         Map<String, Object> map = Map.of("resmsg", "게시글 태그 조회", "resvalue", result);
         return ResponseEntity.ok(map);
@@ -111,20 +116,20 @@ public class BoardController {
             @AuthenticationPrincipal UserDetailsDTO loginuser, @RequestBody BoardPostDto post) throws Exception {
         try {
             Map<String, Object> params = new HashMap<>();
-            params.put("board_id", board_id);
-            params.put("post_id", post_id);
+            params.put("boardId", board_id);
+            params.put("postId", post_id);
 
             BoardPostDto oldPost = boardService.selectByPostId(params);
             User u = userService.getUserByEmail(loginuser.getEmail());
 
-            if (Long.valueOf(u.getUserId()).equals(oldPost.getUser_id())) {
+            if (Long.valueOf(u.getUserId()).equals(oldPost.getUserId())) {
 
                 Post updatePost = new Post();
-                updatePost.setBoard_id(board_id);
-                updatePost.setPost_id(post_id);
+                updatePost.setBoardId(board_id);
+                updatePost.setPostId(post_id);
                 updatePost.setTitle(post.getTitle());
                 updatePost.setContent(post.getContent());
-                updatePost.setBoard_id(boardService.selectBoardId(post.getTags()));
+                updatePost.setBoardId(boardService.selectBoardId(post.getTags()));
 
                 BoardPostDto updatedPost = boardService.updatePost(updatePost);
                 return ResponseEntity.status(HttpStatus.OK)
@@ -145,13 +150,13 @@ public class BoardController {
             @AuthenticationPrincipal UserDetailsDTO loginuser) throws Exception {
         try {
             Map<String, Object> params = new HashMap<>();
-            params.put("board_id", board_id);
-            params.put("post_id", post_id);
+            params.put("boardId", board_id);
+            params.put("postId", post_id);
 
             BoardPostDto deletePost = boardService.selectByPostId(params);
             User u = userService.getUserByEmail(loginuser.getEmail());
 
-            if (Long.valueOf(u.getUserId()).equals(deletePost.getUser_id())) {
+            if (Long.valueOf(u.getUserId()).equals(deletePost.getUserId())) {
                 boardService.deletePost(params);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(Map.of("resmsg", "게시글이 삭제되었습니다.", "resvalue", post_id));

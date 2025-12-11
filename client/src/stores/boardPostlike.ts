@@ -4,17 +4,17 @@ import { useAuthStore } from './auth'
 import { boardPostlikeApi } from '../services/api'
 
 export interface PostLike {
-    board_id: number
-    post_id: number
-    user_id: number
-    created_at: string
+    boardId: number
+    postId: number
+    userId: number
+    createdAt: string
 }
 
 export interface PostLikeStatus {
-    board_id: number
-    post_id: number
-    is_liked: boolean
-    like_count: number
+    boardId: number
+    postId: number
+    isLiked: boolean
+    likeCount: number
 }
 
 export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
@@ -36,19 +36,19 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
             const [likeStatusRes, likeCountRes] = await Promise.all([
                 authStore.isAuthenticated
                     ? boardPostlikeApi.checkPostLike(boardId, postId)
-                    : Promise.resolve({ data: { resvalue: { is_liked: false } } }),
+                    : Promise.resolve({ data: { resvalue: { isLiked: false } } }),
                 boardPostlikeApi.getPostLikeCount(boardId, postId)
             ])
 
-            const isLiked = likeStatusRes.data?.resvalue?.is_liked || false
-            const likeCount = likeCountRes.data?.resvalue?.like_count || 0
+            const isLiked = likeStatusRes.data?.resvalue?.isLiked || false
+            const likeCount = likeCountRes.data?.resvalue?.likeCount || 0
 
             const key = getKey(boardId, postId)
             likeStatusMap.value.set(key, {
-                board_id: boardId,
-                post_id: postId,
-                is_liked: isLiked,
-                like_count: likeCount
+                boardId: boardId,
+                postId: postId,
+                isLiked: isLiked,
+                likeCount: likeCount
             })
 
             return likeStatusMap.value.get(key)!
@@ -59,10 +59,10 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
                 err.response?.data?.resvalue ||
                 err.response?.data?.message ||
                 err.message ||
-                'ÁÁ¾Æ¿ä »óÅÂ Á¶È¸¿¡ ½ÇÆÐÇß½À´Ï´Ù.'
+                'ì¢‹ì•„ìš” ì •ë³´ ì¡°íšŒì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.'
 
             error.value = errorMessage
-            console.error('ÁÁ¾Æ¿ä »óÅÂ Á¶È¸ ½ÇÆÐ:', errorMessage)
+            console.error('ì¢‹ì•„ìš” ì •ë³´ ì¡°íšŒ ì‹¤íŒ¨:', errorMessage)
             throw err
 
         } finally {
@@ -72,8 +72,8 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
 
     async function addPostLike(boardId: number, postId: number) {
         if (!authStore.isAuthenticated) {
-            error.value = '·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù.'
-            throw new Error('·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù.')
+            error.value = 'ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.'
+            throw new Error('ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.')
         }
 
         isLoading.value = true
@@ -82,19 +82,18 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
         try {
             const response = await boardPostlikeApi.addPostLike(boardId, postId)
 
-            const likeCount = response.data?.resvalue?.like_count || 0
+            const likeCount = response.data?.resvalue?.likeCount || 0
 
             const key = getKey(boardId, postId)
-            const currentStatus = likeStatusMap.value.get(key)
-
+            // Update local state
             likeStatusMap.value.set(key, {
-                board_id: boardId,
-                post_id: postId,
-                is_liked: true,
-                like_count: likeCount
+                boardId: boardId,
+                postId: postId,
+                isLiked: true,
+                likeCount: likeCount
             })
 
-            console.log('ÁÁ¾Æ¿ä Ãß°¡ ¼º°ø:', response.data)
+            console.log('ì¢‹ì•„ìš” ì¶”ê°€ ì„±ê³µ:', response.data)
             return response.data
 
         } catch (err: any) {
@@ -103,10 +102,10 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
                 err.response?.data?.resvalue ||
                 err.response?.data?.message ||
                 err.message ||
-                'ÁÁ¾Æ¿ä Ãß°¡¿¡ ½ÇÆÐÇß½À´Ï´Ù.'
+                'ì¢‹ì•„ìš” ì¶”ê°€ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.'
 
             error.value = errorMessage
-            console.error('ÁÁ¾Æ¿ä Ãß°¡ ½ÇÆÐ:', errorMessage)
+            console.error('ì¢‹ì•„ìš” ì¶”ê°€ ì‹¤íŒ¨:', errorMessage)
             throw err
 
         } finally {
@@ -116,8 +115,8 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
 
     async function removePostLike(boardId: number, postId: number) {
         if (!authStore.isAuthenticated) {
-            error.value = '·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù.'
-            throw new Error('·Î±×ÀÎÀÌ ÇÊ¿äÇÕ´Ï´Ù.')
+            error.value = 'ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.'
+            throw new Error('ë¡œê·¸ì¸ì´ í•„ìš”í•©ë‹ˆë‹¤.')
         }
 
         isLoading.value = true
@@ -126,17 +125,18 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
         try {
             const response = await boardPostlikeApi.removePostLike(boardId, postId)
 
-            const likeCount = response.data?.resvalue?.like_count || 0
+            const likeCount = response.data?.resvalue?.likeCount || 0
 
             const key = getKey(boardId, postId)
+            // Update local state
             likeStatusMap.value.set(key, {
-                board_id: boardId,
-                post_id: postId,
-                is_liked: false,
-                like_count: likeCount
+                boardId: boardId,
+                postId: postId,
+                isLiked: false,
+                likeCount: likeCount
             })
 
-            console.log('ÁÁ¾Æ¿ä Ãë¼Ò ¼º°ø:', response.data)
+            console.log('ì¢‹ì•„ìš” ì·¨ì†Œ ì„±ê³µ:', response.data)
             return response.data
 
         } catch (err: any) {
@@ -145,10 +145,10 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
                 err.response?.data?.resvalue ||
                 err.response?.data?.message ||
                 err.message ||
-                'ÁÁ¾Æ¿ä Ãë¼Ò¿¡ ½ÇÆÐÇß½À´Ï´Ù.'
+                'ì¢‹ì•„ìš” ì·¨ì†Œì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.'
 
             error.value = errorMessage
-            console.error('ÁÁ¾Æ¿ä Ãë¼Ò ½ÇÆÐ:', errorMessage)
+            console.error('ì¢‹ì•„ìš” ì·¨ì†Œ ì‹¤íŒ¨:', errorMessage)
             throw err
 
         } finally {
@@ -160,7 +160,7 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
         const key = getKey(boardId, postId)
         const currentStatus = likeStatusMap.value.get(key)
 
-        if (currentStatus?.is_liked) {
+        if (currentStatus?.isLiked) {
             await removePostLike(boardId, postId)
         } else {
             await addPostLike(boardId, postId)
@@ -170,26 +170,26 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
     async function getLikeCount(boardId: number, postId: number) {
         try {
             const response = await boardPostlikeApi.getPostLikeCount(boardId, postId)
-            const likeCount = response.data?.resvalue?.like_count || 0
+            const likeCount = response.data?.resvalue?.likeCount || 0
 
             const key = getKey(boardId, postId)
             const currentStatus = likeStatusMap.value.get(key)
 
             if (currentStatus) {
-                currentStatus.like_count = likeCount
+                currentStatus.likeCount = likeCount
             } else {
                 likeStatusMap.value.set(key, {
-                    board_id: boardId,
-                    post_id: postId,
-                    is_liked: false,
-                    like_count: likeCount
+                    boardId: boardId,
+                    postId: postId,
+                    isLiked: false,
+                    likeCount: likeCount
                 })
             }
 
             return likeCount
 
         } catch (err: any) {
-            console.error('ÁÁ¾Æ¿ä °³¼ö Á¶È¸ ½ÇÆÐ:', err)
+            console.error('ì¢‹ì•„ìš” ê°œìˆ˜ ì¡°íšŒ ì‹¤íŒ¨:', err)
             return 0
         }
     }
@@ -227,4 +227,3 @@ export const useBoardPostlikeStore = defineStore('boardPostlike', () => {
         clearAllLikeStatus
     }
 })
-

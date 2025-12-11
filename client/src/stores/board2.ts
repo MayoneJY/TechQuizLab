@@ -5,23 +5,23 @@ import { boardApi } from '../services/api'
 
 //보여줄 게시글 
 export interface Post {
-    post_id: number              // 게시글 ID (post_id)
-    board_id: number             // 게시판 ID
-    user_id: number              // 작성자 ID
-    title: string                // 게시글 제목
-    content: string              // 게시글 내용
-    view_count: number           // 조회수
-    created_at: string           // 작성 시간 (LocalDateTime -> string으로 변환됨)
-    nickname: string             // 작성자 닉네임
-    tags: string                 // 태그 (쉼표로 구분된 문자열)
-    comment_count?: number       // 댓글 개수
+    postId: number
+    boardId: number
+    userId: number
+    title: string
+    content: string
+    viewCount: number
+    createdAt: string
+    nickname: string
+    tags: string
+    commentCount?: number
 }
 
 //게시글 작성 및 수정 (클라->백엔)
 export interface PostCreateAndUpdateDto {
-    title: string           // 게시글 제목
-    content: string         // 게시글 내용
-    tags: string            // 태그
+    title: string
+    content: string
+    tags: string
 }
 
 export const useBoardStore2 = defineStore('board2', () => {
@@ -35,7 +35,7 @@ export const useBoardStore2 = defineStore('board2', () => {
     const isLoading = ref(false) // 서버에 요청을 보내는 중이라는 표시용 (로딩바)
 
     const error = ref<string | null>(null) // 에러
-    
+
     // 페이징 관련 상태
     const currentPage = ref(1) // 현재 페이지
     const pageSize = ref(10) // 페이지당 게시글 수
@@ -157,11 +157,14 @@ export const useBoardStore2 = defineStore('board2', () => {
             const response = await boardApi.getPostByPostId(boardId, postId)
 
             // 백엔드 응답 구조: { resmsg: string, resvalue: Board }
+            let postData = null;
             if (response.data && response.data.resvalue) {
-                currentPost.value = response.data.resvalue
+                postData = response.data.resvalue
             } else {
-                currentPost.value = response.data
+                postData = response.data
             }
+
+            currentPost.value = postData
 
             console.log('게시글 상세 조회 성공:', currentPost.value)
             return currentPost.value
@@ -256,7 +259,7 @@ export const useBoardStore2 = defineStore('board2', () => {
             await fetchAllPosts()
 
             // 현재 보고 있던 게시글이면 상세도 새로고침
-            if (currentPost.value?.post_id === postId) {
+            if (currentPost.value?.postId === postId) {
                 await fetchPostById(boardId, postId)
             }
 
@@ -299,7 +302,7 @@ export const useBoardStore2 = defineStore('board2', () => {
             await fetchAllPosts()
 
             // 현재 보고 있던 게시글이면 null로 초기화
-            if (currentPost.value?.post_id === postId) {
+            if (currentPost.value?.postId === postId) {
                 currentPost.value = null
             }
 
@@ -338,7 +341,7 @@ export const useBoardStore2 = defineStore('board2', () => {
         currentPost,
         isLoading,
         error,
-        
+
         // 페이징 State
         currentPage,
         pageSize,

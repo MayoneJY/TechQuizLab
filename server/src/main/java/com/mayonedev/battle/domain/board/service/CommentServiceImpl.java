@@ -19,8 +19,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void createComment(Comment comment) throws Exception {
-        if (comment.getIs_deleted() == null) {
-            comment.setIs_deleted(0);
+        if (comment.getIsDeleted() == null) {
+            comment.setIsDeleted(0);
         }
 
         boardCommentDao.insertComment(comment);

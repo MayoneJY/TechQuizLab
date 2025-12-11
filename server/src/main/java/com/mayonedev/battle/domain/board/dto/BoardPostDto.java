@@ -10,29 +10,29 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class BoardPostDto {
-	private long board_id;
-	private long post_id;
-	private long user_id;
+	private long boardId;
+	private long postId;
+	private long userId;
 	private String title;
 	private String content;
-	private long view_count;
-	private LocalDateTime created_at;
-	
+	private long viewCount;
+	private LocalDateTime createdAt;
+
 	private String nickname;
 
 	private String tags;
-	
-	private Long comment_count;
 
-	public BoardPostDto(long board_id, String title, String content) {
+	private Long commentCount;
+
+	public BoardPostDto(long boardId, String title, String content) {
 		super();
-		this.board_id = board_id;
+		this.boardId = boardId;
 		this.title = title;
 		this.content = content;
 	}
 
-	public BoardPostDto(long user_id, String title, String content, String tags) {
-		this.user_id = user_id;
+	public BoardPostDto(long userId, String title, String content, String tags) {
+		this.userId = userId;
 		this.title = title;
 		this.content = content;
 		this.tags = tags;

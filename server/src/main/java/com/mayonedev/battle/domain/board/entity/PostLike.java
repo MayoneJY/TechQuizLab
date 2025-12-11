@@ -10,15 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class PostLike {
-	private int board_id;
-	private long post_id;
-	private long user_id;
-	private LocalDateTime created_at;
+	private int boardId;
+	private long postId;
+	private long userId;
+	private LocalDateTime createdAt;
 
-	public PostLike(int board_id, long post_id, long user_id) {
-		this.board_id = board_id;
-		this.post_id = post_id;
-		this.user_id = user_id;
+	public PostLike(int boardId, long postId, long userId) {
+		this.boardId = boardId;
+		this.postId = postId;
+		this.userId = userId;
 	}
 }
-

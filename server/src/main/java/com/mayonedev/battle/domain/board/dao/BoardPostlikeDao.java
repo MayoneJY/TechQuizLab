@@ -27,7 +27,6 @@ public interface BoardPostlikeDao {
 	List<PostLike> selectPostLikeByPost(BoardPostlikeDto postlikeParm) throws Exception;
 
 	// 사용자가 좋아요한 게시글 목록 조회
-	List<PostLike> selectPostLikeByUser(long user_id) throws Exception;
+	List<PostLike> selectPostLikeByUser(long userId) throws Exception;
 
 }
-

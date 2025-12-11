@@ -10,22 +10,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class BoardPostlikeDto {
-	private int board_id;
-	private long post_id;
-	private long user_id;
-	private LocalDateTime created_at;
-	private int like_count;
-	private boolean is_liked;
+	private int boardId;
+	private long postId;
+	private long userId;
+	private LocalDateTime createdAt;
+	private int likeCount;
+	private boolean isLiked;
 
-	public BoardPostlikeDto(int board_id, long post_id, long user_id) {
-		this.board_id = board_id;
-		this.post_id = post_id;
-		this.user_id = user_id;
+	public BoardPostlikeDto(int boardId, long postId, long userId) {
+		this.boardId = boardId;
+		this.postId = postId;
+		this.userId = userId;
 	}
 
-	public BoardPostlikeDto(int board_id, long post_id){
-		this.board_id = board_id;
-		this.post_id = post_id;
+	public BoardPostlikeDto(int boardId, long postId) {
+		this.boardId = boardId;
+		this.postId = postId;
 	}
 }
-

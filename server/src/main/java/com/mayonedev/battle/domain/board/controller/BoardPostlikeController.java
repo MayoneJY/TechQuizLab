@@ -47,12 +47,12 @@ public class BoardPostlikeController {
 		try {
 			PostLike postlike = new PostLike(board_id, post_id, loginuser.getUserId());
 			boardPostlikeService.insertPostLike(postlike);
-			
+
 			BoardPostlikeDto countParam = new BoardPostlikeDto(board_id, post_id);
 			int likecnt = boardPostlikeService.countPostLike(countParam);
-			
+
 			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(Map.of("resmsg", "좋아요가 추가되었습니다.", "resvalue", Map.of("like_count", likecnt, "is_liked", true)));
+					.body(Map.of("resmsg", "좋아요가 추가되었습니다.", "resvalue", Map.of("likeCount", likecnt, "isLiked", true)));
 		} catch (Exception e) {
 			Map<String, Object> map = Map.of("resmsg", "좋아요 추가에 실패했습니다.", "resvalue", e.getMessage());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
@@ -75,12 +75,13 @@ public class BoardPostlikeController {
 
 		try {
 			boardPostlikeService.deletePostLike(PostlikeParm);
-			
+
 			BoardPostlikeDto countParam = new BoardPostlikeDto(board_id, post_id);
 			int likecnt = boardPostlikeService.countPostLike(countParam);
-			
+
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(Map.of("resmsg", "좋아요가 취소되었습니다.", "resvalue", Map.of("like_count", likecnt, "is_liked", false)));
+					.body(Map.of("resmsg", "좋아요가 취소되었습니다.", "resvalue",
+							Map.of("likeCount", likecnt, "isLiked", false)));
 		} catch (Exception e) {
 			Map<String, Object> map = Map.of("resmsg", "좋아요 취소에 실패했습니다.", "resvalue", e.getMessage());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -96,8 +97,8 @@ public class BoardPostlikeController {
 		try {
 			BoardPostlikeDto postlike = new BoardPostlikeDto(board_id, post_id);
 			int likecnt = boardPostlikeService.countPostLike(postlike);
-			
-			Map<String, Object> map = Map.of("resmsg", "좋아요 개수 조회", "resvalue", Map.of("like_count", likecnt));
+
+			Map<String, Object> map = Map.of("resmsg", "좋아요 개수 조회", "resvalue", Map.of("likeCount", likecnt));
 			return ResponseEntity.ok(map);
 		} catch (Exception e) {
 			Map<String, Object> map = Map.of("resmsg", "좋아요 개수 조회에 실패했습니다.", "resvalue", e.getMessage());
@@ -112,13 +113,13 @@ public class BoardPostlikeController {
 			@PathVariable("post_id") long post_id, @AuthenticationPrincipal UserDetailsDTO loginuser) throws Exception {
 		try {
 			if (loginuser == null) {
-				return ResponseEntity.ok(Map.of("resmsg", "좋아요 여부 확인", "resvalue", Map.of("is_liked", false)));
+				return ResponseEntity.ok(Map.of("resmsg", "좋아요 여부 확인", "resvalue", Map.of("isLiked", false)));
 			}
 
 			BoardPostlikeDto PostlikeParm = new BoardPostlikeDto(board_id, post_id, loginuser.getUserId());
 			Boolean is_like = boardPostlikeService.checkPostLike(PostlikeParm);
 
-			Map<String, Object> map = Map.of("resmsg", "좋아요 여부 확인", "resvalue", Map.of("is_liked", is_like));
+			Map<String, Object> map = Map.of("resmsg", "좋아요 여부 확인", "resvalue", Map.of("isLiked", is_like));
 			return ResponseEntity.ok(map);
 		} catch (Exception e) {
 			Map<String, Object> map = Map.of("resmsg", "좋아요 여부 확인에 실패했습니다.", "resvalue", e.getMessage());
@@ -144,7 +145,7 @@ public class BoardPostlikeController {
 		}
 	}
 
-	//임시 사용 X
+	// 임시 사용 X
 	@GetMapping("/post/like/my")
 	@Operation(summary = "내가 좋아요한 게시글 목록 조회", description = "현재 사용자가 좋아요한 게시글 목록을 조회합니다.")
 	public ResponseEntity<?> getMyLikedPosts(@AuthenticationPrincipal UserDetailsDTO loginuser) throws Exception {

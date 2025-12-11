@@ -13,11 +13,12 @@ public interface BoardCommentDao {
 
     void insertComment(Comment comment);
 
-    void softDeleteComment(@Param("comment_id") Long comment_id);
+    void softDeleteComment(@Param("commentId") Long commentId);
 
-    List<CommentDto> selectCommentsByPost(@Param("board_id") Integer board_id, @Param("post_id") Long post_id);
+    List<CommentDto> selectCommentsByPost(@Param("boardId") Integer boardId, @Param("postId") Long postId);
 
-    Comment selectByCommentId(@Param("board_id") Integer board_id, @Param("post_id") Long post_id, @Param("comment_id") Long comment_id);
+    Comment selectByCommentId(@Param("boardId") Integer boardId, @Param("postId") Long postId,
+            @Param("commentId") Long commentId);
 
-    void deleteComment(@Param("comment_id") Long comment_id);
+    void deleteComment(@Param("commentId") Long commentId);
 }

@@ -8,7 +8,7 @@
         <button class="pixel-button back-button" @click="goBack">
           ← 목록으로
         </button>
-        <div v-if="post && authStore.user && post.user_id === authStore.user.userId" class="post-actions">
+        <div v-if="post && authStore.user && post.userId === authStore.user.userId" class="post-actions">
           <button class="pixel-button edit-button" @click="goToEdit">
             수정
           </button>
@@ -33,10 +33,10 @@
         <div class="post-meta">
           <div class="post-author-info">
             <span class="post-author">{{ post.nickname }}</span>
-            <span class="post-date">{{ formatDate(post?.created_at) }}</span>
+            <span class="post-date">{{ formatDate(post?.createdAt) }}</span>
           </div>
           <div class="post-stats">
-            <span>👁 {{ post.view_count }}</span>
+            <span>👁 {{ post.viewCount }}</span>
             <button 
               class="like-button" 
               :class="{ 'liked': isLiked }"
@@ -78,36 +78,36 @@
             <div v-if="comments.length === 0" class="empty-comments pixel-text">
               댓글이 없습니다. 첫 댓글을 작성해보세요!
             </div>
-            <template v-for="comment in comments" :key="comment.comment_id">
+            <template v-for="comment in comments" :key="comment.commentId">
               <div
-                v-if="!comment.parent_comment_id"
+                v-if="!comment.parentCommentId"
                 class="comment-item"
               >
-                <div class="comment-header" :class="{ 'deleted-comment-header': comment.is_deleted === 1 }">
-                  <span class="comment-author">{{ comment.is_deleted === 1 ? '삭제된 댓글입니다.' : comment.nickname }}</span>
-                  <span v-if="comment.is_deleted === 0" class="comment-date">{{ formatDate(comment.created_at) }}</span>
-                  <div v-if="comment.is_deleted === 0" class="comment-actions">
+                <div class="comment-header" :class="{ 'deleted-comment-header': comment.isDeleted === 1 }">
+                  <span class="comment-author">{{ comment.isDeleted === 1 ? '삭제된 댓글입니다.' : comment.nickname }}</span>
+                  <span v-if="comment.isDeleted === 0" class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                  <div v-if="comment.isDeleted === 0" class="comment-actions">
                     <button
                       v-if="authStore.isAuthenticated"
                       class="comment-reply"
-                      @click="handleReply(comment.comment_id)"
+                      @click="handleReply(comment.commentId)"
                     >
                       답글
                     </button>
                     <button
-                      v-if="authStore.user && comment.user_id === authStore.user.userId"
+                      v-if="authStore.user && comment.userId === authStore.user.userId"
                       class="comment-delete"
-                      @click="handleDeleteComment(comment.comment_id)"
+                      @click="handleDeleteComment(comment.commentId)"
                     >
                       삭제
                     </button>
                   </div>
                 </div>
-                <div class="comment-content" :class="{ 'deleted-comment-content': comment.is_deleted === 1 }">
-                  <span v-if="comment.is_deleted === 1" class="deleted-text">이 댓글은 삭제되었습니다.</span>
+                <div class="comment-content" :class="{ 'deleted-comment-content': comment.isDeleted === 1 }">
+                  <span v-if="comment.isDeleted === 1" class="deleted-text">이 댓글은 삭제되었습니다.</span>
                   <span v-else>{{ comment.content }}</span>
                 </div>
-                <div v-if="replyingTo === comment.comment_id && comment.is_deleted === 0" class="reply-form">
+                <div v-if="replyingTo === comment.commentId && comment.isDeleted === 0" class="reply-form">
                   <textarea
                     v-model="replyContent"
                     class="pixel-input reply-input"
@@ -115,7 +115,7 @@
                     rows="2"
                   ></textarea>
                   <div class="reply-actions">
-                    <button class="pixel-button reply-submit" @click="handleAddReply(comment.comment_id)">
+                    <button class="pixel-button reply-submit" @click="handleAddReply(comment.commentId)">
                       등록
                     </button>
                     <button class="pixel-button reply-cancel" @click="cancelReply">
@@ -123,15 +123,15 @@
                     </button>
                   </div>
                 </div>
-                <div v-for="reply in comments.filter(c => c.parent_comment_id === comment.comment_id && c.is_deleted === 0)" :key="reply.comment_id" class="reply-item">
+                <div v-for="reply in comments.filter(c => c.parentCommentId === comment.commentId && c.isDeleted === 0)" :key="reply.commentId" class="reply-item">
                   <div class="comment-header">
                     <span class="comment-author">↳ {{ reply.nickname }}</span>
-                    <span class="comment-date">{{ formatDate(reply.created_at) }}</span>
+                    <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
                     <div class="comment-actions">
                       <button
-                        v-if="authStore.user && reply.user_id === authStore.user.userId"
+                        v-if="authStore.user && reply.userId === authStore.user.userId"
                         class="comment-delete"
-                        @click="handleDeleteComment(reply.comment_id)"
+                        @click="handleDeleteComment(reply.commentId)"
                       >
                         삭제
                       </button>
@@ -169,7 +169,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useBoardStore2 } from '../stores/board2'
 import { useBoardCommentStore } from '../stores/boardComment'
 import { useAuthStore } from '../stores/auth'
-import { boardPostlikeApi } from '../services/api'
+import { useBoardPostlikeStore } from '../stores/boardPostlike'
 import { useModalStore } from '../stores/modal'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import PixelSpaceship from '../components/PixelSpaceship.vue'
@@ -181,6 +181,7 @@ const boardStore = useBoardStore2()
 const commentStore = useBoardCommentStore()
 const authStore = useAuthStore()
 const modalStore = useModalStore()
+const boardPostlikeStore = useBoardPostlikeStore()
 
 const postId = computed(() => Number(route.params.id))
 const post = computed(() => boardStore.currentPost)
@@ -194,20 +195,20 @@ const isLoadingLike = ref(false)
 
 // 댓글 수 계산 (삭제되지 않은 댓글만 카운트)
 const commentCount = computed(() => {
-  return comments.value.filter(comment => comment.is_deleted === 0).length
+  return comments.value.filter(comment => comment.isDeleted === 0).length
 })
 
 // 일반 댓글 수 (대댓글 제외)
 const parentCommentCount = computed(() => {
   return comments.value.filter(comment => 
-    !comment.parent_comment_id && comment.is_deleted === 0
+    !comment.parentCommentId && comment.isDeleted === 0
   ).length
 })
 
 // 대댓글 수
 const replyCount = computed(() => {
   return comments.value.filter(comment => 
-    comment.parent_comment_id !== null && comment.is_deleted === 0
+    comment.parentCommentId !== null && comment.isDeleted === 0
   ).length
 })
 
@@ -215,26 +216,9 @@ async function fetchLikeStatus() {
   if (!post.value) return
 
   try {
-    if (authStore.isAuthenticated) {
-      const [likeStatusRes, likeCountRes] = await Promise.all([
-        boardPostlikeApi.checkPostLike(post.value.board_id, post.value.post_id),
-        boardPostlikeApi.getPostLikeCount(post.value.board_id, post.value.post_id)
-      ])
-
-      if (likeStatusRes.data?.resvalue?.is_liked !== undefined) {
-        isLiked.value = likeStatusRes.data.resvalue.is_liked
-      }
-
-      if (likeCountRes.data?.resvalue?.like_count !== undefined) {
-        likeCount.value = likeCountRes.data.resvalue.like_count
-      }
-    } else {
-      const likeCountRes = await boardPostlikeApi.getPostLikeCount(post.value.board_id, post.value.post_id)
-      if (likeCountRes.data?.resvalue?.like_count !== undefined) {
-        likeCount.value = likeCountRes.data.resvalue.like_count
-      }
-      isLiked.value = false
-    }
+    const status = await boardPostlikeStore.fetchLikeStatus(post.value.boardId, post.value.postId)
+    isLiked.value = status.isLiked
+    likeCount.value = status.likeCount
   } catch (error: any) {
     console.error('좋아요 상태 조회 실패:', error)
   }
@@ -242,13 +226,13 @@ async function fetchLikeStatus() {
 
 onMounted(async () => {
   await boardStore.fetchAllPosts()
-  const foundPost = boardStore.posts.find(p => p.post_id === postId.value)
+  const foundPost = boardStore.posts.find(p => p.postId === postId.value)
   
   if (foundPost) {
-    await boardStore.fetchPostById(foundPost.board_id, foundPost.post_id)
+    await boardStore.fetchPostById(foundPost.boardId, foundPost.postId)
     
     if (post.value) {
-      await commentStore.fetchComments(post.value.board_id, post.value.post_id)
+      await commentStore.fetchComments(post.value.boardId, post.value.postId)
       await fetchLikeStatus()
     }
   }
@@ -259,7 +243,7 @@ onMounted(async () => {
   }
 })
 
-watch(() => post.value?.board_id, () => {
+watch(() => post.value?.boardId, () => {
   if (post.value) {
     fetchLikeStatus()
   }
@@ -291,7 +275,7 @@ async function handleDelete() {
     return
   }
   try {
-    await boardStore.deletePost(post.value.board_id, post.value.post_id)
+    await boardStore.deletePost(post.value.boardId, post.value.postId)
     await modalStore.openAlert('게시글이 삭제되었습니다.')
     goBack()
   } catch (error: any) {
@@ -316,11 +300,11 @@ async function handleLike() {
 
   try {
     if (isLiked.value) {
-      await boardPostlikeApi.removePostLike(post.value.board_id, post.value.post_id)
+      await boardPostlikeStore.removePostLike(post.value.boardId, post.value.postId)
       isLiked.value = false
       likeCount.value = Math.max(0, likeCount.value - 1)
     } else {
-      await boardPostlikeApi.addPostLike(post.value.board_id, post.value.post_id)
+      await boardPostlikeStore.addPostLike(post.value.boardId, post.value.postId)
       isLiked.value = true
       likeCount.value += 1
     }
@@ -346,7 +330,7 @@ async function handleAddComment() {
   }
 
   try {
-    await commentStore.createComment(post.value.board_id, post.value.post_id, newComment.value)
+    await commentStore.createComment(post.value.boardId, post.value.postId, newComment.value)
     newComment.value = ''
   } catch (error: any) {
     const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '댓글 작성에 실패했습니다.'
@@ -363,7 +347,7 @@ async function handleDeleteComment(commentId: number) {
   }
 
   try {
-    await commentStore.deleteComment(post.value.board_id, post.value.post_id, commentId)
+    await commentStore.deleteComment(post.value.boardId, post.value.postId, commentId)
   } catch (error: any) {
     const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '댓글 삭제에 실패했습니다.'
     modalStore.openAlert(errorMsg)
@@ -392,7 +376,7 @@ async function handleAddReply(parentCommentId: number) {
   }
 
   try {
-    await commentStore.createReply(post.value.board_id, post.value.post_id, parentCommentId, replyContent.value)
+    await commentStore.createReply(post.value.boardId, post.value.postId, parentCommentId, replyContent.value)
     replyingTo.value = null
     replyContent.value = ''
   } catch (error: any) {
@@ -798,102 +782,14 @@ function formatDate(dateString: string) {
   font-size: 14px;
   line-height: 1.6;
   color: #ccc;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.deleted-comment-header {
-  opacity: 0.6;
-}
-
-.deleted-comment-content {
-  opacity: 0.6;
 }
 
 .deleted-text {
-  color: #888;
+  color: #999;
   font-style: italic;
 }
 
-.empty-comments {
-  text-align: center;
-  padding: 40px 20px;
+.deleted-comment-header .comment-author {
   color: #888;
-  font-size: 14px;
-}
-
-.loading-text {
-  text-align: center;
-  padding: 60px 20px;
-  color: #4a9eff;
-  font-size: 18px;
-}
-
-.stars-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.spaceship {
-  position: fixed;
-  bottom: 50px;
-  right: 50px;
-  animation: float 3s ease-in-out infinite;
-  z-index: 5;
-}
-
-.monster {
-  position: fixed;
-  z-index: 3;
-  animation: float 2s ease-in-out infinite;
-}
-
-.monster-1 {
-  top: 100px;
-  left: 50px;
-  animation-delay: 0s;
-}
-
-.monster-2 {
-  top: 200px;
-  right: 100px;
-  animation-delay: 1s;
-}
-
-@keyframes screen-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-@media (max-width: 768px) {
-  .post-detail {
-    padding: 20px;
-  }
-  
-  .post-title {
-    font-size: 20px;
-  }
-  
-  .post-content-text {
-    font-size: 14px;
-  }
 }
 </style>
-
-

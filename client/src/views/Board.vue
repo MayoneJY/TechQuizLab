@@ -64,9 +64,9 @@
         </div>
         <div
           v-for="post in filteredPosts"
-          :key="post.post_id"
+          :key="post.postId"
           class="post-item"
-          @click="goToDetail(post.post_id)"
+          @click="goToDetail(post.postId)"
         >
           <div class="post-header">
             <span class="post-category" :class="post.tags">
@@ -78,11 +78,11 @@
             {{ truncateContent(post.content) }}
           </div>
           <div class="post-footer">
-            <span class="post-author">작성자 {{ post.nickname || post.user_id }}</span>
-            <span class="post-date">{{ formatDate(post.created_at) }}</span>
+            <span class="post-author">작성자 {{ post.nickname || post.userId }}</span>
+            <span class="post-date">{{ formatDate(post.createdAt) }}</span>
             <div class="post-stats">
-              <span>조회수 {{ post.view_count }}</span>
-              <span>좋아요 {{ getLikeCount(post.board_id, post.post_id) }}</span>
+              <span>조회수 {{ post.viewCount }}</span>
+              <span>좋아요 {{ getLikeCount(post.boardId, post.postId) }}</span>
               <span>댓글 {{ getCommentCount(post) }}개</span>
             </div>
           </div>
@@ -225,12 +225,12 @@ function formatDate(dateString: string) {
 }
 
 function getCommentCount(post: any) {
-  return post.comment_count || 0
+  return post.commentCount || 0
 }
 
 function getLikeCount(boardId: number, postId: number) {
   const status = boardpostlikeStore.getLikeStatus(boardId, postId)
-  return status?.like_count ?? 0
+  return status?.likeCount ?? 0
 }
 
 async function fetchAllLikeCounts() {
@@ -239,7 +239,7 @@ async function fetchAllLikeCounts() {
 
   try {
     const promises = posts.map(post => 
-      boardpostlikeStore.getLikeCount(post.board_id, post.post_id)
+      boardpostlikeStore.getLikeCount(post.boardId, post.postId)
     )
     await Promise.all(promises)
   } catch (error) {
@@ -630,5 +630,3 @@ function getPageNumbers() {
   text-transform: none !important;
 }
 </style>
-
-

@@ -4,14 +4,14 @@ import { useAuthStore } from './auth'
 import { boardCommentApi } from '../services/api'
 
 export interface Comment {
-    comment_id: number
-    board_id: number
-    post_id: number
-    user_id: number
-    parent_comment_id: number | null
+    commentId: number
+    boardId: number
+    postId: number
+    userId: number
+    parentCommentId: number | null
     content: string
-    created_at: string
-    is_deleted: number
+    createdAt: string
+    isDeleted: number
     nickname: string
 }
 
@@ -184,4 +184,3 @@ export const useBoardCommentStore = defineStore('boardComment', () => {
         clearComments
     }
 })
-

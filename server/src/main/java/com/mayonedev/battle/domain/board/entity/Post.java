@@ -10,26 +10,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Post {
-	private long board_id;
-	private long post_id;
+	private long boardId;
+	private long postId;
 	private String title;
 	private String content;
-	private long user_id;
-	private long view_count;
-	private LocalDateTime created_at;
+	private long userId;
+	private long viewCount;
+	private LocalDateTime createdAt;
 
-	public Post(long post_id, long board_id, String title, String content) {
+	public Post(long postId, long boardId, String title, String content) {
 		super();
-		this.post_id = post_id;
-		this.board_id = board_id;
+		this.postId = postId;
+		this.boardId = boardId;
 		this.title = title;
 		this.content = content;
 	}
 
-	public Post(long board_id, String title, String content, long user_id) {
+	public Post(long boardId, String title, String content, long userId) {
 		super();
-		this.board_id = board_id;
-		this.user_id = user_id;
+		this.boardId = boardId;
+		this.userId = userId;
 		this.title = title;
 		this.content = content;
 	}
