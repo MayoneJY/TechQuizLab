@@ -3,8 +3,8 @@ import axios from 'axios'
 // 개발 환경에서는 Vite proxy를 사용하고, 프로덕션에서는 직접 API 호출
 const API_BASE_URL = import.meta.env.DEV
   ? '' // 개발 환경: Vite proxy 사용 (상대 경로)
-  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9033')
-// : (import.meta.env.VITE_API_BASE_URL || 'https://battle.mayonedev.com')
+  // : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:9033')
+  : (import.meta.env.VITE_API_BASE_URL || 'https://battle.mayonedev.com')
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -13,7 +13,7 @@ const api = axios.create({
     'Accept': 'application/json; charset=utf-8',
     'Accept-Charset': 'utf-8'
   },
-  timeout: 60000, // 60초 타임아웃
+  timeout: 80000, // 80초 타임아웃
   withCredentials: false, // CORS를 위해 false로 설정
   responseType: 'json',
   responseEncoding: 'utf8'

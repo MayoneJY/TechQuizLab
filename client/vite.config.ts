@@ -10,11 +10,11 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
+    port: 9034,
     proxy: {
       '/api': {
-        target: 'http://localhost:9033',
-        // target: 'https://battle.mayonedev.com',
+        // target: 'http://localhost:9033',
+        target: 'https://battle.mayonedev.com',
         changeOrigin: true,
         secure: true,
         rewrite: (path) => path,
