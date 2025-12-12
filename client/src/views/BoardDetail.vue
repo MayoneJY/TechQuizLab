@@ -212,7 +212,7 @@
         <div class="widget-column">
              <div class="action-widget">
                  <button class="pixel-button back-btn" @click="goBack">
-                    <img :src="btnList" class="btn-icon" /> 목록으로
+                    <img :src="btnList" class="btn-icon" style="height: 15px;"/> 목록으로
                  </button>
                  
                  <template v-if="post && authStore.user && post.userId === authStore.user.userId">
