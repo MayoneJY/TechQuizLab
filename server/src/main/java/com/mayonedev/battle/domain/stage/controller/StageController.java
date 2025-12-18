@@ -1,5 +1,6 @@
 package com.mayonedev.battle.domain.stage.controller;
 
+import com.mayonedev.battle.domain.stage.dto.stageDTO;
 import com.mayonedev.battle.domain.stage.entity.Stage;
 import com.mayonedev.battle.domain.stage.service.StageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -24,7 +24,7 @@ public class StageController {
     @GetMapping
     @Operation(summary = "스테이지 목록 조회", 
                description = "스테이지를 직무별로 조회합니다.")
-    public ResponseEntity<Map<String, Object>> getStages(
+    public ResponseEntity<stageDTO> getStages(
             @RequestParam(required = false) String jobCategories,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size) {
@@ -37,7 +37,7 @@ public class StageController {
                     .collect(Collectors.toList());
         }
 
-        Map<String, Object> result = stageService.getStagesWithPaging(
+        stageDTO result = stageService.getStagesWithPaging(
                 jobCategoryList, page, size);
         
         return ResponseEntity.ok(result);

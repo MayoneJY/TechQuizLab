@@ -1,6 +1,7 @@
 package com.mayonedev.battle.domain.stage.service;
 
 import com.mayonedev.battle.domain.stage.dao.StageDao;
+import com.mayonedev.battle.domain.stage.dto.stageDTO;
 import com.mayonedev.battle.domain.stage.entity.Stage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,13 @@ public class StageService {
                 .orElseThrow(() -> new RuntimeException("Stage not found with id: " + stageId));
     }
 
-    public Map<String, Object> getStagesWithPaging(
+    public stageDTO getStagesWithPaging(
             List<String> jobCategories,
             int page,
-            int size) {
+            int size
+    ) {
+        if (size <= 0) size = 12; // 방어 (원하면 제거 가능)
+        if (page < 0) page = 0;
 
         Map<String, Object> params = new HashMap<>();
         int offset = page * size;
@@ -36,7 +40,7 @@ public class StageService {
         params.put("size", size);
 
         List<Stage> content;
-        int totalElements;
+        long totalElements;
 
         if (jobCategories != null && !jobCategories.isEmpty()) {
             params.put("jobCategories", jobCategories);
@@ -49,14 +53,12 @@ public class StageService {
 
         int totalPages = (int) Math.ceil((double) totalElements / size);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("content", content);
-        result.put("page", page);
-        result.put("size", size);
-        result.put("totalElements", totalElements);
-        result.put("totalPages", totalPages);
-        result.put("jobCategories", jobCategories != null ? jobCategories : List.of());
-
-        return result;
-    }
-}
+        return stageDTO.builder()
+                .content(content)
+                .page(page)
+                .size(size)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
+                .jobCategories(jobCategories != null ? jobCategories : List.of())
+                .build();
+    }}

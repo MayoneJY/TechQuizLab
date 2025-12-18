@@ -96,6 +96,15 @@ export interface Stage {
     deadline?: string
 }
 
+export interface StageDTO {
+    content: Stage[]
+    page: number
+    size: number
+    totalElements: number
+    totalPages: number
+    jobCategories: string[]
+}
+
 export interface Topic {
     id: number
     name: string

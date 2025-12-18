@@ -137,7 +137,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { stageApi, battleApi } from '../services/api'
-import type { Stage } from '../types/schema'
+import type { Stage, StageDTO } from '../types/schema'
 import { useModalStore } from '../stores/modal'
 import PixelMonster from '../components/PixelMonster.vue'
 
@@ -209,7 +209,7 @@ async function fetchStages() {
     console.log('Fetching stages with params:', params)
     const response = await stageApi.getStagesWithPaging(params)
     console.log('API Response:', response)
-    const data = response.data
+    const data = response.data as StageDTO
     console.log('Response data:', data)
     
     stages.value = data.content || []
