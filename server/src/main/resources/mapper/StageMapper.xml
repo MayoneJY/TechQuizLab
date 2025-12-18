@@ -13,6 +13,27 @@
         <result property="content" column="content"/>
     </resultMap>
 
+    <sql id="stageFilterByJobCategories">
+        <where>
+            <if test="jobCategories != null and jobCategories.size() > 0">
+                job_category IN
+                <foreach collection="jobCategories" item="jobCategory" open="(" separator="," close=")">
+                    #{jobCategory}
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <sql id="stageOrderBy">
+        ORDER BY 
+            CASE 
+                WHEN deadline IS NULL THEN 0
+                WHEN deadline >= CURDATE() THEN 1
+                ELSE 2
+            END ASC,
+            deadline ASC
+    </sql>
+
     <select id="findAll" resultMap="StageResultMap">
         SELECT 
             stage_id,
@@ -36,5 +57,53 @@
         FROM stage
         WHERE stage_id = #{stageId}
     </select>
+
+    <select id="findAllWithPaging" parameterType="map" resultMap="StageResultMap">
+        SELECT 
+            stage_id,
+            company_name,
+            title,
+            deadline,
+            job_category,
+            content
+        FROM stage
+        <include refid="stageOrderBy"/>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="findByJobCategoriesWithPaging" parameterType="map" resultMap="StageResultMap">
+        SELECT 
+            stage_id,
+            company_name,
+            title,
+            deadline,
+            job_category,
+            content
+        FROM stage
+        <include refid="stageFilterByJobCategories"/>
+        <include refid="stageOrderBy"/>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*)
+        FROM stage
+    </select>
+
+    <select id="countByJobCategories" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM stage
+        <include refid="stageFilterByJobCategories"/>
+    </select>
+
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.stage.entity.Stage" 
+            useGeneratedKeys="true" keyProperty="stageId">
+        INSERT INTO stage (
+            company_name, title, job_category, content, deadline
+        )
+        VALUES (
+            #{companyName}, #{title}, #{jobCategory}, #{content}, #{deadline}
+        )
+    </insert>
 
 </mapper>

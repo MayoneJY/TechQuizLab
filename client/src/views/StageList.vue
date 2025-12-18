@@ -12,6 +12,36 @@
         </button>
       </div>
 
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-section">
+          <div class="filter-label pixel-text">직무 카테고리</div>
+          <div class="filter-chips">
+            <button 
+              class="filter-chip pixel-button"
+              :class="{ active: selectedJobCategories.length === 0 }"
+              @click="clearFilters"
+            >
+              전체
+            </button>
+            <button
+              v-for="option in jobCategoryOptions"
+              :key="option.value"
+              class="filter-chip pixel-button"
+              :class="{ active: selectedJobCategories.includes(option.value) }"
+              @click="toggleJobCategory(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination Info -->
+      <div v-if="!isLoading && totalElements > 0" class="pagination-info pixel-text">
+        총 {{ totalElements }}개 중 {{ (page * size) + 1 }}-{{ Math.min((page + 1) * size, totalElements) }}개 표시
+      </div>
+
       <div v-if="isLoading" class="stage-grid">
          <div v-for="i in 3" :key="i" class="stage-card skeleton-card">
            <div class="card-badges">
@@ -61,6 +91,27 @@
           <div class="scan-line"></div>
         </div>
       </div>
+
+      <!-- Pagination Controls -->
+      <div v-if="!isLoading && totalPages > 1" class="pagination-controls">
+        <button 
+          class="pixel-button"
+          :disabled="page === 0"
+          @click="changePage(page - 1)"
+        >
+          이전
+        </button>
+        <span class="pixel-text pagination-text">
+          {{ page + 1 }} / {{ totalPages }}
+        </span>
+        <button 
+          class="pixel-button"
+          :disabled="page >= totalPages - 1"
+          @click="changePage(page + 1)"
+        >
+          다음
+        </button>
+      </div>
     </div>
 
     <!-- Floating monsters -->
@@ -83,7 +134,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { stageApi, battleApi } from '../services/api'
 import type { Stage } from '../types/schema'
@@ -91,33 +142,121 @@ import { useModalStore } from '../stores/modal'
 import PixelMonster from '../components/PixelMonster.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const modalStore = useModalStore()
+
+const jobCategoryOptions = [
+  { value: '백엔드/서버개발', label: '백엔드/서버개발' },
+  { value: '게임개발', label: '게임개발' },
+  { value: '데이터 사이언티스트', label: '데이터 사이언스' },
+  { value: '데이터분석가', label: '데이터분석가' },
+  { value: '프론트엔드', label: '프론트엔드' },
+  { value: 'SE(시스템엔지니어)', label: 'SE(시스템엔지니어)' },
+  { value: 'SI개발', label: 'SI개발' },
+  { value: '데이터엔지니어', label: '데이터엔지니어' },
+  { value: '앱개발', label: '앱개발' },
+  { value: '정보보안', label: '정보보안' }
+]
+
+const selectedJobCategories = ref<string[]>([])
+const page = ref<number>(0)
+const size = ref<number>(12)
+const totalElements = ref<number>(0)
+const totalPages = ref<number>(0)
 
 const stages = ref<Stage[]>([])
 const isLoading = ref(false)
 const isCreatingBattle = ref(false)
 
 onMounted(async () => {
+  // 라우터 query에서 상태 복원
+  const query = route.query
+  if (query.jobCategories) {
+    selectedJobCategories.value = (query.jobCategories as string).split(',').filter(Boolean)
+  }
+  if (query.page) {
+    page.value = parseInt(query.page as string, 10) || 0
+  }
+  
   await fetchStages()
 })
+
+function updateQuery() {
+  const query: Record<string, string> = {}
+  if (selectedJobCategories.value.length > 0) {
+    query.jobCategories = selectedJobCategories.value.join(',')
+  }
+  if (page.value > 0) {
+    query.page = page.value.toString()
+  }
+  
+  router.replace({ query })
+}
 
 async function fetchStages() {
   isLoading.value = true
   try {
-    const response = await stageApi.getAllStages()
-    stages.value = response.data
+    const params: Record<string, any> = {
+      page: page.value,
+      size: size.value
+    }
+    
+    if (selectedJobCategories.value.length > 0) {
+      params.jobCategories = selectedJobCategories.value.join(',')
+    }
+    
+    console.log('Fetching stages with params:', params)
+    const response = await stageApi.getStagesWithPaging(params)
+    console.log('API Response:', response)
+    const data = response.data
+    console.log('Response data:', data)
+    
+    stages.value = data.content || []
+    totalElements.value = data.totalElements || 0
+    totalPages.value = data.totalPages || 0
+    
+    console.log('Stages loaded:', stages.value.length, 'Total:', totalElements.value)
+    
+    updateQuery()
   } catch (error) {
     console.error('Failed to fetch stages:', error)
+    if (error instanceof Error) {
+      console.error('Error details:', error.message, error.stack)
+    }
   } finally {
     isLoading.value = false
+  }
+}
+
+function toggleJobCategory(value: string) {
+  const index = selectedJobCategories.value.indexOf(value)
+  if (index > -1) {
+    selectedJobCategories.value.splice(index, 1)
+  } else {
+    selectedJobCategories.value.push(value)
+  }
+  page.value = 0
+  fetchStages()
+}
+
+function clearFilters() {
+  selectedJobCategories.value = []
+  page.value = 0
+  fetchStages()
+}
+
+function changePage(newPage: number) {
+  if (newPage >= 0 && newPage < totalPages.value) {
+    page.value = newPage
+    fetchStages()
   }
 }
 
 
 
 async function startChallenge(stageId: number) {
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isAuthenticated || !authStore.user) {
     if (await modalStore.openConfirm('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?')) {
       router.push('/login')
     }
@@ -443,5 +582,106 @@ function isUrgent(dateString?: string) {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* Filter Bar Styles */
+.filter-bar {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #ffd43b;
+  font-weight: 700;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-chip {
+  padding: 8px 16px;
+  font-size: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-chip:hover {
+  border-color: #4a9eff;
+  transform: translateY(-2px);
+}
+
+.filter-chip.active {
+  background: rgba(74, 158, 255, 0.3);
+  border-color: #4a9eff;
+  color: #fff;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  max-width: 200px;
+}
+
+.filter-select:hover {
+  border-color: #4a9eff;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #4a9eff;
+}
+
+.pagination-info {
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.pagination-text {
+  font-size: 14px;
+  color: #fff;
+}
+
+.pagination-controls .pixel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-controls .pixel-button:disabled:hover {
+  transform: none;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 </style>

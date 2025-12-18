@@ -3,10 +3,14 @@ package com.mayonedev.battle.domain.stage.service;
 import com.mayonedev.battle.domain.stage.dao.StageDao;
 import com.mayonedev.battle.domain.stage.entity.Stage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StageService {
@@ -19,5 +23,40 @@ public class StageService {
     public Stage getStageById(Long stageId) {
         return stageDao.findById(stageId)
                 .orElseThrow(() -> new RuntimeException("Stage not found with id: " + stageId));
+    }
+
+    public Map<String, Object> getStagesWithPaging(
+            List<String> jobCategories,
+            int page,
+            int size) {
+
+        Map<String, Object> params = new HashMap<>();
+        int offset = page * size;
+        params.put("offset", offset);
+        params.put("size", size);
+
+        List<Stage> content;
+        int totalElements;
+
+        if (jobCategories != null && !jobCategories.isEmpty()) {
+            params.put("jobCategories", jobCategories);
+            content = stageDao.findByJobCategoriesWithPaging(params);
+            totalElements = stageDao.countByJobCategories(params);
+        } else {
+            content = stageDao.findAllWithPaging(params);
+            totalElements = stageDao.countAll();
+        }
+
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", content);
+        result.put("page", page);
+        result.put("size", size);
+        result.put("totalElements", totalElements);
+        result.put("totalPages", totalPages);
+        result.put("jobCategories", jobCategories != null ? jobCategories : List.of());
+
+        return result;
     }
 }
