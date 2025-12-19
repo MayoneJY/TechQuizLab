@@ -339,8 +339,11 @@ export const boardPostlikeApi = {
 
 // Portfolio API
 export const portfolioApi = {
-  getMyPortfolios: (userId: number) =>
-    api.get(`/api/portfolios/user/${userId}`),
+  getMyPortfolios: (userId: number, params?: { search?: string; page?: number; size?: number }) =>
+    api.get(`/api/portfolios/user/${userId}`, { params }),
+
+  getPortfolio: (pfId: number) =>
+    api.get(`/api/portfolios/${pfId}`),
 
   createPortfolio: (portfolioDto: { userId: number; title: string; content: string }) =>
     api.post('/api/portfolios', portfolioDto),

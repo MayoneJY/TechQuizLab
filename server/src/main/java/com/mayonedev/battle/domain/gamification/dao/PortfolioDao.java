@@ -9,7 +9,12 @@ import java.util.List;
 public interface PortfolioDao {
     void insert(Portfolio portfolio);
 
-    List<Portfolio> findAllByUserId(Long userId);
+    List<Portfolio> findPortfolios(@Param("userId") Long userId,
+            @Param("search") String search,
+            @Param("limit") int limit,
+            @Param("offset") int offset);
+
+    int countPortfolios(@Param("userId") Long userId, @Param("search") String search);
 
     Portfolio findByUserAndPfId(@Param("userId") Long userId, @Param("pfId") Long pfId);
 

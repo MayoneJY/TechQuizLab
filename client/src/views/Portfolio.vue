@@ -1,110 +1,91 @@
 <template>
-  <div class="portfolio-screen">
+  <div class="page-container">
+    <div class="content-wrapper glass-panel">
+      
+      <!-- Header -->
+      <div class="page-header">
+        <h2 class="page-title pixel-text">포트폴리오</h2>
+        <button class="back-btn pixel-button primary" @click="goHome">홈으로</button>
+      </div>
 
-    
-    <div class="portfolio-container">
-      <div class="header">
-        <h1 class="pixel-text title">
-          <span class="glitch" data-text="포트폴리오">포트폴리오</span>
-        </h1>
-        <button class="pixel-button back-button" @click="goHome">
-          ← 홈으로
+      <!-- Toolbar -->
+      <div class="toolbar-section">
+        <div class="search-container glass-input-wrapper">
+          <input 
+            v-model="searchKeyword" 
+            type="text" 
+            class="glass-input search-input" 
+            placeholder="프로젝트 검색..."
+            @keyup.enter="onSearch"
+          />
+          <button class="search-btn" @click="onSearch">🔍</button>
+        </div>
+        <button class="pixel-button primary new-project-btn" @click="goToCreate">
+          + 새 프로젝트
         </button>
       </div>
 
-      <div class="content-wrapper">
-        <!-- Portfolio List -->
-        <div class="portfolio-list-section glass-panel" :class="{ 'collapsed': viewMode === 'editor' }">
-          <div class="list-header">
-            <h2 class="pixel-text section-title">MY PROJECTS</h2>
-          <transition name="fade-delay">
-            <button class="pixel-button add-btn small" @click="startNewPortfolio" v-if="viewMode === 'list'">
-              + 새 항목
-            </button>
-          </transition>
-        </div>
-          
-          <div v-if="isLoading" class="loading-state">
-             <p class="pixel-text">로딩 중...</p>
-          </div>
-          <div v-else-if="portfolios.length === 0" class="empty-state">
-            <div class="empty-icon">📂</div>
-            <p class="pixel-text">데이터가 없습니다</p>
-            <button class="pixel-button primary" @click="startNewPortfolio">
-              새 프로젝트 만들기
-            </button>
-          </div>
-          <div v-else class="portfolio-list">
-            <div 
-              v-for="pf in portfolios" 
-              :key="pf.pfId" 
-              class="portfolio-item glass-card"
-              :class="{ 'active': selectedPfId === pf.pfId }"
-              @click="selectPortfolio(pf)"
-            >
-              <div class="item-icon">💾</div>
-              <div class="item-content">
-                <h3 class="pixel-text item-title">{{ pf.title }}</h3>
-                <span class="item-date">{{ formatDate(pf.createdAt) }}</span>
-              </div>
-              <div class="item-arrow">→</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Portfolio Editor -->
-        <transition name="slide-fade">
-          <div v-if="viewMode === 'editor'" class="portfolio-editor-section glass-panel">
-            <div class="editor-header">
-              <h2 class="pixel-text section-title">
-                {{ isEditing ? '프로젝트 수정' : '새 프로젝트' }}
-              </h2>
-              <button class="pixel-button secondary small" @click="backToList">
-                취소
-              </button>
-            </div>
-            
-            <div class="editor-form">
-              <div class="form-group">
-                <label class="pixel-text label">제목</label>
-                <input 
-                  v-model="editorTitle" 
-                  type="text" 
-                  class="pixel-input glass-input" 
-                  placeholder="프로젝트 이름을 입력하세요"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label class="pixel-text label">내용</label>
-                <textarea 
-                  v-model="editorContent" 
-                  class="pixel-textarea glass-input" 
-                  placeholder="프로젝트 상세 내용, 기술 스택, 역할 등을 작성하세요..."
-                ></textarea>
-              </div>
-              
-              <div class="editor-actions">
-                <button 
-                  v-if="isEditing" 
-                  class="pixel-button danger delete-btn" 
-                  @click="deletePortfolio(selectedPfId!)"
-                >
-                  삭제
-                </button>
-                <button class="pixel-button primary save-btn" @click="savePortfolio">
-                  저장하기
-                </button>
-              </div>
-            </div>
-          </div>
-        </transition>
+      <!-- List -->
+      <div v-if="isLoading" class="loading-state">
+        <p class="pixel-text">로딩 중...</p>
       </div>
+
+      <div v-else-if="portfolios.length === 0" class="empty-state">
+         <img src="/assets/icons/icon-portfolio.png" alt="Empty" class="empty-icon-img" />
+         <p class="pixel-text">프로젝트가 없습니다.</p>
+         <button class="pixel-button primary" @click="goToCreate">첫 프로젝트 작성하기</button>
+      </div>
+
+      <div v-else class="portfolio-list">
+        <div 
+          v-for="pf in portfolios" 
+          :key="pf.pfId" 
+          class="portfolio-item clickable-item"
+          @click="goToDetail(pf.pfId)"
+        >
+          <div class="icon-box">
+            <img src="/assets/icons/icon-portfolio.png" class="icon-img" />
+          </div>
+          <div class="item-info">
+             <div class="item-title pixel-text">{{ pf.title }}</div>
+             <div class="item-date">{{ formatDate(pf.createdAt) }}</div>
+          </div>
+           <div class="arrow-icon">›</div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination-container">
+          <button 
+            class="pagination-nav-btn prev"
+            :disabled="currentPage === 1"
+            @click="goToPage(currentPage - 1)"
+          >
+            &lt;
+          </button>
+          
+          <div class="page-numbers">
+            <button
+              v-for="page in getPageNumbers()"
+              :key="page"
+              class="page-number-btn pixel-text"
+              :class="{ active: page === currentPage }"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          </div>
+          
+          <button 
+            class="pagination-nav-btn next"
+            :disabled="currentPage === totalPages"
+            @click="goToPage(currentPage + 1)"
+          >
+            &gt;
+          </button>
+      </div>
+
     </div>
-    
-    <!-- Decor elements -->
-    <div class="decoration-circle"></div>
-    <div class="scan-lines"></div>
   </div>
 </template>
 
@@ -112,23 +93,25 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { useModalStore } from '../stores/modal'
 import { portfolioApi } from '../services/api'
 import type { Portfolio } from '../types/schema'
 
-
 const router = useRouter()
 const authStore = useAuthStore()
-const modalStore = useModalStore()
 
 const portfolios = ref<Portfolio[]>([])
 const isLoading = ref(false)
-const selectedPfId = ref<number | null>(null)
-const isEditing = ref(false)
-const viewMode = ref<'list' | 'editor'>('list')
+const searchKeyword = ref('')
 
-const editorTitle = ref('')
-const editorContent = ref('')
+// Pagination
+const currentPage = ref(1)
+const totalPages = ref(0)
+const pageSize = 10
+
+function onSearch() {
+  currentPage.value = 1
+  fetchPortfolios()
+}
 
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
@@ -140,11 +123,16 @@ onMounted(async () => {
 
 async function fetchPortfolios() {
   if (!authStore.user) return
-  
   isLoading.value = true
   try {
-    const response = await portfolioApi.getMyPortfolios(authStore.user.userId)
-    portfolios.value = response.data
+    const response = await portfolioApi.getMyPortfolios(authStore.user.userId, {
+        page: currentPage.value,
+        size: pageSize,
+        search: searchKeyword.value
+    }) 
+    const data = response.data
+    portfolios.value = data.content
+    totalPages.value = data.totalPages
   } catch (error) {
     console.error('Failed to fetch portfolios:', error)
   } finally {
@@ -152,67 +140,12 @@ async function fetchPortfolios() {
   }
 }
 
-function selectPortfolio(pf: Portfolio) {
-  selectedPfId.value = pf.pfId
-  editorTitle.value = pf.title
-  editorContent.value = pf.content || ''
-  isEditing.value = true
-  viewMode.value = 'editor'
+function goToDetail(id: number) {
+  router.push(`/portfolio/${id}`)
 }
 
-function startNewPortfolio() {
-  selectedPfId.value = null
-  editorTitle.value = ''
-  editorContent.value = ''
-  isEditing.value = false
-  viewMode.value = 'editor'
-}
-
-function backToList() {
-  viewMode.value = 'list'
-  selectedPfId.value = null
-}
-
-async function savePortfolio() {
-  if (!authStore.user) return
-  if (!editorTitle.value.trim()) {
-    await modalStore.openAlert('Please enter a title.')
-    return
-  }
-
-  try {
-    if (isEditing.value && selectedPfId.value) {
-      await portfolioApi.updatePortfolio(selectedPfId.value, {
-        userId: authStore.user.userId,
-        title: editorTitle.value,
-        content: editorContent.value
-      })
-    } else {
-      await portfolioApi.createPortfolio({
-        userId: authStore.user.userId,
-        title: editorTitle.value,
-        content: editorContent.value
-      })
-    }
-    await fetchPortfolios()
-    backToList()
-  } catch (error: any) {
-    console.error('Failed to save portfolio:', error)
-    await modalStore.openAlert('Failed to save.')
-  }
-}
-
-async function deletePortfolio(pfId: number) {
-  if (!await modalStore.openConfirm('Area you sure you want to delete this project?')) return
-
-  try {
-    await portfolioApi.deletePortfolio(pfId)
-    await fetchPortfolios()
-    backToList()
-  } catch (error) {
-    console.error('Failed to delete portfolio:', error)
-    await modalStore.openAlert('Failed to delete.')
-  }
+function goToCreate() {
+  router.push('/portfolio/new')
 }
 
 function goHome() {
@@ -223,283 +156,244 @@ function formatDate(dateString?: string) {
   if (!dateString) return ''
   return new Date(dateString).toLocaleDateString()
 }
+
+function goToPage(page: number) {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+    fetchPortfolios()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function getPageNumbers() {
+  const total = totalPages.value
+  const current = currentPage.value
+  const pages: number[] = []
+  
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) pages.push(i)
+  } else {
+    let start = Math.max(1, current - 2)
+    let end = Math.min(total, current + 2)
+    if (end - start < 4) {
+      if (start === 1) end = Math.min(total, start + 4)
+      else if (end === total) start = Math.max(1, end - 4)
+    }
+    for (let i = start; i <= end; i++) pages.push(i)
+  }
+  return pages
+}
 </script>
 
 <style scoped>
-.portfolio-screen {
-  min-height: 100vh;
-  position: relative;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-}
-
-.portfolio-container {
+.page-container {
   width: 100%;
-  max-width: 1200px; /* Increased max-width for better split view */
-  padding: 20px; /* Added internal padding */
-  box-sizing: border-box;
-  z-index: 10;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.title {
-  font-size: 32px;
-  color: #ffd43b;
-  margin: 0;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 80px;
+  min-height: 100vh;
 }
 
 .content-wrapper {
-  display: flex;
-  gap: 20px;
-  flex: 1;
-  overflow: hidden; 
-}
-
-/* List Section */
-.portfolio-list-section {
-  flex: 1;
+  padding: 20px;
+  border-radius: 12px;
+  min-height: 600px;
+  background: rgba(0, 0, 0, 0.4); 
+  border: 1px solid rgba(255,255,255,0.1);
   display: flex;
   flex-direction: column;
-  transition: all 0.5s ease;
-  min-width: 300px;
-  padding: 20px; /* Added padding to fix "sticking to wall" issue */
+  backdrop-filter: blur(10px);
 }
 
-.portfolio-list-section.collapsed {
-  flex: 0 0 300px; 
-}
-
-.list-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-}
-
-.section-title {
-  font-size: 18px;
-  color: #4a9eff;
-  margin: 0;
-}
-
-.portfolio-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding-right: 5px;
-}
-
-.portfolio-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-}
-
-.portfolio-item:hover {
-  transform: translateX(5px);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #4a9eff;
-}
-
-.portfolio-item.active {
-  background: rgba(74, 158, 255, 0.15);
-  border-color: #ffd43b;
-  box-shadow: 0 0 15px rgba(255, 212, 59, 0.2);
-}
-
-.item-icon {
-  font-size: 24px;
-}
-
-.item-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-title {
-  font-size: 16px;
-  color: #fff;
-  margin: 0 0 5px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-date {
-  font-size: 12px;
-  color: #888;
-}
-
-.item-arrow {
-  color: #4a9eff;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.portfolio-item:hover .item-arrow,
-.portfolio-item.active .item-arrow {
-  opacity: 1;
-}
-
-/* Editor Section */
-.portfolio-editor-section {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  padding: 30px;
-}
-
-.editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 15px;
 }
 
-.editor-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.page-title {
+  color: #ffd43b;
+  font-size: 24px;
+  margin: 0;
 }
 
-.form-group {
+.back-btn {
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+/* Toolbar */
+.toolbar-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.search-container {
+  display: flex;
+  width: 300px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+  border: 1px solid #444;
+  overflow: hidden;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px;
+  color: #fff;
+  outline: none;
+}
+
+.search-btn {
+  padding: 0 15px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.new-project-btn {
+  white-space: nowrap;
+  padding: 10px 20px;
+  font-weight: bold;
+  background: transparent !important;
+  border: 1px solid #4a9eff;
+  color: #4a9eff;
+}
+
+.new-project-btn:hover {
+  background: rgba(74, 158, 255, 0.1) !important;
+  color: #fff;
+  border-color: #fff;
+}
+
+/* List Items */
+.portfolio-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.label {
-  font-size: 14px;
-  color: #888;
-}
-
-.pixel-input.glass-input, 
-.pixel-textarea.glass-input {
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  width: 100%;
-}
-
-.pixel-input:focus, 
-.pixel-textarea:focus {
-  border-color: #4a9eff;
-  box-shadow: 0 0 10px rgba(74, 158, 255, 0.2);
-}
-
-.pixel-textarea {
-  min-height: 200px;
-  resize: vertical;
-}
-
-.editor-actions {
-  margin-top: auto;
+.clickable-item {
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 8px;
+  padding: 15px;
+  background: rgba(255,255,255,0.05); /* Match MyBattles item bg approximately */
+  border: 1px solid transparent;
   display: flex;
-  justify-content: space-between;
-  padding-top: 20px;
+  align-items: center;
+  gap: 15px;
 }
 
-.empty-state {
-  flex: 1;
+.clickable-item:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(74, 158, 255, 0.5);
+  transform: translateX(2px);
+}
+
+.icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  color: #888;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.icon-img {
+  width: 24px; image-rendering: pixelated; opacity: 0.8;
 }
 
-.empty-icon {
-  font-size: 48px;
-  opacity: 0.5;
+.item-info { flex: 1; }
+.item-title { color: #fff; font-size: 16px; margin-bottom: 4px; font-weight: bold; }
+.item-date { color: #888; font-size: 12px; }
+.arrow-icon { color: #555; font-size: 20px; }
+.clickable-item:hover .arrow-icon { color: #fff; }
+
+.loading-state, .empty-state {
+  text-align: center; padding: 60px 20px; color: #888;
+  display: flex; flex-direction: column; align-items: center; gap: 15px;
+}
+.empty-icon-img { width: 64px; opacity: 0.3; filter: grayscale(1); }
+
+/* Button Base */
+.pixel-button {
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #ccc;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.pixel-button:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: #fff; }
+.pixel-button.primary { background: #4a9eff; border-color: #4a9eff; color: #fff; }
+.pixel-button.primary:hover { background: #3b82f6; }
+
+
+/* Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0;
+    margin-top: 10px;
 }
 
-
-/* Transitions */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease-out;
+.pagination-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
+.pagination-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
 }
 
-/* Fade Delay for New Button */
-.fade-delay-enter-active {
-  transition: opacity 0.5s ease-out;
-  transition-delay: 0.3s; /* Delay the appearance */
+.page-numbers {
+    display: flex;
+    gap: 6px;
 }
 
-.fade-delay-leave-active {
-  transition: none; /* Immediate disappearance */
+.page-number-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.fade-delay-enter-from,
-.fade-delay-leave-to {
-  opacity: 0;
+.page-number-btn.active {
+    background: #4a9eff;
+    color: #fff;
+    font-weight: bold;
+    border: 1px solid #7cbcf0;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
 }
 
-
-/* Background Decorations */
-.scan-lines {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0) 0px,
-    rgba(0, 0, 0, 0) 1px,
-    rgba(255, 255, 255, 0.02) 2px,
-    rgba(255, 255, 255, 0.02) 3px
-  );
-  pointer-events: none;
-  z-index: 1;
-}
-
-.decoration-circle {
-  position: fixed;
-  top: -100px;
-  right: -100px;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(74, 158, 255, 0.1) 0%, transparent 70%);
-  filter: blur(50px);
-  z-index: 1;
-}
-
-@media (max-width: 768px) {
-  .portfolio-list-section.collapsed {
-    display: none;
-  }
+.page-number-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 </style>

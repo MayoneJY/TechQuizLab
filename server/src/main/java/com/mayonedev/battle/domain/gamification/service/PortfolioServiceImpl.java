@@ -16,8 +16,17 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final PortfolioDao portfolioDao;
 
     @Override
-    public List<Portfolio> getPortfoliosByUserId(Long userId) {
-        return portfolioDao.findAllByUserId(userId);
+    public java.util.Map<String, Object> getMyPortfolios(Long userId, String search, int page, int size) {
+        int offset = (page - 1) * size;
+        List<Portfolio> content = portfolioDao.findPortfolios(userId, search, size, offset);
+        int totalElements = portfolioDao.countPortfolios(userId, search);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return java.util.Map.of(
+                "content", content,
+                "totalPages", totalPages,
+                "totalElements", totalElements,
+                "currentPage", page);
     }
 
     @Override

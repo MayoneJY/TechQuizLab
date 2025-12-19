@@ -54,6 +54,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/portfolio/:id',
+      name: 'portfolio-detail',
+      component: () => import('../views/PortfolioDetail.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/stages',
       name: 'stages',
       component: StageList

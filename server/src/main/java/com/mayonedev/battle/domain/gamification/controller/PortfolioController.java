@@ -22,8 +22,20 @@ public class PortfolioController {
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "내 포트폴리오 목록 조회")
-    public ResponseEntity<List<Portfolio>> getMyPortfolios(@PathVariable Long userId) {
-        return ResponseEntity.ok(portfolioService.getPortfoliosByUserId(userId));
+    public ResponseEntity<java.util.Map<String, Object>> getMyPortfolios(
+            @PathVariable Long userId,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(portfolioService.getMyPortfolios(userId, search, page, size));
+    }
+
+    @GetMapping("/{pfId}")
+    @Operation(summary = "포트폴리오 상세 조회")
+    public ResponseEntity<Portfolio> getPortfolio(
+            @PathVariable Long pfId,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(portfolioService.getPortfolio(userDetails.getUserId(), pfId));
     }
 
     @PostMapping

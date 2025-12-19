@@ -4,7 +4,7 @@ import com.mayonedev.battle.domain.gamification.entity.Portfolio;
 import java.util.List;
 
 public interface PortfolioService {
-    List<Portfolio> getPortfoliosByUserId(Long userId);
+    java.util.Map<String, Object> getMyPortfolios(Long userId, String search, int page, int size);
 
     Portfolio getPortfolio(Long userId, Long pfId);
 
