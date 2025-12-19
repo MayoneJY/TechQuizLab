@@ -21,6 +21,11 @@
                     #{jobCategory}
                 </foreach>
             </if>
+            <if test="keyword != null and keyword != ''">
+      				AND (
+       				title LIKE CONCAT('%', #{keyword}, '%')
+      				)
+    		</if>
         </where>
     </sql>
 

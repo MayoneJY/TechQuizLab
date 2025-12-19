@@ -26,8 +26,12 @@ public class StageController {
                description = "스테이지를 직무별로 조회합니다.")
     public ResponseEntity<stageDTO> getStages(
             @RequestParam(required = false) String jobCategories,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size) {
+        
+    	String kw = (keyword == null) ? null : keyword.trim();
+        if (kw != null && kw.isEmpty()) kw = null;
         
         List<String> jobCategoryList = null;
         if (jobCategories != null && !jobCategories.isEmpty()) {
@@ -38,7 +42,7 @@ public class StageController {
         }
 
         stageDTO result = stageService.getStagesWithPaging(
-                jobCategoryList, page, size);
+                jobCategoryList, kw, page, size);
         
         return ResponseEntity.ok(result);
     }

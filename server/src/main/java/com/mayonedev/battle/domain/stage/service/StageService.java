@@ -28,6 +28,7 @@ public class StageService {
 
     public stageDTO getStagesWithPaging(
             List<String> jobCategories,
+            String keyword,
             int page,
             int size
     ) {
@@ -38,12 +39,24 @@ public class StageService {
         int offset = page * size;
         params.put("offset", offset);
         params.put("size", size);
+        
+        String kw = (keyword == null) ? null : keyword.trim();
+        if (kw != null && kw.isEmpty()) kw = null;
+        params.put("keyword", kw);
+        
+        
 
         List<Stage> content;
         long totalElements;
 
         if (jobCategories != null && !jobCategories.isEmpty()) {
             params.put("jobCategories", jobCategories);
+        }
+        
+        boolean hasJobFilter = jobCategories != null && !jobCategories.isEmpty();
+        boolean hasKeyword = kw != null;
+        
+        if (hasJobFilter || hasKeyword) {
             content = stageDao.findByJobCategoriesWithPaging(params);
             totalElements = stageDao.countByJobCategories(params);
         } else {
@@ -51,10 +64,12 @@ public class StageService {
             totalElements = stageDao.countAll();
         }
 
+
         int totalPages = (int) Math.ceil((double) totalElements / size);
 
         return stageDTO.builder()
                 .content(content)
+                .keyword(kw)
                 .page(page)
                 .size(size)
                 .totalElements(totalElements)

@@ -266,7 +266,7 @@ onMounted(async () => {
     // Reset store state on mount
     boardStore.currentSearch = '';
     boardStore.currentSort = 'latest';
-    searchKeyword.value = ''; // Ensure local state also reset
+    searchKeyword.value = ''; 
     sortOption.value = 'latest';
     
   try {
@@ -781,7 +781,6 @@ function getPageNumbers() {
     gap: 4px;
 }
 
-/* Pagination */
 /* Pagination */
 .pagination-container {
     display: flex;

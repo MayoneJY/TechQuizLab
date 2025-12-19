@@ -14,6 +14,7 @@ import lombok.Data;
 public class stageDTO {
 	
 	    private final List<Stage> content;
+	    private final String keyword;
         private final int page;
         private final int size;
         private final long totalElements;
