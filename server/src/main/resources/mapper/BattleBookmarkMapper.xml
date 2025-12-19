@@ -14,8 +14,11 @@
         <result property="questionText" column="question_text"/>
         <result property="userAnswer" column="user_answer"/>
         <result property="aiFeedback" column="ai_assessment"/>
+        <result property="damage" column="damage"/>
         <result property="difficulty" column="difficulty"/>
         <result property="keywordTags" column="keyword_tags"/>
+        <result property="stageTitle" column="stage_title"/>
+        <result property="jobCategory" column="job_category"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
@@ -27,13 +30,82 @@
         )
     </insert>
 
-    <select id="findByUserId" parameterType="long" resultMap="battleBookmarkResultMap">
+    <update id="update" parameterType="com.mayonedev.battle.domain.battle.entity.BattleBookmark">
+        UPDATE battle_bookmark
+        SET memo = #{memo}
+        WHERE user_id = #{userId} AND bookmark_id = #{bookmarkId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM battle_bookmark
+        WHERE user_id = #{userId} AND bookmark_id = #{bookmarkId}
+    </delete>
+
+    <select id="findBookmarks" resultMap="battleBookmarkResultMap">
         SELECT b.*, bd.question_text, bd.user_answer, bd.ai_feedback as ai_assessment,
-               bd.difficulty, bd.keyword_tags
+               bd.damage, bd.difficulty, bd.keyword_tags,
+               s.title as stage_title, s.job_category
         FROM battle_bookmark b
         LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN stage s ON bt.stage_id = s.stage_id
         WHERE b.user_id = #{userId}
-        ORDER BY b.created_at DESC
+        <if test="category != null and category != 'all'">
+            AND s.job_category = #{category}
+        </if>
+        <if test="search != null and search != ''">
+            AND (bd.question_text LIKE CONCAT('%', #{search}, '%') OR b.memo LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        <choose>
+            <when test="sort == 'latest'">
+                ORDER BY b.created_at DESC
+            </when>
+            <when test="sort == 'oldest'">
+                ORDER BY b.created_at ASC
+            </when>
+            <otherwise>
+                ORDER BY b.created_at DESC
+            </otherwise>
+        </choose>
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countBookmarks" resultType="int">
+        SELECT COUNT(*)
+        FROM battle_bookmark b
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN stage s ON bt.stage_id = s.stage_id
+        WHERE b.user_id = #{userId}
+        <if test="category != null and category != 'all'">
+            AND s.job_category = #{category}
+        </if>
+        <if test="search != null and search != ''">
+            AND (bd.question_text LIKE CONCAT('%', #{search}, '%') OR b.memo LIKE CONCAT('%', #{search}, '%'))
+        </if>
+    </select>
+
+    <select id="findBookmarkCategoriesByUserId" resultType="string">
+        SELECT DISTINCT s.job_category
+        FROM battle_bookmark b
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN stage s ON bt.stage_id = s.stage_id
+        WHERE b.user_id = #{userId}
+        AND s.job_category IS NOT NULL
+        ORDER BY s.job_category
+    </select>
+
+    <select id="findBookmarkById" resultMap="battleBookmarkResultMap">
+        SELECT b.*, bd.question_text, bd.user_answer, bd.ai_feedback as ai_assessment,
+               bd.damage, bd.difficulty, bd.keyword_tags,
+               s.title as stage_title, s.job_category
+        FROM battle_bookmark b
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN stage s ON bt.stage_id = s.stage_id
+        WHERE b.user_id = #{userId} AND b.bookmark_id = #{bookmarkId}
     </select>
 
 </mapper>

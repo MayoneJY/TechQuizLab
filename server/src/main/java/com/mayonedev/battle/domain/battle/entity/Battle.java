@@ -19,4 +19,5 @@ public class Battle {
 
     // Display fields
     private String stageTitle;
+    private String jobCategory;
 }

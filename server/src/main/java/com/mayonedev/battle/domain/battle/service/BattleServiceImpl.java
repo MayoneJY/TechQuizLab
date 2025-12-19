@@ -341,19 +341,71 @@ public class BattleServiceImpl implements BattleService {
     }
 
     @Override
-    public java.util.List<Battle> getMyBattles(Long userId) {
-        return battleDao.findAllByUserId(userId);
+    public java.util.Map<String, Object> getMyBattles(Long userId, String category, String search, String sort,
+            int page, int size) {
+        int offset = (page - 1) * size;
+        java.util.List<Battle> battles = battleDao.findBattles(userId, category, search, sort, size, offset);
+        int totalElements = battleDao.countBattles(userId, category, search);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return Map.of(
+                "content", battles,
+                "totalPages", totalPages,
+                "totalElements", totalElements,
+                "currentPage", page);
     }
 
     @Override
-    public java.util.List<com.mayonedev.battle.domain.battle.entity.BattleBookmark> getMyBookmarks(Long userId) {
-        return battleBookmarkDao.findByUserId(userId);
+    public java.util.Map<String, Object> getMyBookmarks(Long userId, String category, String search, String sort,
+            int page, int size) {
+        int offset = (page - 1) * size;
+        java.util.List<BattleBookmark> bookmarks = battleBookmarkDao.findBookmarks(userId, category, search, sort, size,
+                offset);
+        int totalElements = battleBookmarkDao.countBookmarks(userId, category, search);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return Map.of(
+                "content", bookmarks,
+                "totalPages", totalPages,
+                "totalElements", totalElements,
+                "currentPage", page);
+    }
+
+    @Override
+    public java.util.List<String> getBookmarkCategories(Long userId) {
+        return battleBookmarkDao.findBookmarkCategoriesByUserId(userId);
+    }
+
+    @Override
+    public BattleBookmark getBookmark(Long userId, Long bookmarkId) {
+        BattleBookmark bookmark = battleBookmarkDao.findBookmarkById(userId, bookmarkId);
+        if (bookmark == null) {
+            throw new RuntimeException("Bookmark not found");
+        }
+        return bookmark;
+    }
+
+    @Override
+    @Transactional
+    public void updateBookmark(Long userId, Long bookmarkId, String memo) {
+        BattleBookmark bookmark = battleBookmarkDao.findBookmarkById(userId, bookmarkId);
+        if (bookmark == null) {
+            throw new RuntimeException("Bookmark not found");
+        }
+        bookmark.setMemo(memo);
+        battleBookmarkDao.update(bookmark);
+    }
+
+    @Override
+    @Transactional
+    public void deleteBookmark(Long userId, Long bookmarkId) {
+        battleBookmarkDao.delete(userId, bookmarkId);
     }
 
     @Override
     @Transactional
     public Battle createPracticeBattle(Long userId) {
-        List<BattleBookmark> bookmarks = battleBookmarkDao.findByUserId(userId);
+        List<BattleBookmark> bookmarks = battleBookmarkDao.findBookmarks(userId, null, null, null, null, null);
         if (bookmarks == null || bookmarks.isEmpty()) {
             throw new RuntimeException("북마크된 문제가 없습니다. 오답노트를 먼저 추가해주세요.");
         }
@@ -443,5 +495,10 @@ public class BattleServiceImpl implements BattleService {
         // Let's delete for now as per "Delete Battle".
 
         battleDao.delete(userId, battleId);
+    }
+
+    @Override
+    public java.util.List<String> getBattleCategories(Long userId) {
+        return battleDao.findBattleCategoriesByUserId(userId);
     }
 }

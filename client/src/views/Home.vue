@@ -113,12 +113,12 @@
           <div class="dashboard-widget glass-panel clickable-card user-info-widget" @click="goToMyPage">
              <template v-if="isDashboardLoading">
                 <div class="user-profile-header">
-                  <div class="skeleton skeleton-text" style="width: 100px; height: 33px;"></div>
-                  <div class="skeleton skeleton-text" style="width: 50px; height: 33px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 100px; height: 26px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 50px; height: 26px;"></div>
                 </div>
                 <div class="exp-bar-container">
                    <div class="skeleton skeleton-bar" style="width: 100%; height: 12px; margin-bottom: 5px; border-radius: 6px;"></div>
-                   <div class="skeleton skeleton-text" style="width: 80px; height: 20px; float: right;"></div>
+                   <div class="skeleton skeleton-text" style="width: 80px; height: 12px; float: right;"></div>
                 </div>
              </template>
              <template v-else>
@@ -145,9 +145,9 @@
             
             <template v-if="isDashboardLoading">
               <div class="mini-mission-list">
-                 <div class="mini-mission-item skeleton-item" v-for="i in 3" :key="i">
-                    <div class="skeleton skeleton-box" style="width: 20px; height: 20px; border-radius: 4px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 70%; height: 16px;"></div>
+                 <div class="mini-mission-item" v-for="i in 3" :key="i">
+                    <div class="skeleton skeleton-box" style="width: 16px; height: 16px; border-radius: 4px; padding: 0; margin: 0; margin-bottom: 5px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 70%; height: 16px; padding: 0; margin: 0; margin-bottom: 5px;"></div>
                  </div>
               </div>
             </template>
@@ -201,10 +201,10 @@
             
             <template v-if="isDashboardLoading">
                <div class="skeleton-list">
-                 <div class="skeleton-item-card" v-for="i in 3" :key="i" style="padding-top: 12px; padding-bottom: 12px;">
+                 <div class="skeleton-item-card" v-for="i in 3" :key="i">
                     <div class="skeleton skeleton-circle" style="width: 40px; height: 40px; border-radius: 50%;"></div>
                     <div class="skeleton-content" style="flex: 1;">
-                        <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 5px;"></div>
+                        <div class="skeleton skeleton-text" style="width: 60%; height: 20px; margin-bottom: 2px;"></div>
                         <div class="skeleton skeleton-text" style="width: 40%; height: 12px;"></div>
                     </div>
                  </div>
@@ -217,7 +217,7 @@
                       v-for="battle in recentBattles.slice(0, 3)" 
                       :key="battle.battleId" 
                       class="battle-item clickable-item"
-                      @click="router.push(`/battle-result/${battle.battleId}`)"
+                      @click="router.push(`/battle-result/${battle.battleId}?from=home`)"
                     >
                       <!-- Rank Icon -->
                       <div class="rank-icon-wrapper">
@@ -256,7 +256,7 @@
                  <div class="skeleton-item-card" v-for="i in 3" :key="i">
                     <div class="skeleton skeleton-box" style="width: 24px; height: 24px; border-radius: 4px;"></div>
                     <div class="skeleton-content" style="flex: 1;">
-                         <div class="skeleton skeleton-text" style="width: 90%; height: 16px; margin-bottom: 5px;"></div>
+                         <div class="skeleton skeleton-text" style="width: 90%; height: 16px; margin-bottom: 6px;"></div>
                          <div class="skeleton skeleton-text" style="width: 50%; height: 12px;"></div>
                     </div>
                  </div>
@@ -276,10 +276,12 @@
                       </div>
                       <div class="bookmark-text">
                           <div class="bookmark-q">{{ bookmark.questionText || '질문 내용 없음' }}</div>
-                          <div class="bookmark-memo" v-if="bookmark.memo">
-                              <span class="memo-label">MEMO</span> {{ bookmark.memo }}
+                          <div class="bookmark-date">
+                              {{ new Date(bookmark.createdAt).toLocaleDateString() }}
                           </div>
                       </div>
+
+                      <div class="arrow-icon">›</div>
                     </div>
                  </div>
                </div>
@@ -348,6 +350,7 @@ interface DashboardBookmark {
   refBattleId: number
   questionText?: string
   memo?: string
+  createdAt: string
 }
 
 const isDashboardLoading = ref(true)
@@ -391,11 +394,11 @@ onMounted(async () => {
       await gamificationStore.fetchFriends()
 
       // Request 4: Battles & Bookmarks
-      const battlesRes = await battleApi.getMyBattles()
-      recentBattles.value = battlesRes.data
+      const battlesRes = await battleApi.getMyBattles({ page: 1, size: 5 })
+      recentBattles.value = battlesRes.data.content || []
 
-      const bookmarksRes = await battleApi.getMyBookmarks()
-      recentBookmarks.value = bookmarksRes.data
+      const bookmarksRes = await battleApi.getMyBookmarks({ page: 1, size: 5 })
+      recentBookmarks.value = bookmarksRes.data.content || []
       
     } catch (e) {
       console.error('Failed to fetch dashboard data', e)
@@ -1006,13 +1009,17 @@ async function startPractice() {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .battle-stage {
     font-size: 14px;
     color: #fff;
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .battle-meta {
@@ -1040,6 +1047,7 @@ async function startPractice() {
     display: flex;
     gap: 12px;
     align-items: flex-start;
+    padding: 11px;
 }
 
 .bookmark-icon-wrapper {
@@ -1058,7 +1066,7 @@ async function startPractice() {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0px;
 }
 
 .bookmark-q {
@@ -1070,23 +1078,10 @@ async function startPractice() {
     text-overflow: ellipsis;
 }
 
-.bookmark-memo {
+.bookmark-date {
     font-size: 11px;
-    color: #aaa;
-    background: rgba(0,0,0,0.3);
-    padding: 2px 6px;
-    border-radius: 4px;
-    display: inline-block;
-    max-width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.memo-label {
-    color: #ffd43b;
-    font-weight: 700;
-    margin-right: 4px;
+    color: #888;
+    margin-top: 0px;
 }
 
 .empty-widget-text {

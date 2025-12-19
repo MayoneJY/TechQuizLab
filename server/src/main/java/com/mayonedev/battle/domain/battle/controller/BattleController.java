@@ -79,16 +79,69 @@ public class BattleController {
 
     @GetMapping
     @Operation(summary = "내 배틀 히스토리 조회")
-    public ResponseEntity<java.util.List<Battle>> getMyBattles(
+    public ResponseEntity<java.util.Map<String, Object>> getMyBattles(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetailsDTO userDetails) {
-        return ResponseEntity.ok(battleService.getMyBattles(userDetails.getUserId()));
+        return ResponseEntity
+                .ok(battleService.getMyBattles(userDetails.getUserId(), category, search, sort, page, size));
     }
 
     @GetMapping("/bookmarks")
     @Operation(summary = "내 오답노트(북마크) 조회")
-    public ResponseEntity<java.util.List<com.mayonedev.battle.domain.battle.entity.BattleBookmark>> getMyBookmarks(
+    public ResponseEntity<java.util.Map<String, Object>> getMyBookmarks(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, defaultValue = "latest") String sort,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetailsDTO userDetails) {
-        return ResponseEntity.ok(battleService.getMyBookmarks(userDetails.getUserId()));
+        return ResponseEntity
+                .ok(battleService.getMyBookmarks(userDetails.getUserId(), category, search, sort, page, size));
+    }
+
+    @GetMapping("/bookmarks/{id}")
+    @Operation(summary = "내 오답노트(북마크) 상세 조회")
+    public ResponseEntity<com.mayonedev.battle.domain.battle.entity.BattleBookmark> getBookmark(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.getBookmark(userDetails.getUserId(), id));
+    }
+
+    @PatchMapping("/bookmarks/{id}")
+    @Operation(summary = "내 오답노트(북마크) 메모 수정")
+    public ResponseEntity<Void> updateBookmark(
+            @PathVariable Long id,
+            @RequestBody BookmarkRequest request,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        battleService.updateBookmark(userDetails.getUserId(), id, request.getMemo());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/bookmarks/{id}")
+    @Operation(summary = "내 오답노트(북마크) 삭제")
+    public ResponseEntity<Void> deleteBookmark(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        battleService.deleteBookmark(userDetails.getUserId(), id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/bookmarks/categories")
+    @Operation(summary = "내 오답노트 카테고리 목록 조회")
+    public ResponseEntity<java.util.List<String>> getBookmarkCategories(
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.getBookmarkCategories(userDetails.getUserId()));
+    }
+
+    @GetMapping("/categories")
+    @Operation(summary = "내 배틀 카테고리 목록 조회")
+    public ResponseEntity<java.util.List<String>> getBattleCategories(
+            @AuthenticationPrincipal UserDetailsDTO userDetails) {
+        return ResponseEntity.ok(battleService.getBattleCategories(userDetails.getUserId()));
     }
 
     @PostMapping("/practice/bookmarks")

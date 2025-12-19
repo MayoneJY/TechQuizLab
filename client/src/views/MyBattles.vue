@@ -3,7 +3,42 @@
     <div class="content-wrapper glass-panel">
       <div class="page-header">
         <h2 class="page-title pixel-text">전투 기록</h2>
-        <button class="back-btn pixel-button" @click="router.back()">뒤로가기</button>
+        <button class="back-btn pixel-button" @click="router.push('/')">뒤로가기</button>
+      </div>
+
+      <!-- Toolbar: Search, Sort -->
+      <div class="toolbar-section">
+          <div class="search-container glass-input-wrapper">
+              <input 
+                  v-model="searchKeyword" 
+                  @keyup.enter="handleSearch"
+                  type="text" 
+                  class="glass-input search-input" 
+                  placeholder="스테이지 검색..."
+              >
+              <button class="search-btn" @click="handleSearch">🔍</button>
+          </div>
+
+          <div class="sort-dropdown-wrapper">
+            <select v-model="sortOption" @change="handleSort" class="glass-input sort-select">
+                <option value="latest">최신순</option>
+                <option value="oldest">오래된순</option>
+                <option value="score">점수순</option>
+            </select>
+          </div>
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="category-tabs">
+        <button 
+            v-for="cat in categories" 
+            :key="cat.value"
+            class="pixel-button tab-button" 
+            :class="{ active: selectedCategory === cat.value }"
+            @click="handleCategoryChange(cat.value)"
+        >
+            {{ cat.label }}
+        </button>
       </div>
 
       <div v-if="loading" class="loading-state">
@@ -23,7 +58,7 @@
           v-for="battle in battles" 
           :key="battle.battleId" 
           class="battle-item clickable-item"
-          @click="router.push(`/battle-result/${battle.battleId}`)"
+          @click="router.push(`/battle-result/${battle.battleId}?from=battles`)"
         >
           <!-- Rank Icon -->
           <div class="rank-icon-wrapper">
@@ -35,7 +70,8 @@
           <div class="battle-info">
               <span class="battle-stage">{{ battle.stageTitle || '알 수 없는 스테이지' }}</span>
               <div class="battle-meta">
-                  <span class="battle-date">{{ new Date(battle.createdAt).toLocaleString() }}</span>
+                  <span class="battle-category badge">{{ battle.jobCategory || 'General' }}</span>
+                  <span class="battle-date">{{ formatDateTime(battle.createdAt) }}</span>
                   <span class="battle-score-text">{{ battle.totalDamage }}점</span>
               </div>
           </div>
@@ -48,18 +84,87 @@
         <p>전투 기록이 없습니다.</p>
         <button class="pixel-button primary" @click="router.push('/stages')">전투 시작하기</button>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination-container">
+          <button 
+            class="pagination-nav-btn prev"
+            :disabled="currentPage === 1"
+            @click="goToPage(currentPage - 1)"
+          >
+            &lt;
+          </button>
+          
+          <div class="page-numbers">
+            <button
+              v-for="page in getPageNumbers()"
+              :key="page"
+              class="page-number-btn pixel-text"
+              :class="{ active: page === currentPage }"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          </div>
+          
+          <button 
+            class="pagination-nav-btn next"
+            :disabled="currentPage === totalPages"
+            @click="goToPage(currentPage + 1)"
+          >
+            &gt;
+          </button>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { battleApi } from '../services/api'
 
 const router = useRouter()
 const loading = ref(true)
 const battles = ref<any[]>([])
+
+// Filters & Pagination
+const searchKeyword = ref('')
+const sortOption = ref('latest')
+const selectedCategory = ref('all')
+const currentPage = ref(1)
+const totalPages = ref(0)
+const pageSize = 10
+
+const categories = ref([
+    { label: '전체', value: 'all' }
+])
+
+async function fetchCategories() {
+    try {
+        const res = await battleApi.getBattleCategories()
+        const myCats = res.data // List<String>
+        
+        if (myCats && myCats.length > 0) {
+            const dynamicCats = myCats.filter((c: string) => c).map((cat: string) => ({
+                label: cat,
+                value: cat
+            }))
+            categories.value = [
+                { label: '전체', value: 'all' },
+                ...dynamicCats
+            ]
+        } else {
+             // If no categories found (no battles), just keep 'All'
+             categories.value = [{ label: '전체', value: 'all' }]
+        }
+    } catch (e) {
+        console.error('Failed to fetch categories', e)
+        // Fallback to minimal
+        categories.value = [{ label: '전체', value: 'all' }]
+    }
+}
 
 function getRank(score: number) {
   if (score >= 9000) return 'S'
@@ -74,22 +179,97 @@ function getRankClass(score: number) {
   return `rank-${rank}`
 }
 
-onMounted(async () => {
-  try {
-    const res = await battleApi.getMyBattles()
-    battles.value = res.data
-  } catch (e) {
-    console.error(e)
-  } finally {
-    loading.value = false
+async function fetchBattles() {
+    loading.value = true;
+    try {
+        const res = await battleApi.getMyBattles({
+            category: selectedCategory.value === 'all' ? undefined : selectedCategory.value,
+            search: searchKeyword.value,
+            sort: sortOption.value,
+            page: currentPage.value,
+            size: pageSize
+        })
+        // Assuming response structure from pagination implementation
+        if (res.data && res.data.content) {
+            battles.value = res.data.content;
+            totalPages.value = res.data.totalPages;
+            currentPage.value = res.data.currentPage;
+        } else {
+            // Fallback if API hasn't updated yet or structure mismatch
+           battles.value = Array.isArray(res.data) ? res.data : [];
+        }
+
+    } catch (e) {
+        console.error(e)
+    } finally {
+        loading.value = false
+    }
+}
+
+
+
+function formatDateTime(dateStr: string) {
+    const date = new Date(dateStr)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${year}.${month}.${day} ${hour}:${minute}`
+}
+
+function handleSearch() {
+    currentPage.value = 1;
+    fetchBattles();
+}
+
+function handleSort() {
+    currentPage.value = 1;
+    fetchBattles();
+}
+
+function handleCategoryChange(category: string) {
+    selectedCategory.value = category;
+    currentPage.value = 1;
+    fetchBattles();
+}
+
+function goToPage(page: number) {
+    if (page < 1 || page > totalPages.value) return;
+    currentPage.value = page;
+    fetchBattles();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getPageNumbers() {
+  const total = totalPages.value
+  const current = currentPage.value
+  const pages: number[] = []
+  
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) pages.push(i)
+  } else {
+    let start = Math.max(1, current - 2)
+    let end = Math.min(total, current + 2)
+    if (end - start < 4) {
+      if (start === 1) end = Math.min(total, start + 4)
+      else if (end === total) start = Math.max(1, end - 4)
+    }
+    for (let i = start; i <= end; i++) pages.push(i)
   }
+  return pages
+}
+
+onMounted(async () => {
+    await fetchCategories()
+    fetchBattles()
 })
 </script>
 
 <style scoped>
 .page-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
   padding-bottom: 80px;
@@ -98,7 +278,7 @@ onMounted(async () => {
 .content-wrapper {
   padding: 20px;
   border-radius: 12px;
-  min-height: 400px;
+  min-height: 500px;
 }
 
 .page-header {
@@ -120,6 +300,129 @@ onMounted(async () => {
   font-size: 14px;
   padding: 8px 16px;
 }
+
+/* Toolbar */
+.toolbar-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.search-container {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    min-width: 250px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 2px solid #555;
+    transition: border-color 0.2s;
+    background: rgba(0,0,0,0.4);
+}
+
+.search-container:focus-within {
+    border-color: #ffd43b; /* Active border color */
+    background: rgba(0,0,0,0.6);
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px;
+    border: none; /* Removed individual border */
+    background: transparent; /* Transparent to show container bg */
+    color: #fff;
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-input:focus {
+    /* Focus handled by container */
+}
+
+.search-btn {
+    padding: 0 20px;
+    border: none; /* Removed individual border */
+    background: #4a9eff;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'DungGeunMo', sans-serif;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    background: #5bb0ff;
+    transform: none;
+}
+
+.search-btn:active {
+    background: #3a8eef;
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,0.2);
+}
+
+.sort-select {
+    padding: 10px 16px;
+    border-radius: 4px;
+    background: #222;
+    border: 2px solid #555;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'DungGeunMo', sans-serif;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+    height: 44px; /* Match search height approx */
+}
+
+/* Categories - Matching Board.vue Style */
+.category-tabs {
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.2); /* Added background for panel look if desired, or keep specific to match exact look */
+    justify-content: center; /* Centered tabs */
+    margin-bottom: 24px;
+}
+
+.tab-button {
+  font-size: 13px;
+  padding: 8px 16px;
+  min-width: 60px;
+  border-radius: 8px; /* Rounded consistent with Board */
+  background: rgba(255, 255, 255, 0.1);
+  border-color: transparent; /* Or border-width: 2px if keeping pixel border */
+  border: 1px solid rgba(255,255,255,0.2); /* Refined border */
+  color: #ccc;
+  box-shadow: none;
+  font-family: 'DungGeunMo', sans-serif;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
+  transform: translateY(-2px);
+  color: #fff;
+  font-weight: bold;
+}
+
+.tab-button.active:hover {
+    cursor: default;
+}
+
 
 .battle-list {
   display: flex;
@@ -186,11 +489,27 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 
-.battle-date {
-  font-size: 13px;
-  color: #888;
-  margin-right: 12px;
+.battle-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #888;
 }
+
+.badge {
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.battle-score-text {
+    color: #ffd43b;
+    font-weight: bold;
+}
+
 
 .arrow-icon {
   color: #555;
@@ -207,6 +526,65 @@ onMounted(async () => {
   color: #888;
 }
 
+/* Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0;
+    margin-top: 10px;
+}
+
+.pagination-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 6px;
+}
+
+.page-number-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid transparent; /* invisible border to prevent layout shift */
+    background: transparent;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.page-number-btn.active {
+    background: #4a9eff;
+    color: #fff;
+    font-weight: bold;
+    border: 1px solid #7cbcf0;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+}
+
+.page-number-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Skeleton Styles */
 .skeleton-list {
   display: flex;
   flex-direction: column;

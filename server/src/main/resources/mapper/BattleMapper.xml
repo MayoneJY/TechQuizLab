@@ -13,12 +13,15 @@
         <result property="status" column="status"/>
         <result property="createdAt" column="created_at"/>
         <result property="stageTitle" column="stage_title"/>
+        <result property="jobCategory" column="job_category"/>
     </resultMap>
 
     <select id="findByUserAndBattleId" resultMap="battleResultMap">
-        SELECT user_id, battle_id, stage_id, pf_id, total_damage, status, created_at
-        FROM battle
-        WHERE user_id = #{userId} AND battle_id = #{battleId}
+        SELECT b.user_id, b.battle_id, b.stage_id, b.pf_id, b.total_damage, b.status, b.created_at,
+               s.title as stage_title, s.job_category
+        FROM battle b
+        LEFT JOIN stage s ON b.stage_id = s.stage_id
+        WHERE b.user_id = #{userId} AND b.battle_id = #{battleId}
     </select>
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.Battle">
@@ -29,7 +32,7 @@
     <update id="updateStatus" parameterType="com.mayonedev.battle.domain.battle.entity.Battle">
         UPDATE battle
         SET status = #{status},
-            total_damage = #{totalDamage}
+        total_damage = #{totalDamage}
         WHERE user_id = #{userId} AND battle_id = #{battleId}
     </update>
 
@@ -43,17 +46,59 @@
         WHERE user_id = #{userId} AND battle_id = #{battleId}
     </update>
 
-    <select id="findAllByUserId" resultMap="battleResultMap">
-        SELECT b.*, s.title as stage_title
+    <select id="findBattles" resultMap="battleResultMap">
+        SELECT b.*, s.title as stage_title, s.job_category
         FROM battle b
         LEFT JOIN stage s ON b.stage_id = s.stage_id
         WHERE b.user_id = #{userId}
-        ORDER BY b.created_at DESC
-        LIMIT 5
+        <if test="category != null and category != 'all'">
+            AND s.job_category = #{category}
+        </if>
+        <if test="search != null and search != ''">
+            AND (s.title LIKE CONCAT('%', #{search}, '%'))
+        </if>
+        <choose>
+            <when test="sort == 'latest'">
+                ORDER BY b.created_at DESC
+            </when>
+            <when test="sort == 'oldest'">
+                ORDER BY b.created_at ASC
+            </when>
+            <when test="sort == 'score'">
+                ORDER BY b.total_damage DESC
+            </when>
+            <otherwise>
+                ORDER BY b.created_at DESC
+            </otherwise>
+        </choose>
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <select id="countBattles" resultType="int">
+        SELECT COUNT(*)
+        FROM battle b
+        LEFT JOIN stage s ON b.stage_id = s.stage_id
+        WHERE b.user_id = #{userId}
+        <if test="category != null and category != 'all'">
+            AND s.job_category = #{category}
+        </if>
+        <if test="search != null and search != ''">
+            AND (s.title LIKE CONCAT('%', #{search}, '%'))
+        </if>
     </select>
 
     <delete id="delete">
         DELETE FROM battle WHERE user_id = #{userId} AND battle_id = #{battleId}
     </delete>
+
+    <select id="findBattleCategoriesByUserId" resultType="string">
+        SELECT DISTINCT s.job_category
+        FROM battle b
+        JOIN stage s ON b.stage_id = s.stage_id
+        WHERE b.user_id = #{userId}
+        ORDER BY s.job_category
+    </select>
 
 </mapper>

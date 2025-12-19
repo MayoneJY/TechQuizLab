@@ -20,6 +20,9 @@ public class BattleBookmark {
     private String questionText;
     private String userAnswer;
     private String aiFeedback;
+    private Integer damage;
     private String difficulty;
     private String keywordTags;
+    private String stageTitle;
+    private String jobCategory;
 }

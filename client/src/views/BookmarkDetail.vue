@@ -13,9 +13,38 @@
       </div>
 
       <div v-else-if="bookmark" class="detail-content">
+        <!-- Metadata Row -->
+        <!-- Metadata Header -->
+        <div class="meta-header">
+             <div class="meta-left-col">
+                 <div class="meta-main-row">
+                     <span class="meta-badge category">{{ bookmark.jobCategory || 'General' }}</span>
+                     <span class="meta-separator">|</span>
+                     <span class="meta-text stage">{{ bookmark.stageTitle || 'Unknown Stage' }}</span>
+                     <span class="meta-separator">|</span>
+                     <span class="meta-text difficulty" :class="getDifficultyClass(bookmark.difficulty)">
+                        {{ bookmark.difficulty || 'Normal' }}
+                     </span>
+                 </div>
+                 <span class="meta-date">{{ formatDateTime(bookmark.createdAt) }}</span>
+             </div>
+             
+             <div class="score-display">
+                <span class="score-label">SCORE</span>
+                <span class="score-value pixel-text">
+                    {{ bookmark.damage || 0 }}<span class="sub-score">/1000</span>
+                </span>
+             </div>
+        </div>
+
         <!-- Question Section -->
-        <div class="section-card">
-          <div class="section-label pixel-text">QUESTION</div>
+        <div class="section-card question-card">
+          <div class="card-header-row">
+             <div class="section-label pixel-text">QUESTION</div>
+             <div class="tags-container" v-if="bookmark.keywordTags">
+                <span class="tag-pill" v-for="tag in bookmark.keywordTags.split(',')" :key="tag">#{{ tag.trim() }}</span>
+             </div>
+          </div>
           <div class="question-text">{{ bookmark.questionText }}</div>
         </div>
 
@@ -44,8 +73,8 @@
             <div v-else class="memo-display">{{ bookmark.memo || '메모가 없습니다.' }}</div>
             
             <div class="memo-actions">
-               <button v-if="isEditingMemo" class="pixel-button primary small-btn" @click="saveMemo">저장</button>
                <button v-if="isEditingMemo" class="pixel-button small-btn" @click="cancelEdit">취소</button>
+               <button v-if="isEditingMemo" class="pixel-button primary small-btn" @click="saveMemo">저장</button>
                <button v-else class="pixel-button small-btn" @click="startEdit">메모 수정</button>
             </div>
           </div>
@@ -89,20 +118,15 @@ onMounted(async () => {
 async function fetchBookmark() {
   try {
     loading.value = true
-    // Need an API to get single bookmark details. 
-    // Assuming GET /api/battles/bookmarks/{id} exists or we find it from full list
-    // Since implementing full API might be complex, we can fetch all and find one for now
-    // OR create a dedicated endpoint. 
-    // Actually, implementation plan didn't specify NEW endpoint for detail. 
-    // Let's check api.ts if we can simple use getMyBookmarks and find.
-    const res = await battleApi.getMyBookmarks()
-    bookmark.value = res.data.find((b: any) => b.bookmarkId === bookmarkId)
+    const res = await battleApi.getBookmark(bookmarkId)
+    bookmark.value = res.data
     
     if (bookmark.value) {
         editMemoText.value = bookmark.value.memo || ''
     }
   } catch (e) {
     console.error(e)
+    // If 404, maybe redirect or show error
   } finally {
     loading.value = false
   }
@@ -144,6 +168,25 @@ function goToBattleResult() {
     if (bookmark.value?.refBattleId) {
         router.push(`/battle-result/${bookmark.value.refBattleId}`)
     }
+}
+
+function formatDateTime(dateStr: string) {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${year}.${month}.${day} ${hour}:${minute}`
+}
+
+function getDifficultyClass(diff: string) {
+    if (!diff) return ''
+    const d = diff.toLowerCase()
+    if (d === 'hard' || d === '상') return 'diff-hard'
+    if (d === 'medium' || d === '중') return 'diff-medium'
+    return 'diff-easy'
 }
 </script>
 
@@ -251,6 +294,35 @@ function goToBattleResult() {
     padding: 6px 12px;
 }
 
+.memo-actions .pixel-button {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+    color: #666;
+    box-shadow: none !important;
+    transition: all 0.2s;
+    min-width: auto;
+    padding: 6px 12px;
+}
+
+.memo-actions .pixel-button:hover {
+    transform: translateY(-2px);
+    border-color: #aaa !important;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+}
+
+.memo-actions .pixel-button.primary {
+    color: #4a9eff;
+}
+
+.memo-actions .pixel-button.primary:hover {
+    background: rgba(74, 158, 255, 0.1) !important;
+    border-color: #4a9eff !important;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.2) !important;
+}
+
 .detail-footer {
     display: flex;
     justify-content: space-between;
@@ -259,8 +331,158 @@ function goToBattleResult() {
     border-top: 1px solid rgba(255,255,255,0.1);
 }
 
+.detail-footer .pixel-button {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+    color: #666;
+    box-shadow: none !important;
+    transition: all 0.2s;
+}
+
+.detail-footer .pixel-button:hover {
+    transform: translateY(-2px);
+}
+
+.detail-footer .pixel-button.danger {
+    color: #ff6b6b;
+}
+
+.detail-footer .pixel-button.danger:hover {
+    background: rgba(255, 107, 107, 0.1) !important;
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.2) !important;
+}
+
+.detail-footer .pixel-button.secondary {
+    color: #4a9eff;
+}
+
+.detail-footer .pixel-button.secondary:hover {
+    color: #4a9eff;
+    background: rgba(74, 158, 255, 0.1) !important;
+    border-color: #4a9eff !important;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.2) !important;
+}
+
 .error-state {
     text-align: center;
     padding: 50px;
+}
+
+
+/* Metadata Styles */
+.meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.meta-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.meta-main-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.meta-badge.category {
+    background: rgba(74, 158, 255, 0.2);
+    color: #4a9eff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+}
+
+.meta-separator {
+    color: #555;
+    font-size: 12px;
+}
+
+.meta-text.stage {
+    color: #eee;
+    font-weight: 600;
+}
+
+.meta-text.difficulty {
+    font-weight: bold;
+}
+
+.diff-hard { color: #ff6b6b; }
+.diff-medium { color: #ffd43b; }
+.diff-easy { color: #51cf66; }
+
+.spacer {
+    flex: 1;
+}
+
+.meta-date {
+    font-size: 13px;
+    color: #666;
+    font-family: monospace;
+}
+
+/* Card Header & Tags */
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.tags-container {
+    display: flex;
+    gap: 6px;
+}
+
+.tag-pill {
+    font-size: 11px;
+    color: #aaa;
+    background: rgba(0,0,0,0.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.score-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,212,59,0.2);
+    margin-right: 15px;
+}
+
+.score-label {
+    font-size: 11px;
+    color: #aaa;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.score-value {
+    font-size: 20px;
+    color: #ffd43b;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 212, 59, 0.3);
+}
+
+.sub-score {
+    font-size: 0.6em;
+    color: #666;
+    margin-left: 2px;
+    font-weight: 500;
 }
 </style>

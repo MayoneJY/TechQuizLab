@@ -44,14 +44,34 @@
       
       <div v-else-if="result" class="result-content">
         <h1 class="pixel-text victory-title glitch" data-text="미션 성공">미션 성공</h1>
-        <h2 class="final-score pixel-text">최종 점수: <span class="score-highlight">{{ result.totalScore }}</span></h2>
+        
+        <!-- Metadata Header -->
+        <div class="meta-header">
+             <div class="meta-left-col">
+                 <div class="meta-main-row">
+                     <span class="meta-badge category">{{ result.battle?.jobCategory || 'General' }}</span>
+                     <span class="meta-separator">|</span>
+                     <span class="meta-text stage">{{ result.battle?.stageTitle || 'Unknown Stage' }}</span>
+                 </div>
+                 <span class="meta-date">{{ formatDateTime(result.battle?.createdAt) }}</span>
+             </div>
+
+             <div class="score-display">
+                <span class="score-label">FINAL SCORE</span>
+                <span class="score-value pixel-text">
+                    {{ result.totalScore }} <span class="sub-score">/ {{ result.details.length * 1000 }}</span>
+                </span>
+             </div>
+        </div>
         
         <div class="grading-results-scroll">
             <div v-for="(detail, index) in result.details" :key="detail.detailId" class="grading-card">
                 <div class="grading-header">
                     <div class="header-left">
                         <span class="question-number">Q.{{ index + 1 }}</span>
-                        <span class="grading-score" :class="getScoreClass(detail.damage)">{{ detail.damage }}점</span>
+                        <span class="grading-score" :class="getScoreClass(detail.damage)">
+                            {{ detail.damage }}<span class="sub-score">/1000</span>
+                        </span>
                     </div>
                     <button class="pixel-button small bookmark-btn" @click.stop="bookmarkQuestion(detail.detailId)">
                         ⭐ 북마크
@@ -77,8 +97,8 @@
         </div>
 
         <div class="victory-buttons">
-          <button class="pixel-button primary" @click="goHome">
-            로비로 이동
+          <button class="pixel-button secondary" @click="goBack">
+            {{ backButtonText }}
           </button>
         </div>
       </div>
@@ -88,14 +108,14 @@
         <div class="error-content">
             <p class="pixel-text error-msg">결과를 찾을 수 없거나<br>접근 권한이 없습니다.</p>
         </div>
-        <button class="pixel-button" @click="goHome">로비로 이동</button>
+        <button class="pixel-button" @click="goBack">로비로 이동</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { battleApi } from '../services/api'
 import { useGameStore } from '../stores/game'
@@ -109,28 +129,37 @@ const modalStore = useModalStore()
 const loading = ref(true)
 const result = ref<any>(null)
 
+const backButtonText = computed(() => {
+    return route.query.from === 'battles' ? '목록으로 이동' : '로비로 이동'
+})
+
 function getScoreClass(score: number) {
   if (score >= 800) return 'score-high'
   if (score >= 500) return 'score-medium'
   return 'score-low'
 }
 
-function goHome() {
-  router.push('/')
+function formatDateTime(dateStr: string) {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${year}.${month}.${day} ${hour}:${minute}`
+}
+
+function goBack() {
+  const from = route.query.from
+  if (from === 'battles') {
+    router.back()
+  } else {
+    router.push('/')
+  }
 }
 
 async function bookmarkQuestion(detailId: number) {
-    // Note: detailId is from BattleDetail. We usually need QuestionId to bookmark.
-    // However, in this generated questions setup, the question might not exist in the 'Question' table as a permanent entity
-    // or it might be mapped differently. 
-    // Assuming 'detailId' acts as a reference or we can find original question.
-    // Wait, the detail has 'detailId', but questionStore.bookmarkQuestion expects 'questionId'.
-    // If these are transient AI questions, bookmarking might fail if they aren't in the Question table.
-    // For now, let's assume we pass the detailId and backend handles it, or we simply alert "Feature under construction" if logic differs.
-    // But user asked for it. 
-    // The previous implementation used questionStore.bookmarkQuestion(gameStore.currentQuiz.id). 
-    // Here we have detail.detailId.
-    // Let's try to pass the question text/answer to save? 
     try {
         const battleId = Number(route.params.id)
         if (!battleId) return
@@ -146,27 +175,30 @@ async function bookmarkQuestion(detailId: number) {
 onMounted(async () => {
     const battleId = route.params.id
     
-    if (gameStore.battleResult && String(gameStore.battleId) === battleId) {
-        result.value = gameStore.battleResult
-        loading.value = false
-        return
-    }
-
-    if (!result.value && battleId) {
+    // If coming directly from game finish, we might use store but store might miss metadata like stage title if not populated
+    // So let's fetch fresh data to be consistent with "My Battles" view
+    // Or check if store has everything. GameStore usually has game state.
+    
+    if (battleId) {
         try {
-           const response = await battleApi.getBattleDetails(Number(battleId))
-           const details = response.data
+           const [battleRes, detailsRes] = await Promise.all([
+               battleApi.getBattle(Number(battleId)),
+               battleApi.getBattleDetails(Number(battleId))
+           ])
            
-           if (!details || details.length === 0) {
-               // Unauthorized access or invalid battle ID results in empty list
-               throw new Error('Access denied or battle not found')
+           const battle = battleRes.data
+           const details = detailsRes.data
+           
+           if (!battle || !details) {
+               throw new Error('Data not found')
            }
 
-           const totalScore = details.reduce((acc: number, cur: any) => acc + (cur.damage || 0), 0)
+           const totalScore = battle.totalDamage || details.reduce((acc: number, cur: any) => acc + (cur.damage || 0), 0)
            
            result.value = {
-               totalScore,
-               details
+               battle,
+               details,
+               totalScore
            }
         } catch(e) {
             console.error(e)
@@ -264,29 +296,30 @@ onMounted(async () => {
     height: 10px; 
 }
 
+/* Card Styles - Matches BookmarkDetail .section-card */
 .grading-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 20px;
     text-align: left;
-    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
 }
 
 .grading-card:hover {
     transform: translateY(-2px);
-    border-color: #4a9eff;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(74, 158, 255, 0.3);
+    background: rgba(0,0,0,0.4);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
 .grading-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
 .header-left {
@@ -311,71 +344,79 @@ onMounted(async () => {
 .score-low { color: #ff6b6b; }
 
 .bookmark-btn {
-    font-size: 12px;
-    padding: 6px 12px;
+    font-size: 11px;
+    padding: 4px 10px;
     height: auto;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid #555;
-    color: #ffd43b;
-    border-radius: 20px;
+    background: transparent !important;
+    border: 1px solid #333 !important;
+    color: #666;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    box-shadow: none !important;
 }
 
 .bookmark-btn:hover {
-    background: rgba(255, 212, 59, 0.15);
-    border-color: #ffd43b;
-    transform: scale(1.05);
+    background: rgba(255, 212, 59, 0.1) !important;
+    border-color: #ffd43b !important;
+    color: #ffd43b;
+    transform: translateY(-2px);
+    box-shadow: 0 0 10px rgba(255, 212, 59, 0.2) !important;
 }
 
 .grading-question-text {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 15px;
-    line-height: 1.6;
-    color: #eee;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.5;
+    margin-bottom: 20px;
 }
 
 .grading-body {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
     font-size: 14px;
 }
 
-.answer-box {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 12px;
-    border-radius: 8px;
-}
-
-.feedback-box {
-    background: rgba(74, 158, 255, 0.1);
-    padding: 12px;
-    border-radius: 8px;
-    border-left: 3px solid #4a9eff;
+/* Updated Box Styles */
+.answer-box, .feedback-box {
+    background: transparent;
+    padding: 0;
+    border: none;
 }
 
 .label {
     display: block;
     font-size: 12px;
-    font-weight: 700;
-    color: #888;
+    font-weight: bold;
+    color: #4a9eff; /* Matches section-label */
     margin-bottom: 6px;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* Specifically for AI Feedback label to match BookmarkDetail */
+.feedback-box .label {
+    color: #4a9eff; 
+}
+/* But wait, BookmarkDetail uses "AI UPDATE" text which is same color. */
+
 .user-answer {
-    color: #ccc;
-    line-height: 1.5;
+    color: #ddd;
+    line-height: 1.6;
     margin: 0;
+    padding-left: 10px;
+    border-left: 2px solid #555;
 }
 
 .ai-feedback {
-    color: #fff;
-    line-height: 1.5;
+    color: #51cf66;
+    line-height: 1.6;
     margin: 0;
+    padding-left: 10px;
+    border-left: 2px solid rgba(81, 207, 102, 0.5);
 }
+
 
 .victory-buttons {
     display: flex;
@@ -456,5 +497,112 @@ onMounted(async () => {
     line-height: 1.6;
     color: #eee;
     margin: 0;
+}
+
+/* Metadata Styles */
+.meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 0 10px; /* Reduced padding slightly */
+    box-sizing: border-box;
+}
+
+.meta-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.meta-main-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.meta-badge.category {
+    background: rgba(74, 158, 255, 0.2);
+    color: #4a9eff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+}
+
+.meta-separator {
+    color: #555;
+    font-size: 12px;
+}
+
+.meta-text.stage {
+    color: #eee;
+    font-weight: 600;
+}
+
+.meta-date {
+    font-size: 13px;
+    color: #666;
+    font-family: monospace;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.score-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,212,59,0.2);
+}
+
+.score-label {
+    font-size: 11px;
+    color: #aaa;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.score-value {
+    font-size: 20px;
+    color: #ffd43b;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 212, 59, 0.3);
+}
+
+/* Override footer button styles */
+.victory-buttons .pixel-button {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+    color: #666;
+    box-shadow: none !important;
+    transition: all 0.2s;
+}
+
+.victory-buttons .pixel-button:hover {
+    transform: translateY(-2px);
+}
+
+.victory-buttons .pixel-button.secondary {
+    color: #4a9eff;
+}
+
+.victory-buttons .pixel-button.secondary:hover {
+    background: rgba(74, 158, 255, 0.1) !important;
+    border-color: #4a9eff !important;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.2) !important;
+}
+.sub-score {
+    font-size: 0.6em;
+    color: #666;
+    margin-left: 2px;
+    font-weight: 500;
 }
 </style>
