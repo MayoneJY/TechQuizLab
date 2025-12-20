@@ -109,8 +109,12 @@
       </div>
 
       <div v-else class="empty-state">
-        <p>전투 기록이 없습니다.</p>
-        <button class="pixel-button primary" @click="router.push('/stages')">전투 시작하기</button>
+        <div class="empty-icon">⚔️</div>
+        <p class="empty-text">아직 진행한 전투가 없습니다.</p>
+        <p class="empty-subtext">지금 바로 모의 면접에 도전해보세요!</p>
+        <button class="pixel-button primary big-btn" @click="router.push('/stages')">
+            새로운 전투 시작하기
+        </button>
       </div>
 
       <!-- Pagination -->
@@ -606,9 +610,41 @@ onMounted(async () => {
 }
 
 .empty-state {
-  text-align: center;
-  padding: 50px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
   color: #888;
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  border: 2px dashed rgba(255,255,255,0.1);
+  margin-top: 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.empty-text {
+  font-size: 18px;
+  color: #fff;
+  margin: 0 0 10px 0;
+  font-weight: bold;
+}
+
+.empty-subtext {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 30px 0;
+}
+
+.big-btn {
+    padding: 12px 24px;
+    font-size: 16px;
 }
 
 /* Pagination */
