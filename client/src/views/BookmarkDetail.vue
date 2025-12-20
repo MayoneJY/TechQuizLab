@@ -158,7 +158,7 @@ async function deleteBookmark() {
     try {
         // Assume API exists: deleteBookmark(id)
         await battleApi.deleteBookmark(bookmarkId)
-        router.replace('/my-bookmarks')
+        router.back()
     } catch (e) {
         await modalStore.openAlert('삭제 실패')
     }
