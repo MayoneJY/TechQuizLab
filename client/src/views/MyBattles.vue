@@ -293,10 +293,12 @@ function getPageNumbers() {
 }
 
 import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const authStore = useAuthStore()
+const modalStore = useModalStore()
 
 // ... existing code ...
 
@@ -331,10 +333,18 @@ async function createBattleFromQuery() {
             
             // Clean URL
             router.replace({ path: '/my-battles', query: {} })
-        } catch (e) {
+        } catch (e: any) {
             console.error(e)
             battles.value.shift() // remove temp
-            // show error
+            
+            // Handle No Portfolio Error
+            if (e.response?.data?.message?.toLowerCase().includes('portfolio') || e.message?.toLowerCase().includes('portfolio')) {
+                if (await modalStore.openConfirm('포트폴리오가 필요합니다. 지금 생성하시겠습니까?')) {
+                    router.push('/portfolio')
+                }
+            } else {
+                await modalStore.openAlert(e.response?.data?.message || '전투 생성에 실패했습니다.')
+            }
         } finally {
             isCreating.value = false
         }

@@ -450,9 +450,19 @@ async function startPractice() {
     try {
       const response = await battleApi.createPracticeBattle()
       router.push(`/game?battleId=${response.data.battleId}`)
-    } catch (error: any) {
-      console.error(error)
-      await modalStore.openAlert(error.response?.data?.message || '연습 게임 생성에 실패했습니다. 북마크된 문제가 있는지 확인해주세요.')
+    } catch (e: any) {
+      console.error(e)
+      
+      // Handle Portfolio Error (Practice Mode)
+      if (e.response?.data?.message?.toLowerCase().includes('portfolio') || e.message?.toLowerCase().includes('portfolio')) {
+           // Different message might be needed? "Practice requires a portfolio too?"
+           // Or just the same "Create portfolio first?"
+           if (await modalStore.openConfirm('연습 게임을 위해서도 포트폴리오가 필요합니다. 생성하시겠습니까?')) {
+                router.push('/portfolio')
+           }
+      } else {
+           await modalStore.openAlert(e.response?.data?.message || '연습 게임 생성에 실패했습니다. 북마크된 문제가 있는지 확인해주세요.')
+      }
     }
   }
 }
