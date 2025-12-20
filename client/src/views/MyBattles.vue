@@ -44,7 +44,7 @@
       <div v-if="loading" class="loading-state">
         <div class="skeleton-list">
           <div class="skeleton-item-card" v-for="i in 5" :key="i">
-            <div class="skeleton skeleton-circle" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+            <div class="skeleton skeleton-circle" style="width: 40px; height: 40px; border-radius: 10px;"></div>
             <div class="skeleton-content" style="flex: 1;">
                <div class="skeleton skeleton-text" style="width: 60%; height: 16px; margin-bottom: 5px;"></div>
                <div class="skeleton skeleton-text" style="width: 40%; height: 12px;"></div>
@@ -57,26 +57,54 @@
         <div 
           v-for="battle in battles" 
           :key="battle.battleId" 
-          class="battle-item clickable-item"
-          @click="router.push(`/battle-result/${battle.battleId}?from=battles`)"
+          class="battle-item"
+          :class="{ 'creating-item': battle.isTemp, 'clickable-item': !battle.isTemp }"
+          @click="!battle.isTemp && router.push(`/battle-result/${battle.battleId}?from=battles`)"
         >
-          <!-- Rank Icon -->
-          <div class="rank-icon-wrapper">
-              <div class="rank-circle pixel-text" :class="getRankClass(battle.totalDamage)">
-                  {{ getRank(battle.totalDamage) }}
+          <!-- Special Case: Generating -->
+          <template v-if="battle.isTemp">
+              <div class="rank-icon-wrapper">
+                  <div class="rank-circle generating-rank">
+                      <div class="loading-spinner-small"></div>
+                  </div>
               </div>
-          </div>
 
-          <div class="battle-info">
-              <span class="battle-stage">{{ battle.stageTitle || '알 수 없는 스테이지' }}</span>
-              <div class="battle-meta">
-                  <span class="battle-category badge">{{ battle.jobCategory || 'General' }}</span>
-                  <span class="battle-date">{{ formatDateTime(battle.createdAt) }}</span>
-                  <span class="battle-score-text">{{ battle.totalDamage }}점</span>
+              <div class="battle-info">
+                  <span class="battle-stage">{{ battle.stageTitle }}</span>
+                  <div class="battle-meta">
+                      <span class="battle-category badge">{{ battle.jobCategory }}</span>
+                      <span class="glitch-text-small">AI 면접관 생성중...</span>
+                  </div>
               </div>
-          </div>
-          
-          <div class="arrow-icon">›</div>
+          </template>
+
+          <template v-else>
+            <!-- Rank Icon -->
+            <div class="rank-icon-wrapper">
+                <div class="rank-circle pixel-text" :class="isUnplayed(battle) ? 'rank-none' : getRankClass(battle.totalDamage)">
+                    {{ isUnplayed(battle) ? '?' : getRank(battle.totalDamage) }}
+                </div>
+            </div>
+
+            <div class="battle-info">
+                <span class="battle-stage">{{ battle.stageTitle || '알 수 없는 스테이지' }}</span>
+                <div class="battle-meta">
+                    <span class="battle-category badge">{{ battle.jobCategory || 'General' }}</span>
+                    <span class="battle-date">{{ formatDateTime(battle.createdAt) }}</span>
+                    <span class="battle-score-text">
+                        {{ isUnplayed(battle) ? '도전 대기' : `${battle.totalDamage}점` }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Start Button if unplayed -->
+            <div v-if="isUnplayed(battle)" class="action-area" @click.stop>
+                <button class="pixel-button primary small-btn" @click="handleStartBattle(battle.battleId)">
+                    도전하기
+                </button>
+            </div>
+            <div v-else class="arrow-icon">›</div>
+          </template>
         </div>
       </div>
 
@@ -121,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { battleApi } from '../services/api'
 
@@ -260,9 +288,68 @@ function getPageNumbers() {
   return pages
 }
 
+import { useAuthStore } from '../stores/auth'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const authStore = useAuthStore()
+
+// ... existing code ...
+
+const isCreating = ref(false)
+
+// Imports already at top
+
+// ...
+
+async function createBattleFromQuery() {
+    const { createStageId, title, category } = route.query
+    if (createStageId) {
+        isCreating.value = true
+        // Add temporary item
+        const tempBattle = {
+            battleId: -1,
+            stageTitle: title || 'Loading...',
+            jobCategory: category || 'General',
+            totalDamage: 0,
+            createdAt: new Date().toISOString(),
+            isTemp: true
+        }
+        battles.value.unshift(tempBattle)
+
+        try {
+            await battleApi.createBattle({
+                stageId: Number(createStageId),
+                userId: authStore.user?.userId || 0
+            })
+            // Refresh list to show real item
+            await fetchBattles()
+            
+            // Clean URL
+            router.replace({ path: '/my-battles', query: {} })
+        } catch (e) {
+            console.error(e)
+            battles.value.shift() // remove temp
+            // show error
+        } finally {
+            isCreating.value = false
+        }
+    }
+}
+
+function handleStartBattle(battleId: number) {
+    router.push(`/game?battleId=${battleId}`)
+}
+
+function isUnplayed(battle: any) {
+    // If status is READY, it's unplayed
+    return battle.status === 'READY' || (!battle.totalDamage && battle.status !== 'COMPLETED')
+}
+
 onMounted(async () => {
     await fetchCategories()
-    fetchBattles()
+    await fetchBattles()
+    await createBattleFromQuery()
 })
 </script>
 
@@ -424,10 +511,10 @@ onMounted(async () => {
 }
 
 
-.battle-list {
+.battle-item {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 15px;
 }
 
 .clickable-item {
@@ -437,9 +524,6 @@ onMounted(async () => {
   padding: 15px;
   background: rgba(0,0,0,0.2);
   border: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  gap: 15px;
 }
 
 .clickable-item:hover {
@@ -475,6 +559,7 @@ onMounted(async () => {
 .rank-B { background: #4a9eff; color: #fff; border-color: #228be6; }
 .rank-C { background: #ced4da; color: #495057; border-color: #868e96; }
 .rank-F { background: #ff6b6b; color: #fff; border-color: #fa5252; }
+.rank-none { background: #444; color: #888; border-color: #666; border-style: dashed; }
 
 .battle-info {
   flex: 1;
@@ -593,9 +678,9 @@ onMounted(async () => {
 .skeleton-item-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px;
-  background: rgba(255,255,255,0.05);
+  gap: 15px;
+  padding: 15px;
+  background: rgba(0,0,0,0.2);
   border-radius: 8px;
 }
 .skeleton {
@@ -615,4 +700,51 @@ onMounted(async () => {
 @keyframes shimmer {
   100% { transform: translateX(100%); }
 }
+
+/* Generating State Styles */
+.creating-item {
+    border-radius: 8px;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid transparent;
+}
+
+.generating-rank {
+    background: transparent;
+    border: none;
+}
+
+.loading-spinner-small {
+    width: 24px;
+    height: 24px;
+    border: 3px solid transparent;
+    border-top-color: #4a9eff;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+.glitch-text-small {
+    color: #4a9eff;
+    font-weight: bold;
+    font-size: 13px;
+    animation: glitch 1.5s infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes glitch {
+    0% { opacity: 1; transform: translate(0); }
+    20% { opacity: 0.8; transform: translate(-1px, 0); }
+    40% { opacity: 1; transform: translate(1px, 0); }
+    60% { opacity: 1; transform: translate(0); }
+    100% { opacity: 1; transform: translate(0); }
+}
+
+.small-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
 </style>

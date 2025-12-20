@@ -61,4 +61,11 @@
         WHERE user_id = #{userId}
     </select>
 
+    <select id="findAllByUserId" parameterType="long" resultMap="portfolioResultMap">
+        SELECT *
+        FROM portfolio
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
 </mapper>

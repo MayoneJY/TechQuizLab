@@ -221,8 +221,8 @@
                     >
                       <!-- Rank Icon -->
                       <div class="rank-icon-wrapper">
-                          <div class="rank-circle pixel-text" :class="getRankClass(battle.totalDamage)">
-                              {{ getRank(battle.totalDamage) }}
+                          <div class="rank-circle pixel-text" :class="isUnplayed(battle) ? 'rank-none' : getRankClass(battle.totalDamage)">
+                              {{ isUnplayed(battle) ? '?' : getRank(battle.totalDamage) }}
                           </div>
                       </div>
 
@@ -230,7 +230,9 @@
                           <span class="battle-stage">{{ battle.stageTitle || '알 수 없는 스테이지' }}</span>
                           <div class="battle-meta">
                               <span class="battle-date">{{ new Date(battle.createdAt).toLocaleDateString() }}</span>
-                              <span class="battle-score-text">{{ battle.totalDamage }}점</span>
+                              <span class="battle-score-text">
+                                  {{ isUnplayed(battle) ? '도전 대기' : `${battle.totalDamage}점` }}
+                              </span>
                           </div>
                       </div>
                       
@@ -342,6 +344,7 @@ interface DashboardBattle {
   stageId: number
   totalDamage: number
   stageTitle?: string
+  status?: string
   createdAt: string
 }
 
@@ -373,6 +376,10 @@ function getRank(score: number) {
   if (score >= 6000) return 'B'
   if (score >= 4000) return 'C'
   return 'F'
+}
+
+function isUnplayed(battle: any) {
+  return battle.status === 'READY' || (!battle.totalDamage && battle.status !== 'COMPLETED')
 }
 
 function getRankClass(score: number) {
@@ -1004,6 +1011,7 @@ async function startPractice() {
 .rank-B { background: #4a9eff; color: #fff; border-color: #228be6; }
 .rank-C { background: #ced4da; color: #495057; border-color: #868e96; }
 .rank-F { background: #ff6b6b; color: #fff; border-color: #fa5252; }
+.rank-none { background: #444; color: #888; border-color: #666; border-style: dashed; }
 
 .battle-info {
     flex: 1;

@@ -37,7 +37,7 @@
           v-for="stage in stages" 
           :key="stage.stageId" 
           class="stage-card glass-card"
-          @click="startChallenge(stage.stageId)"
+          @click="startChallenge(stage)"
         >
           <div class="card-badges">
             <span class="badge deadline" :class="{ urgent: isUrgent(stage.deadline) }">
@@ -69,15 +69,7 @@
     </div>
 
     <!-- Battle Creation Loading Overlay -->
-    <div v-if="isCreatingBattle" class="loading-overlay">
-      <div class="loading-content">
-        <h2 class="pixel-text glitch" data-text="AI 면접관 생성중...">AI 면접관 생성중...</h2>
-        <div class="loading-bar">
-          <div class="loading-progress"></div>
-        </div>
-        <p class="pixel-text blink">잠시만 기다려주세요</p>
-      </div>
-    </div>
+
   </div>
 </template>
 
@@ -85,7 +77,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { stageApi, battleApi } from '../services/api'
+import { stageApi } from '../services/api'
 import type { Stage } from '../types/schema'
 import { useModalStore } from '../stores/modal'
 import PixelMonster from '../components/PixelMonster.vue'
@@ -96,7 +88,6 @@ const modalStore = useModalStore()
 
 const stages = ref<Stage[]>([])
 const isLoading = ref(false)
-const isCreatingBattle = ref(false)
 
 onMounted(async () => {
   await fetchStages()
@@ -116,7 +107,7 @@ async function fetchStages() {
 
 
 
-async function startChallenge(stageId: number) {
+async function startChallenge(stage: Stage) {
   if (!authStore.isAuthenticated) {
     if (await modalStore.openConfirm('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?')) {
       router.push('/login')
@@ -124,24 +115,16 @@ async function startChallenge(stageId: number) {
     return
   }
 
-  isCreatingBattle.value = true
-  try {
-    // 배틀 생성 요청
-    const response = await battleApi.createBattle({
-      stageId: stageId,
-      userId: authStore.user.userId
-    })
-    
-    // 배틀 ID로 문제 로딩
-    const battleId = response.data.battleId
-    
-    // 성공 시 게임 화면으로 이동 (Query Param으로 battleId 전달)
-    router.push(`/game?battleId=${battleId}`)
-  } catch (error: any) {
-    console.error('Failed to create battle:', error)
-    await modalStore.openAlert('배틀 생성에 실패했습니다.')
-    isCreatingBattle.value = false // Reset loading state on error
-  }
+  // Redirect to My Battles with creation intent
+  router.push({
+    path: '/my-battles',
+    query: {
+        createStageId: stage.stageId,
+        company: stage.companyName,
+        title: stage.title,
+        category: stage.jobCategory
+    }
+  })
 }
 
 function goHome() {

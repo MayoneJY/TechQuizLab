@@ -23,4 +23,6 @@ public interface PortfolioDao {
     void delete(@Param("userId") Long userId, @Param("pfId") Long pfId);
 
     Long findMaxPfIdByUserId(Long userId);
+
+    List<Portfolio> findAllByUserId(Long userId);
 }

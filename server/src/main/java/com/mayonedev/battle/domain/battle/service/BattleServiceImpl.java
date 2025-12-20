@@ -88,7 +88,7 @@ public class BattleServiceImpl implements BattleService {
                 .orElseThrow(() -> new RuntimeException("Stage not found with id: " + stageId));
 
         battle.setStageId(stageId);
-        battle.setStatus("IN_PROGRESS");
+        battle.setStatus("READY");
         battle.setTotalDamage(0);
         battle.setCreatedAt(LocalDateTime.now());
 

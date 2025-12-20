@@ -14,7 +14,7 @@ export interface Battle {
     stageId: number
     pfId: number
     totalDamage?: number
-    status?: 'IN_PROGRESS' | 'COMPLETED' | 'GAVE_UP'
+    status?: 'IN_PROGRESS' | 'COMPLETED' | 'GAVE_UP' | 'READY'
     createdAt?: string
 }
 
