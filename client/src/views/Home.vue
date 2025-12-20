@@ -42,6 +42,7 @@
                       </transition>
                   </div>
                   <span class="life-count">{{ authStore.user?.remainingLives ?? 5 }} / 5</span>
+                  <button class="charge-btn" @click="router.push('/charge')" title="충전하기">+</button>
               </div>
           </div>
 
@@ -788,6 +789,35 @@ async function startPractice() {
   color: #ff6b6b;
   font-weight: 700;
   margin-left: 5px;
+}
+
+.charge-btn {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: 'DungGeunMo', sans-serif;
+  font-size: 14px;
+  line-height: 20px; /* Match height for vertical centering fallback */
+  margin-left: 8px;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.charge-btn:active {
+  transform: translateY(1px);
+}
+
+.charge-btn:hover {
+  background: #ff6b6b;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
 }
 
 

@@ -115,6 +115,24 @@ const router = createRouter({
       name: 'bookmark-detail',
       component: () => import('../views/BookmarkDetail.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/charge',
+      name: 'charge',
+      component: () => import('../views/ChargeLives.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/payment/success',
+      name: 'payment-success',
+      component: () => import('../views/PaymentSuccess.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/payment/fail',
+      name: 'payment-fail',
+      component: () => import('../views/PaymentFail.vue'),
+      meta: { requiresAuth: true }
     }
   ]
 })

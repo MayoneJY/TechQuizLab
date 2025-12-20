@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mayonedev.battle.domain.payment.dao.PaymentDao">
+
+    <insert id="insert" parameterType="com.mayonedev.battle.domain.payment.entity.Payment">
+        INSERT INTO payment (
+            payment_key,
+            order_id,
+            user_id,
+            amount,
+            quantity,
+            status,
+            requested_at,
+            approved_at
+        ) VALUES (
+            #{paymentKey},
+            #{orderId},
+            #{userId},
+            #{amount},
+            #{quantity},
+            #{status},
+            #{requestedAt},
+            #{approvedAt}
+        )
+    </insert>
+
+    <select id="findByPaymentKey" resultType="com.mayonedev.battle.domain.payment.entity.Payment">
+        SELECT * FROM payment WHERE payment_key = #{paymentKey}
+    </select>
+
+</mapper>

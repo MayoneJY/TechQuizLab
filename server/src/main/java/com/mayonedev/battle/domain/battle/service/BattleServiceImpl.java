@@ -55,7 +55,11 @@ public class BattleServiceImpl implements BattleService {
         // safety)
         if (user.getLastLivesResetAt() == null
                 || !user.getLastLivesResetAt().toLocalDate().isEqual(java.time.LocalDate.now())) {
-            user.setRemainingLives(5);
+            // Only reset if lives are less than 5
+            if (user.getRemainingLives() < 5) {
+                user.setRemainingLives(5);
+            }
+            // Always update the reset time so we don't check again today
             user.setLastLivesResetAt(LocalDateTime.now());
             userDao.update(user);
         }
