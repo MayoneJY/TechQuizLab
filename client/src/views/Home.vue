@@ -28,13 +28,19 @@
                   <span class="pixel-text">남은 도전 기회</span>
               </div>
               <div class="hearts-container">
-                  <img 
-                    v-for="i in 5" 
-                    :key="i" 
-                    :src="i > (authStore.user?.remainingLives ?? 5) ? '/assets/icons/icon-heart-empty.png' : '/assets/icons/icon-heart-full.png'"
-                    alt="Life"
-                    class="pixel-heart-img"
-                  />
+                  <div v-for="i in 5" :key="i" class="heart-wrapper">
+                      <!-- 1. Background: Empty Heart (Always there) -->
+                      <img src="/assets/icons/icon-heart-empty.png" class="pixel-heart-bg" />
+                      
+                      <!-- 2. Foreground: Full Heart (Fade in/out) -->
+                      <transition name="heart-pop">
+                        <img 
+                            v-if="i <= (authStore.user?.remainingLives ?? 5)"
+                            src="/assets/icons/icon-heart-full.png" 
+                            class="pixel-heart-fg"
+                        />
+                      </transition>
+                  </div>
                   <span class="life-count">{{ authStore.user?.remainingLives ?? 5 }} / 5</span>
               </div>
           </div>
@@ -776,12 +782,37 @@ async function startPractice() {
 
 
 /* Heart Images */
-.hearts-container .pixel-heart-img {
+.hearts-container .heart-wrapper {
+  position: relative;
   width: 20px;
   height: 20px;
-  object-fit: contain; /* Preserve aspect ratio */
+}
+
+.pixel-heart-bg, 
+.pixel-heart-fg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   image-rendering: pixelated;
-  /* No filter needed as we swap images */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Vue Transition for Heart Pop */
+.heart-pop-enter-active,
+.heart-pop-leave-active {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.heart-pop-enter-from {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.heart-pop-leave-to {
+  opacity: 0;
+  transform: scale(1.5); /* Scale up when disappearing (popping effect) */
 }
 
 /* Checkbox Images */
