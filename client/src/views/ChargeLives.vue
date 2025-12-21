@@ -346,4 +346,41 @@ async function requestPayment() {
         width: 100%;
     }
 }
+
+@media (max-width: 480px) {
+    .charge-screen {
+        padding: 40px 15px 40px; /* Reduced top padding */
+    }
+
+    .charge-grid {
+        grid-template-columns: 1fr; /* Single column */
+        gap: 15px;
+    }
+    
+    .title {
+        font-size: 24px;
+    }
+
+    /* Floating Dock Mobile Optimization */
+    .action-dock {
+        width: 95%;
+        padding: 12px 20px;
+        bottom: 20px;
+        gap: 15px;
+    }
+    
+    .dock-price {
+        font-size: 20px;
+    }
+    
+    .dock-btn {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    
+    /* Hide decorative monsters on mobile to prevent obstruction */
+    .monster {
+        display: none;
+    }
+}
 </style>

@@ -321,9 +321,7 @@ onMounted(async () => {
     outline: none;
 }
 
-.search-input:focus {
-    /* Focus handled by container */
-}
+
 
 .search-btn {
     padding: 0 20px;
@@ -433,6 +431,7 @@ onMounted(async () => {
   /* line-clamp */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -614,5 +613,101 @@ onMounted(async () => {
 
 .tab-button.active:hover {
     cursor: default;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .page-container {
+      padding: 15px;
+      padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Toolbar Stacking */
+  .toolbar-section {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+  }
+  
+  .search-container {
+      flex: none;
+      width: 100%;
+  }
+
+  .sort-dropdown-wrapper {
+      width: 100%;
+  }
+  
+  .sort-select {
+      width: 100%;
+      box-sizing: border-box;
+  }
+
+  /* Category Tabs Scrolling */
+  .category-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      justify-content: flex-start;
+      padding-bottom: 10px; 
+      margin-bottom: 15px;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+  }
+  
+  .tab-button {
+      flex-shrink: 0;
+  }
+
+  /* Bookmark List Items */
+  .bookmark-item {
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+  }
+
+  .bookmark-icon-wrapper {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+      flex-shrink: 0;
+  }
+  
+  .bookmark-text {
+      min-width: 0; /* Enable text truncation */
+  }
+
+  .bookmark-header {
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+  }
+  
+  .bookmark-badge {
+      margin-bottom: 0;
+  }
+
+  .bookmark-q {
+      font-size: 14px;
+      -webkit-line-clamp: 3; /* Show slightly more text on mobile before truncation */
+      margin-bottom: 6px;
+  }
+  
+  /* Memo adjustments */
+  .bookmark-memo {
+      max-width: 100%;
+      white-space: normal; /* Allow memo to wrap */
+      height: auto;
+      overflow: visible;
+  }
+
+  /* Arrow icon positioning */
+  .arrow-icon {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 18px;
+  }
 }
 </style>

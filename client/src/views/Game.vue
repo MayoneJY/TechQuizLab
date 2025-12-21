@@ -125,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, onUnmounted, watch } from 'vue'
+import { onMounted, ref, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useQuestionStore } from '../stores/question'
@@ -754,5 +754,90 @@ onUnmounted(() => {
   align-items: center;
 }
 
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .quiz-screen {
+      width: 95%;
+      padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-container {
+      padding: 10px;
+  }
+
+  .quiz-screen {
+      width: 100%;
+      padding: 10px;
+      gap: 15px;
+  }
+  
+  .game-glass-header {
+      padding: 12px;
+  }
+
+  .header-top {
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+  }
+  
+  .lives-display {
+      align-self: flex-end; /* Move hearts to right or just standard flow */
+      margin-top: -30px; /* Hacky overlap or just let it flow? Let's flow properly first. */
+      margin-top: 0;
+      align-self: flex-start;
+  }
+  
+  /* Better mobile header layout: 
+     Row 1: Question#  Timer
+     Row 2: Hearts
+  */
+  .header-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-areas: 
+          "info timer"
+          "lives lives";
+      gap: 8px;
+  }
+  
+  .question-info { grid-area: info; }
+  .score-display { grid-area: timer; }
+  .lives-display { grid-area: lives; justify-content: flex-start; }
+
+  .question-card {
+      min-height: 140px;
+      padding: 20px 15px;
+  }
+  
+  .question-text {
+      font-size: 18px;
+  }
+
+  .answer-section {
+      flex-direction: column;
+      align-items: stretch;
+  }
+
+  .answer-input {
+      height: 46px;
+  }
+
+  .submit-button {
+      height: 46px;
+      width: 100%;
+  }
+  
+  .top-controls {
+      margin-bottom: -10px; /* pull closer */
+  }
+  
+  .small-btn {
+      padding: 5px 12px;
+  }
+}
 </style>
 

@@ -384,4 +384,58 @@ async function handleDeleteAccount() {
   padding: 10px;
   margin-top: 10px;
 }
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .mypage-container {
+      padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mypage-screen {
+      padding: 10px;
+  }
+
+  .mypage-container {
+      padding: 20px;
+      gap: 20px;
+  }
+  
+  .title {
+      font-size: 24px;
+  }
+  
+  .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+  }
+  
+  .back-button {
+      align-self: flex-start;
+  }
+
+  .profile-avatar {
+      width: 80px;
+      height: 80px;
+  }
+  
+  .avatar-icon {
+      font-size: 40px;
+  }
+  
+  .stats-group {
+      flex-direction: column;
+      gap: 10px;
+  }
+  
+  .actions {
+      margin-top: 10px;
+  }
+  
+  .edit-actions {
+      flex-direction: column;
+  }
+}
 </style>

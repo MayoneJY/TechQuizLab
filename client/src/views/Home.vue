@@ -550,9 +550,7 @@ async function startPractice() {
   animation: slideDown 0.8s ease-out;
 }
 
-.game-title {
-  /* margin-bottom: 20px; */
-}
+
 
 .title-main {
   font-size: 72px;
@@ -1175,5 +1173,124 @@ async function startPractice() {
 .widget-footer {
     display: none;
 }
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .dashboard-screen {
+    padding: 15px;
+    padding-bottom: 80px; 
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+
+  .title-main {
+    font-size: 48px;
+  }
+
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    /* Grid items need min-width: 0 to prevent overflow from long text */
+    min-width: 0;
+  }
+  
+  /* Fix grid/flex overflow issues */
+  .feature-grid, 
+  .widget-column {
+    min-width: 0;
+  }
+
+  .feature-card,
+  .dashboard-widget {
+    min-width: 0; /* Critical for text-overflow to work in grid/flex */
+  }
+  
+  /* Decorative elements adjustments */
+  .monster {
+    transform: scale(0.7);
+  }
+  .planet {
+    transform: scale(1.5);
+    /* Avoid using percentage that might push out of bounds visually */
+    right: -50px; 
+  }
+}
+
+@media (max-width: 480px) {
+  .title-main {
+    font-size: 36px;
+  }
+
+  /* Force single column for feature grid */
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Reset spans for single column */
+  .battle-card, 
+  .life-card {
+    grid-column: span 1;
+  }
+
+  /* Adjust Battle Card for narrow screens */
+  .battle-card {
+    flex-direction: column;
+    align-items: stretch; /* Stretch children to fill width */
+    padding: 20px;
+    gap: 15px;
+    text-align: left;
+  }
+  
+  .battle-card .card-info-battle {
+    padding-left: 0;
+    width: 100%; /* Ensure text container takes full width */
+  }
+  
+  /* Ensure text doesn't overflow */
+  .battle-card .card-info p {
+    word-break: keep-all; /* Korean text wrapping optimization */
+    white-space: normal;
+  }
+
+  .battle-card .card-action {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box; /* Ensure padding doesn't add to width */
+    display: block;
+  }
+
+  /* Adjust Life Card */
+  .life-card {
+    padding: 15px;
+    flex-wrap: wrap; 
+  }
+  
+  .life-header {
+    margin-bottom: 5px;
+  }
+
+  /* Widgets */
+  .dashboard-widget {
+    padding: 12px;
+  }
+
+  /* Hide distracting background elements */
+  .monster, .planet {
+    opacity: 0.15; /* Even more subtle */
+    z-index: 0; 
+  }
+  
+  .monster-1 {
+    top: 5%;
+    left: -20px;
+    transform: scale(0.5);
+  }
+  
+  .monster-2 {
+    bottom: 5%;
+    right: -20px;
+    transform: scale(0.5);
+  }
+}
+
 
 </style>

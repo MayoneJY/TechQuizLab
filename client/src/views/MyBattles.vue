@@ -440,9 +440,7 @@ onMounted(async () => {
     outline: none;
 }
 
-.search-input:focus {
-    /* Focus handled by container */
-}
+
 
 .search-btn {
     padding: 0 20px;
@@ -791,6 +789,134 @@ onMounted(async () => {
 .small-btn {
     font-size: 12px;
     padding: 6px 12px;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .page-container {
+      padding: 15px;
+      padding-bottom: 80px;
+  }
+  
+  .content-wrapper {
+      padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Toolbar Stacking */
+  .toolbar-section {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+  }
+  
+  .search-container {
+      min-width: auto;
+      width: 100%;
+  }
+  
+  .sort-dropdown-wrapper {
+      width: 100%;
+  }
+  
+  .sort-select {
+      width: 100%;
+      box-sizing: border-box;
+  }
+
+  /* Category Tabs Scrolling */
+  .category-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      justify-content: flex-start;
+      padding-bottom: 15px; 
+      margin-bottom: 15px;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap; /* Force single line */
+  }
+  
+  .tab-button {
+      flex-shrink: 0;
+  }
+
+  /* Battle List Items */
+  .battle-item {
+      align-items: flex-start; /* Align top for better multi-line look */
+      gap: 12px;
+  }
+
+  .rank-circle {
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+  }
+  
+  .battle-info {
+      min-width: 0; /* Enable truncation */
+  }
+
+  .battle-stage {
+      font-size: 15px;
+      white-space: normal; /* Allow wrapping */
+      word-break: keep-all;
+      margin-bottom: 6px;
+  }
+  
+  .battle-meta {
+      flex-direction: row; /* Keep row */
+      flex-wrap: wrap; /* Allow wrap */
+      align-items: center;
+      gap: 6px;
+      row-gap: 2px; /* Tighter vertical gap if it wraps */
+  }
+  
+  /* Add separator between Date and Score if they end up side by side visually */
+  .battle-date::after {
+      content: "|";
+      margin-left: 6px;
+      color: #555;
+      font-size: 10px;
+  }
+  
+
+  
+  .badge {
+      display: inline-block;
+      margin-bottom: 2px;
+  }
+  
+  /* Action Button on Mobile */
+  /* Action Button on Mobile */
+  .battle-item {
+      flex-wrap: wrap; /* Allow wrapping for the button */
+  }
+
+  .action-area {
+      width: 100%; /* Force button to take full width row */
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end; /* Align right */
+  }
+  
+  .small-btn {
+      padding: 8px 12px;
+      white-space: nowrap;
+      width: 100%; /* Make button full width for easy tapping */
+      text-align: center;
+  }
+  
+  /* Pagination adjustments */
+  .pagination-container {
+      gap: 5px;
+  }
+  
+  .page-number-btn, .pagination-nav-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 13px;
+  }
 }
 
 </style>

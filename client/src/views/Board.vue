@@ -746,6 +746,7 @@ function getPageNumbers() {
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -997,5 +998,106 @@ function getPageNumbers() {
     text-align: center;
     color: #fff;
     margin-bottom: 20px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .board-page-wrapper {
+      padding: 15px;
+      padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-main {
+      font-size: 36px;
+  }
+
+  /* Toolbar Stacking */
+  .board-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      padding: 15px;
+  }
+
+  .home-toolbar-btn {
+      justify-content: center;
+      width: 100%;
+  }
+
+  .search-container {
+      width: 100%;
+      min-width: auto;
+  }
+  
+  .toolbar-actions {
+      flex-direction: column;
+      width: 100%;
+      align-items: stretch;
+      gap: 10px;
+  }
+
+  .sort-dropdown-wrapper, .sort-select {
+      width: 100%;
+  }
+  
+  .search-btn {
+      width: 100%;
+  }
+
+  /* Category Tabs Scrolling */
+  .category-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      justify-content: flex-start;
+      padding-bottom: 10px; 
+      margin-bottom: 15px;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+  }
+  
+  .tab-button {
+      flex-shrink: 0;
+  }
+  
+  .transparent-write-btn {
+      margin-left: 0; /* Reset margin */
+      flex-shrink: 0;
+  }
+
+  /* Post List Items */
+  .post-header-row {
+      flex-wrap: wrap; /* Allow wrapping */
+      gap: 6px;
+      align-items: flex-start; /* Align for wrap */
+  }
+  
+  .post-title {
+      width: 100%; /* Force new line if needed or take full width */
+      white-space: normal; /* Allow title to wrap */
+      flex: none; /* Reset flex */
+      margin-bottom: 4px;
+      line-height: 1.4;
+  }
+  
+  .post-meta-right {
+      margin-left: 0; /* Reset margin */
+      width: 100%;
+      justify-content: space-between; /* Spread author and date */
+      margin-top: 5px;
+  }
+  
+  /* Post Footer */
+  .post-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+  }
+  
+  .post-stats {
+      width: 100%;
+      justify-content: flex-end; /* Align stats to right or keeps correct */
+  }
 }
 </style>
