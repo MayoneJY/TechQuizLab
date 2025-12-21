@@ -46,8 +46,8 @@
                bd.damage, bd.difficulty, bd.keyword_tags,
                s.title as stage_title, s.job_category
         FROM battle_bookmark b
-        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
-        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id AND b.user_id = bd.user_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id AND b.user_id = bt.user_id
         LEFT JOIN stage s ON bt.stage_id = s.stage_id
         WHERE b.user_id = #{userId}
         <if test="category != null and category != 'all'">
@@ -75,8 +75,8 @@
     <select id="countBookmarks" resultType="int">
         SELECT COUNT(*)
         FROM battle_bookmark b
-        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
-        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id AND b.user_id = bd.user_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id AND b.user_id = bt.user_id
         LEFT JOIN stage s ON bt.stage_id = s.stage_id
         WHERE b.user_id = #{userId}
         <if test="category != null and category != 'all'">
@@ -90,7 +90,7 @@
     <select id="findBookmarkCategoriesByUserId" resultType="string">
         SELECT DISTINCT s.job_category
         FROM battle_bookmark b
-        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id AND b.user_id = bt.user_id
         LEFT JOIN stage s ON bt.stage_id = s.stage_id
         WHERE b.user_id = #{userId}
         AND s.job_category IS NOT NULL
@@ -102,8 +102,8 @@
                bd.damage, bd.difficulty, bd.keyword_tags,
                s.title as stage_title, s.job_category
         FROM battle_bookmark b
-        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id
-        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id
+        LEFT JOIN battle_detail bd ON b.ref_battle_id = bd.battle_id AND b.ref_detail_id = bd.detail_id AND b.user_id = bd.user_id
+        LEFT JOIN battle bt ON b.ref_battle_id = bt.battle_id AND b.user_id = bt.user_id
         LEFT JOIN stage s ON bt.stage_id = s.stage_id
         WHERE b.user_id = #{userId} AND b.bookmark_id = #{bookmarkId}
     </select>
