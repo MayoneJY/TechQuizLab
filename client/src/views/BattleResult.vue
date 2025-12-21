@@ -74,7 +74,7 @@
                         </span>
                     </div>
                     <button class="pixel-button small bookmark-btn" @click.stop="bookmarkQuestion(detail.detailId)">
-                        ⭐ 북마크
+                        ⭐ 오답노트 저장
                     </button>
                 </div>
                 
@@ -165,10 +165,10 @@ async function bookmarkQuestion(detailId: number) {
         if (!battleId) return
         
         await battleApi.bookmarkBattleDetail(battleId, detailId)
-        await modalStore.openAlert('북마크에 저장되었습니다!')
+        await modalStore.openSuccess('오답노트에 저장되었습니다!')
     } catch (e) {
         console.error(e)
-        await modalStore.openAlert('북마크 저장에 실패했습니다.')
+        await modalStore.openAlert('오답노트 저장에 실패했습니다.')
     }
 }
 

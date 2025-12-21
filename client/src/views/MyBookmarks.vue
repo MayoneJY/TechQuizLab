@@ -81,7 +81,7 @@
       </div>
 
       <div v-else class="empty-state">
-        <p>저장된 북마크가 없습니다.</p>
+        <p>저장된 오답노트가 없습니다.</p>
       </div>
 
       <!-- Pagination -->

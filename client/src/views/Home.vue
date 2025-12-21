@@ -90,7 +90,7 @@
             <img src="/assets/icons/icon-practice.png" alt="Practice" class="card-icon-img" />
             <div class="card-info">
               <h3 class="pixel-text">오답 복습</h3>
-              <p>북마크한 문제를 다시 풀어보세요.</p>
+              <p>오답노트에 저장된 문제를 다시 풀어보세요.</p>
             </div>
           </div>
 
@@ -295,7 +295,7 @@
                  </div>
                </div>
                <div v-else class="empty-widget-text">
-                  저장된 북마크가 없습니다.
+                  저장된 오답노트가 없습니다.
                </div>
             </template>
           </div>
@@ -462,7 +462,7 @@ async function startPractice() {
                 router.push('/portfolio')
            }
       } else {
-           await modalStore.openAlert(e.response?.data?.message || '연습 게임 생성에 실패했습니다. 북마크된 문제가 있는지 확인해주세요.')
+           await modalStore.openAlert(e.response?.data?.message || '연습 게임 생성에 실패했습니다. 오답노트에 저장된 문제가 있는지 확인해주세요.')
       }
     }
   }

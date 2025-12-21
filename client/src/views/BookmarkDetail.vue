@@ -82,13 +82,13 @@
 
         <!-- Footer Actions -->
         <div class="detail-footer">
-          <button class="pixel-button danger" @click="deleteBookmark">북마크 삭제</button>
+          <button class="pixel-button danger" @click="deleteBookmark">오답노트에서 삭제</button>
           <button class="pixel-button secondary" @click="goToBattleResult">원본 결과 보기</button>
         </div>
       </div>
 
       <div v-else class="error-state">
-        <p>북마크를 찾을 수 없습니다.</p>
+        <p>오답노트 데이터를 찾을 수 없습니다.</p>
         <button class="pixel-button" @click="router.back()">목록으로</button>
       </div>
     </div>
