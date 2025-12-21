@@ -15,8 +15,14 @@
 
     <sql id="stageFilterByJobCategories">
         <where>
+            stage_id != 0
+
+            <if test="showClosed == false">
+                AND (deadline >= CURDATE() OR deadline IS NULL)
+            </if>
+
             <if test="jobCategories != null and jobCategories.size() > 0">
-                job_category IN
+                AND job_category IN
                 <foreach collection="jobCategories" item="jobCategory" open="(" separator="," close=")">
                     #{jobCategory}
                 </foreach>
@@ -24,19 +30,30 @@
             <if test="keyword != null and keyword != ''">
       				AND (
        				title LIKE CONCAT('%', #{keyword}, '%')
+       				OR company_name LIKE CONCAT('%', #{keyword}, '%')
       				)
     		</if>
         </where>
     </sql>
 
     <sql id="stageOrderBy">
-        ORDER BY 
-            CASE 
-                WHEN deadline IS NULL THEN 0
-                WHEN deadline >= CURDATE() THEN 1
-                ELSE 2
-            END ASC,
-            deadline ASC
+        <choose>
+            <when test="sort == 'latest'">
+                ORDER BY stage_id DESC
+            </when>
+            <when test="sort == 'oldest'">
+                ORDER BY stage_id ASC
+            </when>
+            <otherwise>
+                <!-- Default: Deadline Approaching -->
+                ORDER BY 
+                CASE 
+                    WHEN deadline IS NULL THEN 1  <!-- Put No Deadline items at bottom -->
+                    ELSE 0
+                END ASC,
+                deadline ASC
+            </otherwise>
+        </choose>
     </sql>
 
     <select id="findAll" resultMap="StageResultMap">
@@ -48,6 +65,10 @@
             job_category,
             content
         FROM stage
+        WHERE stage_id != 0
+        <if test="showClosed == false">
+            AND (deadline >= CURDATE() OR deadline IS NULL)
+        </if>
         ORDER BY deadline ASC
     </select>
 
@@ -72,8 +93,12 @@
             job_category,
             content
         FROM stage
+        WHERE stage_id != 0
+        <if test="showClosed == false">
+            AND (deadline >= CURDATE() OR deadline IS NULL)
+        </if>
         <include refid="stageOrderBy"/>
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="findByJobCategoriesWithPaging" parameterType="map" resultMap="StageResultMap">
@@ -87,12 +112,16 @@
         FROM stage
         <include refid="stageFilterByJobCategories"/>
         <include refid="stageOrderBy"/>
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countAll" resultType="int">
         SELECT COUNT(*)
         FROM stage
+        WHERE stage_id != 0
+        <if test="showClosed == false">
+            AND (deadline >= CURDATE() OR deadline IS NULL)
+        </if>
     </select>
 
     <select id="countByJobCategories" parameterType="map" resultType="int">

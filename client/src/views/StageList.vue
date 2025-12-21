@@ -7,59 +7,63 @@
         <h1 class="pixel-text title">
           <span class="glitch" data-text="실전 모의면접">실전 모의면접</span>
         </h1>
+        <button class="pixel-button link-button home-toolbar-btn" @click="goHome">
+            <img :src="iconHome" class="btn-icon" /> 메인
+        </button>
       </div>
 
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-        <div class="filter-section">
-          <div class="filter-label pixel-text">직무 카테고리</div>
-          <div class="filter-chips">
-            <button 
-              class="filter-chip pixel-button"
-              :class="{ active: selectedJobCategories.length === 0 }"
-              @click="clearFilters"
-            >
-              전체
-            </button>
-            <button
-              v-for="option in jobCategoryOptions"
-              :key="option.value"
-              class="filter-chip pixel-button"
-              :class="{ active: selectedJobCategories.includes(option.value) }"
-              @click="toggleJobCategory(option.value)"
-            >
-              {{ option.label }}
-            </button>
+      <!-- Toolbar: Search -->
+      <div class="toolbar-section">
+            <div class="search-container glass-input-wrapper">
+              <input 
+                  v-model="searchKeyword" 
+                  @keyup.enter="handleSearch"
+                  type="text" 
+                  class="glass-input search-input" 
+                  placeholder="기업명, 직무 검색..."
+              >
+              <button class="search-btn" @click="handleSearch">🔍</button>
           </div>
-        </div>
+
+          <div class="sort-dropdown-wrapper">
+             <div class="checkbox-wrapper">
+                 <input type="checkbox" id="showClosed" v-model="showClosed" @change="fetchStages">
+                 <label for="showClosed" class="pixel-text checkbox-label">마감된 공고 포함</label>
+             </div>
+             <select v-model="sortOption" @change="handleSort" class="glass-input sort-select">
+                 <option value="deadline">마감임박순</option>
+                 <option value="latest">최신순</option>
+                 <option value="oldest">오래된순</option>
+             </select>
+          </div>
       </div>
 
-          <!-- Toolbar: Search, Sort, Write -->
-        <div class="board-toolbar glass-panel">
-            <button class="pixel-button link-button home-toolbar-btn" @click="goHome" style="padding: 12px 12px;">
-                    <img :src="iconHome" class="btn-icon" /> 메인
-            </button>
-            <div class="search-container">
-                <!-- <span class="search-icon">🔍</span> -->
-                 
-                <input 
-                    v-model="searchKeyword" 
-                    @keyup.enter="handleSearch"
-                    type="text" 
-                    class="glass-input search-input" 
-                    placeholder="검색어를 입력하세요..."
-                >
-                
-            </div>
-            <button class="pixel-button search-btn" @click="handleSearch">
-                   검색
-            </button>
-                
-        </div>
+      <!-- Category Tabs -->
+      <div class="category-tabs">
+        <button 
+          class="pixel-button tab-button"
+          :class="{ active: selectedJobCategories.length === 0 }"
+          @click="clearFilters"
+        >
+          전체
+        </button>
+        <button
+          v-for="option in jobCategoryOptions"
+          :key="option.value"
+          class="pixel-button tab-button"
+          :class="{ active: selectedJobCategories.includes(option.value) }"
+          @click="toggleJobCategory(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      </div>
 
       <!-- Pagination Info -->
       <div v-if="!isLoading && totalElements > 0" class="pagination-info pixel-text">
         총 {{ totalElements }}개 중 {{ (page * size) + 1 }}-{{ Math.min((page + 1) * size, totalElements) }}개 표시
+      </div>
+      <div v-else-if="isLoading" class="pagination-info">
+          <div class="skeleton skeleton-text" style="width: 200px; height: 16px; margin: 0 auto;"></div>
       </div>
 
       <div v-if="isLoading" class="stage-grid">
@@ -114,33 +118,32 @@
 
       <!-- Pagination Controls -->
       <div v-if="!isLoading && totalPages > 1" class="pagination-container">
-        <!-- 이전 -->
         <button
-          class="pagination-nav-btn"
+          class="pagination-nav-btn prev"
           :disabled="page === 0"
           @click="changePage(page - 1)"
         >
-        <
+        &lt;
         </button>
 
-        <!-- 1 2 3 4 5 -->
-        <button
-          v-for="p in getPageNumbers()"
-          :key="p"
-          class="page-number-btn page-button"
-          :class="{ active: page + 1 === p }"
-          @click="changePage(p - 1)"
-        >
-          {{ p }}
-        </button>
+        <div class="page-numbers">
+            <button
+            v-for="p in getPageNumbers()"
+            :key="p"
+            class="page-number-btn pixel-text"
+            :class="{ active: page + 1 === p }"
+            @click="changePage(p - 1)"
+            >
+            {{ p }}
+            </button>
+        </div>
 
-        <!-- 다음 -->
         <button
-          class="pagination-nav-btn"
+          class="pagination-nav-btn next"
           :disabled="page >= totalPages - 1"
           @click="changePage(page + 1)"
         >
-          >
+          &gt;
         </button>
       </div>
     </div>
@@ -188,7 +191,10 @@ const page = ref<number>(0)
 const size = ref<number>(12)
 const totalElements = ref<number>(0)
 const totalPages = ref<number>(0)
-const searchKeyword = ref<string>('') 
+
+const searchKeyword = ref<string>('')
+const sortOption = ref<string>('deadline') 
+const showClosed = ref<boolean>(false) 
 
 const stages = ref<Stage[]>([])
 const isLoading = ref(false)
@@ -219,11 +225,14 @@ function updateQuery() {
 }
 
 async function fetchStages() {
+  if (isLoading.value) return
   isLoading.value = true
   try {
     const params: Record<string, any> = {
       page: page.value,
-      size: size.value
+      size: size.value,
+      sort: sortOption.value,
+      showClosed: showClosed.value
     }
     
     if (selectedJobCategories.value.length > 0) {
@@ -276,6 +285,11 @@ function clearFilters() {
 }
 
 function handleSearch() {
+  page.value = 0
+  fetchStages()
+}
+
+function handleSort() {
   page.value = 0
   fetchStages()
 }
@@ -643,116 +657,167 @@ function isUrgent(dateString?: string) {
   50% { opacity: 0.5; }
 }
 
-/*Nav Bar*/
-
-.board-toolbar{
-  display:flex;
-  align-items:center;
-  gap:20px;
-  flex-wrap:nowrap;
+/* Toolbar & Search */
+.toolbar-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
-.search-container{
-  flex:1;
-  min-width:200px;
+.search-container {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    min-width: 250px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 2px solid #555;
+    transition: border-color 0.2s;
+    background: rgba(0,0,0,0.4);
 }
 
-.search-input{
-  width:100%;
+.search-container:focus-within {
+    border-color: #ffd43b;
+    background: rgba(0,0,0,0.6);
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-family: 'DungGeunMo', sans-serif;
+    font-size: 14px;
+    outline: none;
 }
 
 .search-btn {
     padding: 0 20px;
-    height: 46px;
-    min-width: auto;
-    font-size: 14px;
-    white-space: nowrap;
+    border: none;
+    background: #4a9eff;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'DungGeunMo', sans-serif;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.search-btn:hover {
+    background: #5bb0ff;
+}
+
+.sort-dropdown-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,0,0,0.4);
+    padding: 0 12px;
+    height: 44px;
+    border-radius: 4px;
+    border: 2px solid #555;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.checkbox-label {
+    font-size: 13px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+.sort-select {
+    padding: 10px 16px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.6);
+    border: 2px solid #555;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'DungGeunMo', sans-serif;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+    height: 44px;
+    outline: none;
+}
+.sort-select:focus {
+    border-color: #ffd43b;
+}
+
+/* Category Tabs */
+.category-tabs {
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.2);
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.tab-button {
+  font-size: 13px;
+  padding: 8px 16px;
+  min-width: 60px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #ccc;
+  box-shadow: none;
+  font-family: 'DungGeunMo', sans-serif;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+  border-color: rgba(255,255,255,0.5);
+  box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
+  transform: translateY(-2px);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Home Button */
 .home-toolbar-btn {
     min-width: auto;
-    padding: 12px 20px; /* Increased padding */
-    font-size: 14px; /* Adjusted size */
+    padding: 8px 16px;
+    font-size: 14px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255,255,255,0.2);
     display: flex;
     align-items: center;
     gap: 4px;
-    height: 46px; /* Explicit height to match inputs */
+    border-radius: 4px;
+}
+
+.home-toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-icon {
+    width: 16px;
+    height: 16px;
 }
 
 
-/* Filter Bar Styles */
-.filter-bar {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.filter-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.filter-label {
-  font-size: 14px;
-  color: #ffd43b;
-  font-weight: 700;
-}
-
-.filter-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-chip {
-  padding: 8px 16px;
-  font-size: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.5);
-  color: #ccc;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.filter-chip:hover {
-  border-color: #4a9eff;
-  transform: translateY(-2px);
-}
-
-.filter-chip.active {
-  background: rgba(74, 158, 255, 0.3);
-  border-color: #4a9eff;
-  color: #fff;
-}
-
-.filter-select {
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #fff;
-  font-size: 12px;
-  cursor: pointer;
-  max-width: 200px;
-}
-
-.filter-select:hover {
-  border-color: #4a9eff;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: #4a9eff;
-}
-
+/* Pagination */
 .pagination-info {
   margin-bottom: 20px;
   font-size: 12px;
@@ -765,39 +830,58 @@ function isUrgent(dateString?: string) {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    padding: 20px;
-    margin-top: 20px;
+    padding: 20px 0;
+    margin-top: 10px;
 }
 
 .pagination-nav-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
     display: flex;
-    justify-content: center;
     align-items: center;
-    font-size: 16px;
-}
-
-.pagination-nav-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    justify-content: center;
 }
 
 .pagination-nav-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.3;
     cursor: not-allowed;
 }
 
-.pagination-controls .pixel-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.page-numbers {
+    display: flex;
+    gap: 6px;
 }
+
+.page-number-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid transparent; 
+    background: transparent;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.page-number-btn.active {
+    background: #4a9eff;
+    color: #fff;
+    font-weight: bold;
+    border: 1px solid #7cbcf0;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+}
+
+.page-number-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
 
 .pagination-controls .pixel-button:disabled:hover {
   transform: none;

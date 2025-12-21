@@ -10,8 +10,7 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json; charset=utf-8',
-    'Accept': 'application/json; charset=utf-8',
-    'Accept-Charset': 'utf-8'
+    'Accept': 'application/json; charset=utf-8'
   },
   timeout: 80000, // 80초 타임아웃
   withCredentials: false, // CORS를 위해 false로 설정

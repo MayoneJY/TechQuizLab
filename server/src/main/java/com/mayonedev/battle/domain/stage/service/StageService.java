@@ -29,22 +29,30 @@ public class StageService {
     public stageDTO getStagesWithPaging(
             List<String> jobCategories,
             String keyword,
+            String sort,
+            boolean showClosed,
             int page,
-            int size
-    ) {
-        if (size <= 0) size = 12; // 방어 (원하면 제거 가능)
-        if (page < 0) page = 0;
+            int size) {
+        if (size <= 0)
+            size = 12; // 방어 (원하면 제거 가능)
+        if (page < 0)
+            page = 0;
 
         Map<String, Object> params = new HashMap<>();
         int offset = page * size;
         params.put("offset", offset);
-        params.put("size", size);
-        
+        params.put("limit", size); // Renamed from size to limit to avoid potential keyword conflicts
+        params.put("size", size); // Keep size for backward compatibility/stale XML
+
         String kw = (keyword == null) ? null : keyword.trim();
-        if (kw != null && kw.isEmpty()) kw = null;
+        if (kw != null && kw.isEmpty())
+            kw = null;
         params.put("keyword", kw);
-        
-        
+        params.put("sort", sort);
+        params.put("showClosed", showClosed);
+
+        log.info("Fetching stages with params: page={}, size={}, offset={}, limit={}, keyword={}, showClosed={}",
+                page, size, offset, size, kw, showClosed);
 
         List<Stage> content;
         long totalElements;
@@ -52,18 +60,19 @@ public class StageService {
         if (jobCategories != null && !jobCategories.isEmpty()) {
             params.put("jobCategories", jobCategories);
         }
-        
+
         boolean hasJobFilter = jobCategories != null && !jobCategories.isEmpty();
         boolean hasKeyword = kw != null;
-        
+
         if (hasJobFilter || hasKeyword) {
+            log.info("Executing findByJobCategoriesWithPaging with params: {}", params);
             content = stageDao.findByJobCategoriesWithPaging(params);
             totalElements = stageDao.countByJobCategories(params);
         } else {
+            log.info("Executing findAllWithPaging with params: {}", params);
             content = stageDao.findAllWithPaging(params);
             totalElements = stageDao.countAll();
         }
-
 
         int totalPages = (int) Math.ceil((double) totalElements / size);
 
@@ -76,4 +85,5 @@ public class StageService {
                 .totalPages(totalPages)
                 .jobCategories(jobCategories != null ? jobCategories : List.of())
                 .build();
-    }}
+    }
+}
