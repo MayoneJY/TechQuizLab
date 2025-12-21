@@ -57,7 +57,8 @@ public class AiQuestionService {
                 - 기술 스택, 문제 해결 과정, 구체적인 프로젝트 경험을 묻는 질문 위주로 생성합니다.
 
                 태그(tags) 생성 규칙
-                - tags는 문자열 배열입니다.
+                - tags는 문자열 하나입니다.
+                - 형식: "대분류,키워드1,키워드2"
                 - tags의 첫 번째 값은 반드시 아래 6개 중 하나의 "대분류"이어야 합니다.
                   TECH, PROBLEM_SOLVING, COMMUNICATION, COLLABORATION, GROWTH, BUSINESS_IMPACT
                 - 두 번째 이후 태그는 질문과 직접적으로 관련된 기술/개념 키워드입니다.
@@ -69,13 +70,14 @@ public class AiQuestionService {
                 - tags 배열의 순서는 반드시 다음을 따릅니다.
                   1) 대분류 (1개)
                   2) 기술/개념 키워드들
+                  
 
                 출력 JSON 스키마 (절대 변경 불가)
                 [
                   {
                     "question_text": "질문 내용 (구체적이고 명확하게)",
                     "difficulty": "EASY",
-                    "tags": ["TECH", "JWT", "HTTP"]
+                    "tags": "TECH, JWT, HTTP"
                   }
                 ]
 
