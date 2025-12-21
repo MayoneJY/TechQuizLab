@@ -361,7 +361,15 @@ export const stageApi = {
     api.get('/api/stages'),
 
   getStageById: (stageId: number) =>
-    api.get(`/api/stages/${stageId}`)
+    api.get(`/api/stages/${stageId}`),
+
+  getStagesWithPaging: (params?: {
+    jobCategories?: string
+    page?: number
+    size?: number
+    sort?: string
+  }) =>
+    api.get('/api/stages', { params })
 }
 
 export default api
