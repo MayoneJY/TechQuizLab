@@ -173,7 +173,7 @@ public class UserServiceImpl implements UserService {
         checkAndResetLives(user);
 
         if (user.getRemainingLives() <= 0) {
-            throw new RuntimeException("오늘의 도전 횟수를 모두 소진했습니다.");
+            throw new RuntimeException("오늘의 도전 횟수를 모두 소진했습니다. [LIFE_EXHAUSTED]");
         }
 
         user.setRemainingLives(user.getRemainingLives() - 1);

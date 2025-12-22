@@ -402,7 +402,14 @@ async function createBattleFromQuery() {
                 if (await modalStore.openConfirm('포트폴리오가 필요합니다. 지금 생성하시겠습니까?')) {
                     router.push('/portfolio')
                 }
-            } else {
+            } 
+            // Handle Life Exhausted Error
+            else if (e.response?.data?.message?.includes('[LIFE_EXHAUSTED]') || e.message?.includes('[LIFE_EXHAUSTED]')) {
+                 if (await modalStore.openConfirm('오늘의 도전 횟수를 모두 소진했습니다.\n충전 페이지로 이동하시겠습니까?')) {
+                     router.push('/charge')
+                 }
+            }
+            else {
                 await modalStore.openAlert(e.response?.data?.message || '전투 생성에 실패했습니다.')
             }
         } finally {

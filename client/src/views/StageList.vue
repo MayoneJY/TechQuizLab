@@ -345,6 +345,13 @@ async function startChallenge(stage: Stage) {
   }
 
   // Redirect to My Battles with creation intent
+  if ((authStore.user?.remainingLives ?? 0) <= 0) {
+    if (await modalStore.openConfirm('오늘의 도전 횟수를 모두 소진했습니다.\n충전 페이지로 이동하시겠습니까?')) {
+       router.push('/charge')
+    }
+    return
+  }
+  
   router.push({
     path: '/my-battles',
     query: {
