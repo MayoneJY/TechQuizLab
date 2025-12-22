@@ -32,4 +32,7 @@ public interface BattleDao {
         java.util.List<String> findBattleCategoriesByUserId(@Param("userId") Long userId);
 
         void delete(@Param("userId") Long userId, @Param("battleId") Long battleId);
+
+        void relinkPortfolio(@Param("userId") Long userId, @Param("oldPfId") Long oldPfId,
+                        @Param("newPfId") Long newPfId);
 }

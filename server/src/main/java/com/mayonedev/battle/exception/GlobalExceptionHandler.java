@@ -11,21 +11,21 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException e) {
         log.error("Runtime Exception occurred: ", e);
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
+                .body(ApiResponse.error(e.getClass().getName() + ": " + e.getMessage()));
     }
-    
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Object>> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("Illegal Argument Exception occurred: ", e);
         return ResponseEntity.badRequest()
                 .body(ApiResponse.error("잘못된 요청입니다: " + e.getMessage()));
     }
-    
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
         log.error("Unexpected Exception occurred: ", e);

@@ -101,4 +101,10 @@
         ORDER BY s.job_category
     </select>
 
+    <update id="relinkPortfolio">
+        UPDATE battle
+        SET pf_id = #{newPfId}
+        WHERE user_id = #{userId} AND pf_id = #{oldPfId}
+    </update>
+
 </mapper>
