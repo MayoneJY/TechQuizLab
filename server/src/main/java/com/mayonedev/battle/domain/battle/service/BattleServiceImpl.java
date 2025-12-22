@@ -169,6 +169,8 @@ public class BattleServiceImpl implements BattleService {
                 d.setKeywordTags(p.getKeywordTags());
                 d.setUserAnswer(p.getUserAnswer());
                 d.setAiFeedback(p.getAiFeedback());
+                d.setAiFeedbackGood(p.getAiFeedbackGood());
+                d.setAiFeedbackBad(p.getAiFeedbackBad());
                 d.setDamage(p.getDamage());
                 d.setCreatedAt(p.getCreatedAt());
                 return d;
@@ -193,7 +195,8 @@ public class BattleServiceImpl implements BattleService {
             // We should find the first one where userAnswer is null.
             for (com.mayonedev.battle.domain.battle.entity.BookmarkPractice p : practices) {
                 if (p.getUserAnswer() == null) {
-                    p.setUserAnswer(answer);
+                    String finalAnswer = (answer == null || answer.trim().isEmpty()) ? "모르겠음" : answer.trim();
+                    p.setUserAnswer(finalAnswer);
                     bookmarkPracticeDao.updateResult(p);
                     break;
                 }
@@ -205,7 +208,8 @@ public class BattleServiceImpl implements BattleService {
         List<BattleDetail> details = battleDetailDao.findByBattleId(userId, battleId);
         for (BattleDetail detail : details) {
             if (detail.getUserAnswer() == null) {
-                detail.setUserAnswer(answer);
+            	String finalAnswer = (answer == null || answer.trim().isEmpty()) ? "모르겠음" : answer.trim();
+                detail.setUserAnswer(finalAnswer);
                 battleDetailDao.updateUserAnswer(detail);
                 break;
             }
@@ -238,21 +242,48 @@ public class BattleServiceImpl implements BattleService {
                             	        ? sanitizeScoreManipulationText(p.getUserAnswer())
                             	        : p.getUserAnswer();
                             	
-                            	
+                            	Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
+                                		cleanedAnswer);
+                     
                             	//무의미한 답변이면 0점 확정
                             	if (isGibberishOrTooShort(cleanedAnswer)) {
                             	    p.setDamage(0);
-                            	    p.setAiFeedback("답변이 너무 짧거나 의미 없는 문자로 구성되어 0점 처리되었습니다. 핵심 개념/경험/근거를 포함해 작성해 주세요.");
+                     
+                                    String all = "답변이 너무 짧거나 의미 없는 문자로 구성되어 0점 처리되었습니다.";
+                                    String bad = (String) ((Map) evaluation.get("feedback")).get("bad");
+                                    // bad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
+                                    if (bad != null && bad.startsWith("개선할 점:")) {
+                                        bad = bad.substring("개선할 점:".length()).trim();
+                                    }
+                                    p.setDamage(0);
+                                    p.setAiFeedbackGood("없음");
+                                    p.setAiFeedbackBad(bad);
+                                    p.setAiFeedback(all + "\n" + "좋았던 점: 없음" + "\n" + "개선할 점: " + bad);
+                                    
                             	}else {
                             	// 아닌 경우 정상적으로 점수
-                                    Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
-                                    		cleanedAnswer);
+                                    
                                     int score = clampScore1000(evaluation.get("score"));
-                                    String feedback = (String) evaluation.get("feedback");
+                                    Map fb = (Map) evaluation.get("feedback");
+
+                                    String feedbackGood = (fb == null || fb.get("good") == null) ? "없음" : fb.get("good").toString();
+                                    String feedbackBad  = (fb == null || fb.get("bad")  == null) ? "없음" : fb.get("bad").toString();
+
+                                    if(feedbackGood.isBlank()) feedbackGood = "없음" + "\n";
+                                    if(feedbackBad.isBlank()) feedbackBad = "없음";
+                                    
+                                    // feedbackBad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
+                                    if (feedbackBad != null && feedbackBad.startsWith("개선할 점:")) {
+                                        feedbackBad = feedbackBad.substring("개선할 점:".length()).trim();
+                                    }
+
+                                    String feedbackAll = "좋았던 점: " + feedbackGood + "\n" + "개선할 점: " + feedbackBad;
 
                                     p.setDamage(score);
-                                    p.setAiFeedback(feedback);
-                            		
+                                    p.setAiFeedback(feedbackAll);
+                                    p.setAiFeedbackGood(feedbackGood);
+                                    p.setAiFeedbackBad(feedbackBad);
+                                    
                             	}
                             	
                             } catch (Exception e) {
@@ -289,9 +320,12 @@ public class BattleServiceImpl implements BattleService {
                 d.setKeywordTags(p.getKeywordTags());
                 d.setUserAnswer(p.getUserAnswer());
                 d.setAiFeedback(p.getAiFeedback());
+                d.setAiFeedbackGood(p.getAiFeedbackGood());
+                d.setAiFeedbackBad(p.getAiFeedbackBad());
                 d.setDamage(p.getDamage());
                 d.setCreatedAt(p.getCreatedAt());
                 return d;
+                
             }).collect(java.util.stream.Collectors.toList());
 
             return Map.of(
@@ -323,10 +357,26 @@ public class BattleServiceImpl implements BattleService {
                             Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(detail.getQuestionText(),
                             		cleanedAnswer);
                             int score = clampScore1000(evaluation.get("score"));
-                            String feedback = (String) evaluation.get("feedback");
+                            Map fb = (Map) evaluation.get("feedback");
+
+                            String feedbackGood = (fb == null || fb.get("good") == null) ? "없음" : fb.get("good").toString();
+                            String feedbackBad  = (fb == null || fb.get("bad")  == null) ? "없음" : fb.get("bad").toString();
+                            
+                            if(feedbackGood.isBlank()) feedbackGood = "없음" + "\n";
+                            if(feedbackBad.isBlank()) feedbackBad = "없음";
+                            
+                            // feedbackBad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
+                            if (feedbackBad != null && feedbackBad.startsWith("개선할 점:")) {
+                                feedbackBad = feedbackBad.substring("개선할 점:".length()).trim();
+                            }
+                            
+                            String feedbackAll = "좋았던 점: " + feedbackGood + "\n" + "개선할 점: " + feedbackBad;
 
                             detail.setDamage(score);
-                            detail.setAiFeedback(feedback);
+                            detail.setAiFeedback(feedbackAll);
+                            detail.setAiFeedbackGood(feedbackGood);
+                            detail.setAiFeedbackBad(feedbackBad);
+                            
                         } catch (Exception e) {
                             e.printStackTrace();
                             // Fallback or log error

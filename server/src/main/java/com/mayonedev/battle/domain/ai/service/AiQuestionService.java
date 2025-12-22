@@ -141,8 +141,11 @@ public class AiQuestionService {
         		출력 JSON 스키마 (절대 변경 불가)
         		{
         		"score": 210,
-        		"feedback": "피드백 문장"
+        		 feedback": 
+        			{"good" : "좋았던점 내용",
+        			 "bad" : "개선할 점 내용" }
         		}
+}
 
         		피드백 작성 가이드
         		- 정상적인 답변의 경우:
