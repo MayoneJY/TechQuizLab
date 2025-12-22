@@ -16,6 +16,7 @@ public class Battle {
     private Integer totalDamage;
     private String status;
     private LocalDateTime createdAt;
+    private String jobCategory;
 
     // Display fields
     private String stageTitle;
