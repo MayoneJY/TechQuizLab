@@ -80,7 +80,7 @@
                 
                 <p class="grading-question-text">{{ detail.questionText }}</p>
                 
-                <div class="grading-body">
+                                <div class="grading-body">
                     <div class="answer-box">
                         <span class="label">나의 답변:</span>
                         <p class="user-answer">{{ detail.userAnswer || '(답변 없음)' }}</p>
@@ -88,7 +88,16 @@
                     
                     <div class="feedback-box">
                         <span class="label">AI 피드백:</span>
-                        <p class="ai-feedback">{{ detail.aiFeedback }}</p>
+                        <div class="feedback-sections">
+                            <div class="feedback-section feedback-good">
+                                <div class="feedback-title">좋았던 점</div>
+                                <div class="feedback-content">{{ detail.aiFeedbackGood || '(없음)' }}</div>
+                            </div>
+                            <div class="feedback-section feedback-bad">
+                                <div class="feedback-title">개선할 점</div>
+                                <div class="feedback-content">{{ detail.aiFeedbackBad || '(없음)' }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -380,10 +389,71 @@ onMounted(async () => {
 }
 
 /* Updated Box Styles */
-.answer-box, .feedback-box {
-    background: transparent;
-    padding: 0;
-    border: none;
+.answer-box {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 16px;
+}
+
+.feedback-box {
+    background: rgba(74, 158, 255, 0.1);
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 3px solid #4a9eff;
+}
+
+.feedback-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.feedback-section {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid;
+}
+
+.feedback-good {
+    border-left-color: #51cf66;
+}
+
+.feedback-bad {
+    border-left-color: #ff6b6b;
+}
+
+.feedback-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #aaa;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.feedback-content {
+    color: #fff;
+    line-height: 1.6;
+    white-space: pre-line;
+    word-wrap: break-word;
+}
+
+.user-answer {
+    color: #ccc;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-line;
+    word-wrap: break-word;
+}
+
+.ai-feedback {
+    color: #fff;
+    line-height: 1.5;
+    margin: 0;
 }
 
 .label {
