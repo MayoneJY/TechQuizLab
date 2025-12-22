@@ -36,6 +36,8 @@ export interface BattleDetail {
     difficulty?: string
     userAnswer?: string
     aiFeedback?: string
+    aiFeedbackGood?: string
+    aiFeedbackBad?: string
     damage?: number
     createdAt?: string
 }

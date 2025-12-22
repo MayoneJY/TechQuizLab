@@ -14,6 +14,8 @@ public class BookmarkPractice {
     private Long practiceId;
     private String userAnswer;
     private String aiFeedback;
+    private String aiFeedbackGood;
+    private String aiFeedbackBad;
     private Integer damage;
     private LocalDateTime createdAt;
 

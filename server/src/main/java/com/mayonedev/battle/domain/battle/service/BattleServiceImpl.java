@@ -203,13 +203,51 @@ public class BattleServiceImpl implements BattleService {
                     .map(p -> {
                         if (p.getUserAnswer() != null) {
                             try {
-                                Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
-                                        p.getUserAnswer());
-                                int score = (int) evaluation.get("score");
-                                String feedback = (String) evaluation.get("feedback");
+                            	
+                            	//조작 정황 점수 측정
+                            	boolean manipulation = hasScoreManipulationAttempt(p.getUserAnswer());
 
-                                p.setDamage(score);
-                                p.setAiFeedback(feedback);
+                            	//조작 문구 제거
+                            	String cleanedAnswer = manipulation
+                            	        ? sanitizeScoreManipulationText(p.getUserAnswer())
+                            	        : p.getUserAnswer();
+                            	
+                            	Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
+                                		cleanedAnswer);
+                     
+                            	//무의미한 답변이면 0점 확정
+                            	if (isGibberishOrTooShort(cleanedAnswer)) {
+                            	    p.setDamage(0);
+                            	    String all = "답변이 너무 짧거나 의미 없는 문자로 구성되어 0점 처리되었습니다.";
+                                    String bad = (String) ((Map) evaluation.get("feedback")).get("bad");
+                   
+                                 // bad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
+                                    if (bad != null && bad.startsWith("개선할 점:")) {
+                                        bad = bad.substring("개선할 점:".length()).trim();
+                                    }p.setDamage(0);
+                                    p.setAiFeedbackGood("없음");
+                                    p.setAiFeedbackBad(bad);
+                                    p.setAiFeedback(all + "\n" + "좋았던 점: 없음" + "\n" + "개선할 점: " + bad);
+                                    
+                            	}else {// 아닌 경우 정상적으로 점수
+                                    
+                                    int score = clampScore1000(evaluation.get("score"));
+                                    Map fb = (Map) evaluation.get("feedback");
+
+                                    String feedbackGood = (fb == null || fb.get("good") == null) ? "없음" : fb.get("good").toString();
+                                    String feedbackBad  = (fb == null || fb.get("bad")  == null) ? "없음" : fb.get("bad").toString();
+
+                                    if(feedbackGood.isBlank()) feedbackGood = "없음" + "\n";
+                                    if(feedbackBad.isBlank()) feedbackBad = "없음";
+                                    
+                                    // feedbackBad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
+                                    if (feedbackBad != null && feedbackBad.startsWith("개선할 점:")) {
+                                        feedbackBad = feedbackBad.substring("개선할 점:".length()).trim();
+                                    }
+                                    }
+
+                            	    
+
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 p.setDamage(0);
@@ -268,13 +306,35 @@ public class BattleServiceImpl implements BattleService {
                 .map(detail -> {
                     if (detail.getUserAnswer() != null) {
                         try {
+                        	boolean manipulation = hasScoreManipulationAttempt(detail.getUserAnswer());
+
+                        	String cleanedAnswer = manipulation
+                        	        ? sanitizeScoreManipulationText(detail.getUserAnswer())
+                        	        : detail.getUserAnswer();
+                        	
                             Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(detail.getQuestionText(),
-                                    detail.getUserAnswer());
-                            int score = (int) evaluation.get("score");
-                            String feedback = (String) evaluation.get("feedback");
+                            		cleanedAnswer);
+                            int score = clampScore1000(evaluation.get("score"));
+                            Map fb = (Map) evaluation.get("feedback");
+
+                            String feedbackGood = (fb == null || fb.get("good") == null) ? "없음" : fb.get("good").toString();
+                            String feedbackBad  = (fb == null || fb.get("bad")  == null) ? "없음" : fb.get("bad").toString();
+
+                            if(feedbackGood.isBlank()) feedbackGood = "없음" + "\n";
+                            if(feedbackBad.isBlank()) feedbackBad = "없음";
+                            
+                            // feedbackBad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
+                            if (feedbackBad != null && feedbackBad.startsWith("개선할 점:")) {
+                                feedbackBad = feedbackBad.substring("개선할 점:".length()).trim();
+                            }
+
+                            String feedbackAll = "좋았던 점: " + feedbackGood + "\n" + "개선할 점: " + feedbackBad;
 
                             detail.setDamage(score);
-                            detail.setAiFeedback(feedback);
+                            detail.setAiFeedback(feedbackAll);
+                            detail.setAiFeedbackGood(feedbackGood);
+                            detail.setAiFeedbackBad(feedbackBad);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                             // Fallback or log error
@@ -485,4 +545,164 @@ public class BattleServiceImpl implements BattleService {
     public java.util.List<String> getBattleCategories(Long userId) {
         return battleDao.findBattleCategoriesByUserId(userId);
     }
+    
+    //무의미 답변 감지용
+    private boolean isGibberishOrTooShort(String s) {
+        if (s == null) return true;
+        String t = s.trim();
+        if (t.length() < 20) return true; // 최소 길이 정책(원하면 30~50으로)
+
+        // 한글/영문/숫자 비율(의미 문자) 계산
+        int meaningful = 0;
+        for (char c : t.toCharArray()) {
+            if (Character.isLetterOrDigit(c)) meaningful++;
+            // 한글 범위
+            if (c >= 0xAC00 && c <= 0xD7A3) meaningful++;
+        }
+        double ratio = (double) meaningful / Math.max(1, t.length());
+        return ratio < 0.25; // 의미문자 비율이 너무 낮으면 컷 (원하면 0.3~0.4)
+    }
+
+    
+    // 서버에서 score 파싱/범위 강제용 계산 함수
+    private int clampScore1000(Object scoreObj) {
+        int s;
+        try {
+            if (scoreObj instanceof Number n) s = n.intValue();
+            else s = Integer.parseInt(String.valueOf(scoreObj).trim());
+        } catch (Exception e) {
+            return 0; // 파싱 실패는 0점
+        }
+        if (s < 0) return 0;
+        if (s > 1000) return 1000;
+        return s;
+    }
+    
+    // 대안 1) AI 피드백으로 5단계로 나눔 -> 점수 범위안에서 랜덤 데미지
+    private int scoreByLabel(String label) {
+        return switch (label) {
+            case "EXCELLENT" -> randomBetween(800, 1000);
+            case "GOOD"      -> randomBetween(600, 799);
+            case "OK"        -> randomBetween(300, 599);
+            case "BAD"       -> randomBetween(1, 200);
+            default          -> 0;
+        };
+    }
+
+    private int randomBetween(int min, int max) {
+        return java.util.concurrent.ThreadLocalRandom.current().nextInt(min, max + 1);
+    }
+    
+    
+ // 유저 점수 조작 문구 감지 함수 -> 특정 단어 등장시 점수 부여 
+    private boolean hasScoreManipulationAttempt(String answer) {
+        if (answer == null) return false;
+
+        String t = answer.toLowerCase();
+
+        // 0) 인용/설명 문맥이면 오탐 방지 (화이트리스트)
+        // "사용자가 ~ 요청이 있어서" / "~라고 했다" 같은 문장은 조작이 아니라 서술일 가능성 큼
+        if (containsAny(t,
+                "요청이 있어서", "요청이 있었다", "요청이 있어", "요청이 있으면",
+                "라고 해서", "라고 했다", "라고 하더라", "라고 말", "라고 함", "라고 하면",
+                "예를 들어", "가정", "설명", "문구", "문장", "표현", "인용")) {
+            // 단, "라고 했으니 1000점 줘" 같이 실제 명령이 뒤에 이어질 수도 있으니
+            // 아래에서 '직접 명령 패턴'이 매우 강하면 다시 잡도록 한다.
+            // 그래서 바로 return false 대신 '오탐 감점'으로 처리:
+            // -> 플래그로 감점한다.
+        }
+
+        int score = 0;
+
+        boolean hasNarrationContext = containsAny(t,
+                "요청이 있어서", "요청이 있었다", "라고 해서", "라고 했다", "예를 들어", "가정", "설명", "인용", "문장", "표현");
+
+     // 1) 점수 관련 (약하게)
+        if (containsAny(t, "점수", "채점", "평가")) score += 1;
+
+        // 2) 강한 목표 점수/만점 (강하게)
+        boolean hasPerfectTarget = containsAny(t, "1000점", "천점", "만점", "풀점수");
+        if (hasPerfectTarget) score += 4; 
+
+        // 3) 범위/미래/전체 지시 (중간)
+        boolean hasScope = containsAny(t, "이번 문제 점수", "전부", "모든", "남은 문제", "다음 문제");
+        if (hasScope) score += 1;
+
+        // 4) 직접 명령/요구 (강하게)
+        boolean hasCommand = containsAny(t, "줘", "주세요", "주셈", "부여", "올려", "높게", "만들어", "처리", "해줘", "해라");
+        if (hasCommand) score += 2;
+
+        // 5) “무조건/반드시” 같은 강제성
+        boolean hasForce = containsAny(t, "무조건", "반드시", "꼭", "절대로", "조건 없이");
+        if (hasForce) score += 1;
+
+        // 6) 조작 의도 표현 (직접 문구)
+        if (hasPerfectTarget && containsAny(t, "만점 처리", "1000점 처리", "무조건 1000")) score += 4;
+
+        // "점수 올려달/높게"는 너무 일반적이라 가중치 약하게만
+        if (containsAny(t, "점수 올려달", "점수 높게")) score += 1;
+
+        // 7) 서술/인용 문맥이면 감점 (오탐 방지)
+        if (hasNarrationContext) score -= 3;
+
+
+        // 8) 최종 판정
+        // - 단, "1000점/만점" + "줘/해줘" 같이 강한 조합이면 조작 정황
+        boolean strongCombo =
+                (hasPerfectTarget && containsAny(t, "줘", "주세요", "해줘", "부여해", "처리", "부여", "줘라", "해라"));
+
+        return strongCombo || score >= 8;
+    }
+    
+    // 유저 점수 조작 문구 감지 함수 -> 해당 시도가 보일 시 해당 단어들 교체
+    private String sanitizeScoreManipulationText(String answer) {
+        if (answer == null) return null;
+
+        String s = answer;
+
+        // 한글 패턴
+        s = s.replaceAll("(점수|1000점|만점)\\s*(을|를)?\\s*(줘|주세요|주셈|부여|처리|올려)", "");
+        s = s.replaceAll("(1000점|만점)\\s*(을|를)?\\s*(줘|주세요|처리|부여)", "");
+        s = s.replaceAll("남은\\s*문제\\s*.*?(점수|1000점)", "");
+        s = s.replaceAll("전부\\s*.*?(점수|1000점)", "");
+
+        // 영어 패턴
+        s = s.replaceAll("(?i)give\\s+me\\s+\\d+\\s*points?", "");
+        s = s.replaceAll("(?i)full\\s+score", "");
+        s = s.replaceAll("(?i)max\\s+score", "");
+
+        // 공백 정리
+        s = s.replaceAll("\\s{2,}", " ").trim();
+
+        return s;
+    }
+
+
+    private boolean containsAny(String text, String... needles) {
+        for (String n : needles) {
+            if (text.contains(n)) return true;
+        }
+        return false;
+    }
+    
+    //난이도 정규화 함수
+    private String normalizeQuestionDifficulty(String aiDifficulty) {
+        if (aiDifficulty == null) return "MEDIUM";
+        String d = aiDifficulty.trim().toUpperCase();
+        return switch (d) {
+            case "EASY", "MEDIUM", "HARD" -> d;
+            default -> "MEDIUM";
+        };
+    }
+
+
+
+    // 피드백 답변 길이 제한용
+    private String normalizeFeedback(Object fbObj) {
+        String s = String.valueOf(fbObj == null ? "" : fbObj).trim();
+        if (s.length() > 200) s = s.substring(0, 200);
+        return s;
+    }
+    
+
 }

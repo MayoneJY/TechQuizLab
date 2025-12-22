@@ -13,6 +13,8 @@
         <result property="difficulty" column="difficulty"/>
         <result property="userAnswer" column="user_answer"/>
         <result property="aiFeedback" column="ai_feedback"/>
+        <result property="aiFeedbackGood" column="ai_feedback_good"/>
+        <result property="aiFeedbackBad" column="ai_feedback_bad"/>
         <result property="damage" column="damage"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
@@ -20,11 +22,11 @@
     <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BattleDetail">
         INSERT INTO battle_detail (
             user_id, battle_id, detail_id, question_text, keyword_tags, 
-            difficulty, user_answer, ai_feedback, damage, created_at
+            difficulty, user_answer, ai_feedback,ai_feedback_good,ai_feedback_bad, damage, created_at
         )
         VALUES (
             #{userId}, #{battleId}, #{detailId}, #{questionText}, #{keywordTags},
-            #{difficulty}, #{userAnswer}, #{aiFeedback}, #{damage}, #{createdAt}
+            #{difficulty}, #{userAnswer}, #{aiFeedback},#{aiFeedbackGood},#{aiFeedbackBad}, #{damage}, #{createdAt}
         )
     </insert>
 
@@ -43,7 +45,7 @@
 
     <update id="updateGrading" parameterType="com.mayonedev.battle.domain.battle.entity.BattleDetail">
         UPDATE battle_detail
-        SET damage = #{damage}, ai_feedback = #{aiFeedback}
+        SET damage = #{damage}, ai_feedback = #{aiFeedback}, ai_feedback_good = #{aiFeedbackGood}, ai_feedback_bad = #{aiFeedbackBad}
         WHERE user_id = #{userId} AND battle_id = #{battleId} AND detail_id = #{detailId}
     </update>
 
