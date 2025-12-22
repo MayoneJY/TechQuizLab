@@ -14,6 +14,7 @@ import java.util.List;
 public class PortfolioServiceImpl implements PortfolioService {
 
     private final PortfolioDao portfolioDao;
+    private final com.mayonedev.battle.domain.battle.dao.BattleDao battleDao;
 
     @Override
     public List<Portfolio> getPortfoliosByUserId(Long userId) {
@@ -51,6 +52,23 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     @Transactional
     public void deletePortfolio(Long userId, Long pfId) {
+        // 1. Ensure 'Trash' portfolio (ID 0) exists to hold references
+        long trashPfId = 0L;
+        Portfolio trash = portfolioDao.findByUserAndPfId(userId, trashPfId);
+        if (trash == null) {
+            trash = new Portfolio();
+            trash.setUserId(userId);
+            trash.setPfId(trashPfId);
+            trash.setTitle("Deleted Portfolio");
+            trash.setContent("");
+            trash.setCreatedAt(LocalDateTime.now());
+            portfolioDao.insert(trash);
+        }
+
+        // 2. Relink battles from the portfolio-to-be-deleted to the Trash portfolio
+        battleDao.relinkPortfolio(userId, pfId, trashPfId);
+
+        // 3. Delete the actual portfolio
         portfolioDao.delete(userId, pfId);
     }
 }

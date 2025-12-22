@@ -101,7 +101,7 @@ public class TokenProvider {
      */
     public static ValidToken isValidToken(String token) {
         try {
-            // Claims claims = getTokenToClaims(token);
+            Claims claims = getTokenToClaims(token);
             return ValidToken.builder().isValid(true).errorName(null).build();
         } catch (ExpiredJwtException e) {
             return ValidToken.builder().isValid(false).errorName("TOKEN_EXPIRED").build();

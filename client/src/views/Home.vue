@@ -415,11 +415,12 @@ async function handleLogout() {
 } 
 function goToStages() { 
   if ((authStore.user?.remainingLives ?? 0) <= 0) {
-    // Alert is synchronous, modal is async but we just return here anyway. 
-    // Ideally we should await it if we wanted to block code, but here we just show and return.
-    // However, best practice is to await to ensure it opens before navigation logic (though here it returns).
-    // Marking async to be safe.
-    modalStore.openAlert('오늘의 도전 횟수를 모두 소진했습니다. 내일 다시 도전해주세요!');
+    // Upsell flow
+    modalStore.openConfirm('오늘의 도전 횟수를 모두 소진했습니다.\n충전 페이지로 이동하시겠습니까?').then(confirmed => {
+      if (confirmed) {
+        router.push('/charge');
+      }
+    });
     return;
   }
   router.push('/stages');

@@ -56,4 +56,18 @@
         DELETE FROM battle WHERE user_id = #{userId} AND battle_id = #{battleId}
     </delete>
 
+    <select id="findBattleCategoriesByUserId" resultType="string">
+        SELECT DISTINCT s.job_category
+        FROM battle b
+        JOIN stage s ON b.stage_id = s.stage_id
+        WHERE b.user_id = #{userId}
+        ORDER BY s.job_category
+    </select>
+
+    <update id="relinkPortfolio">
+        UPDATE battle
+        SET pf_id = #{newPfId}
+        WHERE user_id = #{userId} AND pf_id = #{oldPfId}
+    </update>
+
 </mapper>

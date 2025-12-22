@@ -339,24 +339,23 @@ async function startChallenge(stageId: number) {
     return
   }
 
-  isCreatingBattle.value = true
-  try {
-    // 배틀 생성 요청
-    const response = await battleApi.createBattle({
-      stageId: stageId,
-      userId: authStore.user.userId
-    })
-    
-    // 배틀 ID로 문제 로딩
-    const battleId = response.data.battleId
-    
-    // 성공 시 게임 화면으로 이동 (Query Param으로 battleId 전달)
-    router.push(`/game?battleId=${battleId}`)
-  } catch (error: any) {
-    console.error('Failed to create battle:', error)
-    await modalStore.openAlert('배틀 생성에 실패했습니다.')
-    isCreatingBattle.value = false // Reset loading state on error
+  // Redirect to My Battles with creation intent
+  if ((authStore.user?.remainingLives ?? 0) <= 0) {
+    if (await modalStore.openConfirm('오늘의 도전 횟수를 모두 소진했습니다.\n충전 페이지로 이동하시겠습니까?')) {
+       router.push('/charge')
+    }
+    return
   }
+  
+  router.push({
+    path: '/my-battles',
+    query: {
+        createStageId: stage.stageId,
+        company: stage.companyName,
+        title: stage.title,
+        category: stage.jobCategory
+    }
+  })
 }
 
 function goHome() {

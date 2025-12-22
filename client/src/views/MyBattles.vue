@@ -54,10 +54,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { battleApi } from '../services/api'
+import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
+import { useBattleGlobalStore } from '../stores/battleGlobal'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const modalStore = useModalStore()
+const battleGlobalStore = useBattleGlobalStore()
+
 const loading = ref(true)
 const battles = ref<any[]>([])
 
@@ -74,15 +82,218 @@ function getRankClass(score: number) {
   return `rank-${rank}`
 }
 
-onMounted(async () => {
-  try {
-    const res = await battleApi.getMyBattles()
-    battles.value = res.data
-  } catch (e) {
-    console.error(e)
-  } finally {
-    loading.value = false
+async function fetchBattles() {
+    loading.value = true;
+    try {
+        const res = await battleApi.getMyBattles({
+            category: selectedCategory.value === 'all' ? undefined : selectedCategory.value,
+            search: searchKeyword.value,
+            sort: sortOption.value,
+            page: currentPage.value,
+            size: pageSize
+        })
+        // Assuming response structure from pagination implementation
+        if (res.data && res.data.content) {
+            battles.value = res.data.content;
+            totalPages.value = res.data.totalPages;
+            currentPage.value = res.data.currentPage;
+        } else {
+            // Fallback if API hasn't updated yet or structure mismatch
+           battles.value = Array.isArray(res.data) ? res.data : [];
+        }
+
+    } catch (e) {
+        console.error(e)
+    } finally {
+        loading.value = false
+        syncPendingBattles()
+    }
+}
+
+function syncPendingBattles() {
+    // Get pending list from global store
+    const pendingList = battleGlobalStore.pendingBattles
+
+    pendingList.forEach(p => {
+        // Check if this pending battle is already active/completed in the loaded list
+        // Note: The API response 'battles' should contain stageId.
+        const exists = battles.value.some(b => {
+            if (b.stageId !== p.stageId || b.isTemp) return false
+             // Same timestamp logic as Global Store
+            const battleCreated = new Date(b.createdAt).getTime()
+            return battleCreated > p.timestamp
+        })
+
+        if (!exists) {
+            // It's not in the list yet, show it as generating
+            // But don't duplicate if we already have a temp item in view
+            const viewDuplicate = battles.value.find(b => b.isTemp && b.stageId === p.stageId)
+            
+            if (!viewDuplicate) {
+                const tempBattle = {
+                    battleId: -1, 
+                    stageId: p.stageId,
+                    stageTitle: p.title,
+                    jobCategory: p.category,
+                    totalDamage: 0,
+                    createdAt: new Date(p.timestamp).toISOString(),
+                    isTemp: true
+                }
+                battles.value.unshift(tempBattle)
+            }
+        }
+    })
+}
+
+
+
+function formatDateTime(dateStr: string) {
+    const date = new Date(dateStr)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${year}.${month}.${day} ${hour}:${minute}`
+}
+
+function handleSearch() {
+    currentPage.value = 1;
+    fetchBattles();
+}
+
+function handleSort() {
+    currentPage.value = 1;
+    fetchBattles();
+}
+
+function handleCategoryChange(category: string) {
+    selectedCategory.value = category;
+    currentPage.value = 1;
+    fetchBattles();
+}
+
+function goToPage(page: number) {
+    if (page < 1 || page > totalPages.value) return;
+    currentPage.value = page;
+    fetchBattles();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getPageNumbers() {
+  const total = totalPages.value
+  const current = currentPage.value
+  const pages: number[] = []
+  
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) pages.push(i)
+  } else {
+    let start = Math.max(1, current - 2)
+    let end = Math.min(total, current + 2)
+    if (end - start < 4) {
+      if (start === 1) end = Math.min(total, start + 4)
+      else if (end === total) start = Math.max(1, end - 4)
+    }
+    for (let i = start; i <= end; i++) pages.push(i)
   }
+  return pages
+}
+
+// Imports and consts moved to top
+
+// ... existing code ...
+
+const isCreating = ref(false)
+
+// Imports already at top
+
+// ...
+
+async function createBattleFromQuery() {
+    const { createStageId, title, category } = route.query
+    if (createStageId) {
+        isCreating.value = true
+        // Add temporary item
+        const tempBattle = {
+            battleId: -1,
+            stageTitle: title || 'Loading...',
+            jobCategory: category || 'General',
+            totalDamage: 0,
+            createdAt: new Date().toISOString(),
+            isTemp: true
+        }
+            battles.value.unshift(tempBattle)
+        
+        // Mark as pending in Global Store immediately
+        battleGlobalStore.addPendingBattle({
+            stageId: Number(createStageId),
+            title: (title as string) || '제목 없음',
+            category: (category as string) || 'General',
+            timestamp: Date.now()
+        })
+
+        try {
+            await battleApi.createBattle({
+                stageId: Number(createStageId),
+                userId: authStore.user?.userId || 0
+            })
+
+            // Check if user is still on the page
+            if (router.currentRoute.value.path !== '/my-battles') {
+                // User navigated away.
+                // Leave it in pending so global store picks it up and shows Toast.
+                return
+            }
+
+            // If we are here, we are on the page.
+            // Refresh list - syncPendingBattles will handle cleanup if it appears
+            await fetchBattles()
+            
+            // Clean URL
+            router.replace({ path: '/my-battles', query: {} })
+            // Also explicitly remove from global just in case to avoid race with poll
+            battleGlobalStore.removePendingBattle(Number(createStageId))
+        } catch (e: any) {
+            console.error(e)
+            battles.value.shift() // remove temp
+            
+            // Remove from pending since it failed
+            battleGlobalStore.removePendingBattle(Number(createStageId))
+            
+            // Handle No Portfolio Error
+            if (e.response?.data?.message?.toLowerCase().includes('portfolio') || e.message?.toLowerCase().includes('portfolio')) {
+                if (await modalStore.openConfirm('포트폴리오가 필요합니다. 지금 생성하시겠습니까?')) {
+                    router.push('/portfolio')
+                }
+            } 
+            // Handle Life Exhausted Error
+            else if (e.response?.data?.message?.includes('[LIFE_EXHAUSTED]') || e.message?.includes('[LIFE_EXHAUSTED]')) {
+                 if (await modalStore.openConfirm('오늘의 도전 횟수를 모두 소진했습니다.\n충전 페이지로 이동하시겠습니까?')) {
+                     router.push('/charge')
+                 }
+            }
+            else {
+                await modalStore.openAlert(e.response?.data?.message || '전투 생성에 실패했습니다.')
+            }
+        } finally {
+            isCreating.value = false
+        }
+    }
+}
+
+function handleStartBattle(battleId: number) {
+    router.push(`/game?battleId=${battleId}`)
+}
+
+function isUnplayed(battle: any) {
+    // If status is READY, it's unplayed
+    return battle.status === 'READY' || (!battle.totalDamage && battle.status !== 'COMPLETED')
+}
+
+onMounted(async () => {
+    await fetchCategories()
+    await fetchBattles()
+    await createBattleFromQuery()
 })
 </script>
 

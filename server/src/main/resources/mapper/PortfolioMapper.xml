@@ -20,8 +20,21 @@
     <select id="findAllByUserId" parameterType="long" resultMap="portfolioResultMap">
         SELECT *
         FROM portfolio
-        WHERE user_id = #{userId}
+        WHERE user_id = #{userId} AND pf_id > 0
+        <if test="search != null and search != ''">
+            AND (title LIKE CONCAT('%', #{search}, '%') OR content LIKE CONCAT('%', #{search}, '%'))
+        </if>
         ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countPortfolios" resultType="int">
+        SELECT COUNT(*)
+        FROM portfolio
+        WHERE user_id = #{userId} AND pf_id > 0
+        <if test="search != null and search != ''">
+            AND (title LIKE CONCAT('%', #{search}, '%') OR content LIKE CONCAT('%', #{search}, '%'))
+        </if>
     </select>
 
     <select id="findByUserAndPfId" resultMap="portfolioResultMap">

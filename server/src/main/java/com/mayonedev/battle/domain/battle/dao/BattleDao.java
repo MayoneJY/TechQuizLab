@@ -18,5 +18,8 @@ public interface BattleDao {
 
     java.util.List<Battle> findAllByUserId(Long userId);
 
-    void delete(@Param("userId") Long userId, @Param("battleId") Long battleId);
+        void delete(@Param("userId") Long userId, @Param("battleId") Long battleId);
+
+        void relinkPortfolio(@Param("userId") Long userId, @Param("oldPfId") Long oldPfId,
+                        @Param("newPfId") Long newPfId);
 }

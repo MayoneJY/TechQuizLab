@@ -154,9 +154,42 @@ public class UserServiceImpl implements UserService {
         // If lastReset is null or not today
         if (lastReset == null || !lastReset.toLocalDate().isEqual(now.toLocalDate())) {
             log.info("Daily Life Reset for user: {}", user.getNickname());
-            user.setRemainingLives(5); // Reset to 5
+            if (user.getRemainingLives() < 5) {
+                user.setRemainingLives(5); // Reset to 5
+            }
             user.setLastLivesResetAt(now);
             userDao.update(user);
         }
+    }
+
+    @Override
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void consumeLife(Long userId) {
+        User user = userDao.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+
+        checkAndResetLives(user);
+
+        if (user.getRemainingLives() <= 0) {
+            throw new RuntimeException("오늘의 도전 횟수를 모두 소진했습니다. [LIFE_EXHAUSTED]");
+        }
+
+        user.setRemainingLives(user.getRemainingLives() - 1);
+        userDao.update(user);
+        log.info("Life consumed for user: {}. Remaining: {}", userId, user.getRemainingLives());
+    }
+
+    @Override
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void refundLife(Long userId) {
+        User user = userDao.findById(userId);
+        if (user == null)
+            return;
+
+        user.setRemainingLives(user.getRemainingLives() + 1);
+        userDao.update(user);
+        log.info("Life refunded for user: {}. Remaining: {}", userId, user.getRemainingLives());
     }
 }
