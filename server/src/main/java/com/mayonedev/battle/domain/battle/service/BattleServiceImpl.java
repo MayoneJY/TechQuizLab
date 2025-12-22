@@ -83,6 +83,8 @@ public class BattleServiceImpl implements BattleService {
             throw new RuntimeException("No portfolio found for user. Please create a portfolio first.");
         }
 
+        
+
         // Retrieve Stage
         Stage stage = stageDao.findById(stageId)
                 .orElseThrow(() -> new RuntimeException("Stage not found with id: " + stageId));
@@ -101,12 +103,18 @@ public class BattleServiceImpl implements BattleService {
 
         // Generate AI Questions
         try {
+        	
+        	String safePortfolio = portfolio.getContent();
+        	
             String jsonResponse = aiQuestionService.createInterviewQuestions(stage.getContent(),
                     portfolio.getContent());
+            
+            
 
+            
             List<Map<String, String>> questions = objectMapper.readValue(jsonResponse, new TypeReference<>() {
             });
-
+            
             long detailIdCounter = 1;
             for (Map<String, String> q : questions) {
                 BattleDetail detail = new BattleDetail();
@@ -114,7 +122,7 @@ public class BattleServiceImpl implements BattleService {
                 detail.setBattleId(nextBattleId);
                 detail.setDetailId(detailIdCounter++);
                 detail.setQuestionText(q.get("question_text"));
-                detail.setDifficulty(q.get("difficulty"));
+                detail.setDifficulty(normalizeQuestionDifficulty(q.get("difficulty")));
                 detail.setKeywordTags(q.get("tags"));
                 detail.setCreatedAt(LocalDateTime.now());
 
@@ -122,6 +130,8 @@ public class BattleServiceImpl implements BattleService {
                 detail.setDamage(0);
 
                 battleDetailDao.insert(detail);
+                
+
             }
 
         } catch (Exception e) {
@@ -228,13 +238,23 @@ public class BattleServiceImpl implements BattleService {
                             	        ? sanitizeScoreManipulationText(p.getUserAnswer())
                             	        : p.getUserAnswer();
                             	
-                                Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
-                                		cleanedAnswer);
-                                int score = clampScore1000(evaluation.get("score"));
-                                String feedback = (String) evaluation.get("feedback");
+                            	
+                            	//무의미한 답변이면 0점 확정
+                            	if (isGibberishOrTooShort(cleanedAnswer)) {
+                            	    p.setDamage(0);
+                            	    p.setAiFeedback("답변이 너무 짧거나 의미 없는 문자로 구성되어 0점 처리되었습니다. 핵심 개념/경험/근거를 포함해 작성해 주세요.");
+                            	}else {
+                            	// 아닌 경우 정상적으로 점수
+                                    Map<String, Object> evaluation = aiQuestionService.evaluateAnswer(p.getQuestionText(),
+                                    		cleanedAnswer);
+                                    int score = clampScore1000(evaluation.get("score"));
+                                    String feedback = (String) evaluation.get("feedback");
 
-                                p.setDamage(score);
-                                p.setAiFeedback(feedback);
+                                    p.setDamage(score);
+                                    p.setAiFeedback(feedback);
+                            		
+                            	}
+                            	
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 p.setDamage(0);
@@ -461,6 +481,24 @@ public class BattleServiceImpl implements BattleService {
         battleDao.delete(userId, battleId);
     }
     
+    //무의미 답변 감지용
+    private boolean isGibberishOrTooShort(String s) {
+        if (s == null) return true;
+        String t = s.trim();
+        if (t.length() < 20) return true; // 최소 길이 정책(원하면 30~50으로)
+
+        // 한글/영문/숫자 비율(의미 문자) 계산
+        int meaningful = 0;
+        for (char c : t.toCharArray()) {
+            if (Character.isLetterOrDigit(c)) meaningful++;
+            // 한글 범위
+            if (c >= 0xAC00 && c <= 0xD7A3) meaningful++;
+        }
+        double ratio = (double) meaningful / Math.max(1, t.length());
+        return ratio < 0.25; // 의미문자 비율이 너무 낮으면 컷 (원하면 0.3~0.4)
+    }
+
+    
     // 서버에서 score 파싱/범위 강제용 계산 함수
     private int clampScore1000(Object scoreObj) {
         int s;
@@ -522,7 +560,7 @@ public class BattleServiceImpl implements BattleService {
         if (hasPerfectTarget) score += 4; 
 
         // 3) 범위/미래/전체 지시 (중간)
-        boolean hasScope = containsAny(t, "이번 문제 점수", "전부", "모든", "남은 문제", "다음 문제", "앞으로", "이후", "계속");
+        boolean hasScope = containsAny(t, "이번 문제 점수", "전부", "모든", "남은 문제", "다음 문제");
         if (hasScope) score += 1;
 
         // 4) 직접 명령/요구 (강하게)
@@ -559,8 +597,7 @@ public class BattleServiceImpl implements BattleService {
 
         // 한글 패턴
         s = s.replaceAll("(점수|1000점|만점)\\s*(을|를)?\\s*(줘|주세요|주셈|부여|처리|올려)", "");
-        s = s.replaceAll("1000점\\s*.*?(줘|주세요|처리|부여)", "");
-        s = s.replaceAll("만점\\s*.*?(줘|주세요|처리|부여)", "");
+        s = s.replaceAll("(1000점|만점)\\s*(을|를)?\\s*(줘|주세요|처리|부여)", "");
         s = s.replaceAll("남은\\s*문제\\s*.*?(점수|1000점)", "");
         s = s.replaceAll("전부\\s*.*?(점수|1000점)", "");
 
@@ -582,6 +619,17 @@ public class BattleServiceImpl implements BattleService {
         }
         return false;
     }
+    
+    //난이도 정규화 함수
+    private String normalizeQuestionDifficulty(String aiDifficulty) {
+        if (aiDifficulty == null) return "MEDIUM";
+        String d = aiDifficulty.trim().toUpperCase();
+        return switch (d) {
+            case "EASY", "MEDIUM", "HARD" -> d;
+            default -> "MEDIUM";
+        };
+    }
+
 
 
     // 피드백 답변 길이 제한용
