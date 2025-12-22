@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { battleApi } from '../services/api'
 import router from '../router'
+import { useToastStore } from './toast'
 
 interface PendingBattle {
     stageId: number
@@ -15,6 +16,7 @@ const POLLING_INTERVAL_MS = 3000 // 3 seconds
 const EXPIRY_MS = 5 * 60 * 1000 // 5 minutes
 
 export const useBattleGlobalStore = defineStore('battleGlobal', () => {
+    const toastStore = useToastStore()
     const pendingBattles = ref<PendingBattle[]>([])
     const isMonitoring = ref(false)
     let intervalId: number | null = null
@@ -104,31 +106,51 @@ export const useBattleGlobalStore = defineStore('battleGlobal', () => {
             // Find completed battles
             const completed = pendingBattles.value.filter(p => {
                 // Check if this pending battle exists in the active battles list
-                // Real battles have stageId (or we can match by title if stageId missing in list, but stageId is safer)
-                // The API response for 'MyBattles' returns items with 'stageId'.
-                // Let's verify schema.ts: Battle has 'stageId'.
-                return activeBattles.some((b: any) => b.stageId === p.stageId)
+                // Real battles have stageId
+                // IMPORTANT: We must check that the battle is NEW (created AFTER our pending request started)
+                // Otherwise, we might match an old battle history for the same stage.
+                return activeBattles.some((b: any) => {
+                    if (b.stageId !== p.stageId) return false
+
+                    const battleCreated = new Date(b.createdAt).getTime()
+                    // Allow some buffer or purely rely on 'after'. 
+                    // Server time > Client time usually.
+                    // If b.createdAt > p.timestamp, it's the new one.
+                    return battleCreated > p.timestamp
+                })
             })
 
             if (completed.length > 0) {
                 console.log('[BattleGlobal] Found completed battles:', completed)
 
+                // Stop monitoring temporarily
+                stopMonitoring()
+
                 // Remove completed from pending
                 completed.forEach(c => removePendingBattle(c.stageId))
 
-                // Redirect to MyBattles if not already there
-                // But only if we are currently on a different page that allows interruption
+                // Show non-blocking toast notification
                 const currentRoute = router.currentRoute.value.path
-                if (currentRoute !== '/my-battles' && !currentRoute.startsWith('/game')) {
-                    console.log('[BattleGlobal] Redirecting to my-battles')
-                    router.push('/my-battles')
-                } else if (currentRoute === '/my-battles') {
-                    // If already on page, we might want to trigger a refresh
-                    // But MyBattles.vue will likely poll or manually refresh.
-                    // Instead, we can let MyBattles.vue watch the global store or just rely on the user refreshing?
-                    // The requirement says: "If on another page, force redirect". 
-                    // If on same page, it just updates. MyBattles.vue should use this store's state to hide the "loading" item.
+                if (currentRoute === '/my-battles') {
+                    // If on target page, refresh logic (Toast + maybe silent refresh via component watching store)
+                    toastStore.showToast('AI 면접관 생성이 완료되었습니다!', 'success')
+                    // Ideally we trigger a data refresh here without full reload, 
+                    // but for now let's leave reload if that's what triggers the list update
+                    // Or better, let MyBattles.vue watch pendingBattles? 
+                    // Since we removed it from pending, MyBattles syncPendingBattles will remove the loading item.
+                    // But we need to fetch the REAL item.
+                    // Let's just do a reload for safety on this page as before, but maybe cleaner?
+                    // User asked for "Toast without redirect". 
+                    // If on the page, a reload updates the list.
                     window.location.reload()
+                } else {
+                    // Just show toast, no redirect
+                    toastStore.showToast('AI 면접관 생성이 완료되었습니다!', 'success')
+                }
+
+                // If there are still pending battles, resume monitoring
+                if (pendingBattles.value.length > 0) {
+                    startMonitoring()
                 }
             }
 

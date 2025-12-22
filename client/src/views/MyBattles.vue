@@ -254,7 +254,12 @@ function syncPendingBattles() {
     pendingList.forEach(p => {
         // Check if this pending battle is already active/completed in the loaded list
         // Note: The API response 'battles' should contain stageId.
-        const exists = battles.value.some(b => b.stageId === p.stageId && !b.isTemp)
+        const exists = battles.value.some(b => {
+            if (b.stageId !== p.stageId || b.isTemp) return false
+             // Same timestamp logic as Global Store
+            const battleCreated = new Date(b.createdAt).getTime()
+            return battleCreated > p.timestamp
+        })
 
         if (!exists) {
             // It's not in the list yet, show it as generating
@@ -369,11 +374,22 @@ async function createBattleFromQuery() {
                 stageId: Number(createStageId),
                 userId: authStore.user?.userId || 0
             })
+
+            // Check if user is still on the page
+            if (router.currentRoute.value.path !== '/my-battles') {
+                // User navigated away.
+                // Leave it in pending so global store picks it up and shows Toast.
+                return
+            }
+
+            // If we are here, we are on the page.
             // Refresh list - syncPendingBattles will handle cleanup if it appears
             await fetchBattles()
             
             // Clean URL
             router.replace({ path: '/my-battles', query: {} })
+            // Also explicitly remove from global just in case to avoid race with poll
+            battleGlobalStore.removePendingBattle(Number(createStageId))
         } catch (e: any) {
             console.error(e)
             battles.value.shift() // remove temp

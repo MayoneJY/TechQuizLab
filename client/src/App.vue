@@ -1,6 +1,7 @@
 <template>
   <MusicControl />
   <PixelModal />
+  <GlobalToast />
   <MainLayout>
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
@@ -15,6 +16,7 @@ import { onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MusicControl from './components/MusicControl.vue'
 import PixelModal from './components/PixelModal.vue'
+import GlobalToast from './components/GlobalToast.vue'
 import MainLayout from './layouts/MainLayout.vue'
 import { useMusicStore } from './stores/music'
 import { useBattleGlobalStore } from './stores/battleGlobal'

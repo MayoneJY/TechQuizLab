@@ -37,105 +37,85 @@ public class BattleServiceImpl implements BattleService {
     private final com.mayonedev.battle.domain.battle.dao.BookmarkPracticeDao bookmarkPracticeDao;
     private final AiQuestionService aiQuestionService;
     private final ObjectMapper objectMapper;
-    private final com.mayonedev.battle.domain.user.service.UserService userService; // Use Service to ensure consistency
-                                                                                    // if needed, or Dao direct update
+    private final com.mayonedev.battle.domain.user.service.UserService userService;
+    private final org.springframework.transaction.support.TransactionTemplate transactionTemplate;
 
     @Override
-    @Transactional
+    // Removed @Transactional to handle transactions manually
     public Battle createBattle(Long stageId, Long userId) {
-        // [Life Check]
-        com.mayonedev.battle.domain.user.entity.User user = userDao.findById(userId);
-        // Ensure reset logic runs if it hasn't (though usually handled at login) - safe
-        // double check or rely on login
-        // But to be safe and atomic:
-        if (user.getRemainingLives() == null)
-            user.setRemainingLives(0);
+        // 1. Consume Life Immediately (New Transaction)
+        userService.consumeLife(userId);
 
-        // Reset check (Optional here if guaranteed by filter/login, but good for
-        // safety)
-        if (user.getLastLivesResetAt() == null
-                || !user.getLastLivesResetAt().toLocalDate().isEqual(java.time.LocalDate.now())) {
-            // Only reset if lives are less than 5
-            if (user.getRemainingLives() < 5) {
-                user.setRemainingLives(5);
-            }
-            // Always update the reset time so we don't check again today
-            user.setLastLivesResetAt(LocalDateTime.now());
-            userDao.update(user);
-        }
-
-        if (user.getRemainingLives() <= 0) {
-            throw new RuntimeException("오늘의 도전 횟수를 모두 소진했습니다. 내일 다시 도전해주세요!");
-        }
-
-        // Consume Life
-        user.setRemainingLives(user.getRemainingLives() - 1);
-        userDao.update(user);
-
-        Battle battle = new Battle();
-        battle.setUserId(userId);
-
-        // Retrieve user's portfolios and select the latest one
-        List<com.mayonedev.battle.domain.gamification.entity.Portfolio> portfolios = portfolioDao
-                .findAllByUserId(userId);
-        com.mayonedev.battle.domain.gamification.entity.Portfolio portfolio;
-
-        if (portfolios != null && !portfolios.isEmpty()) {
-            portfolio = portfolios.get(0);
-            battle.setPfId(portfolio.getPfId());
-        } else {
-            throw new RuntimeException("No portfolio found for user. Please create a portfolio first.");
-        }
-
-        // Retrieve Stage
-        Stage stage = stageDao.findById(stageId)
-                .orElseThrow(() -> new RuntimeException("Stage not found with id: " + stageId));
-
-        battle.setStageId(stageId);
-        battle.setStatus("READY");
-        battle.setTotalDamage(0);
-        battle.setCreatedAt(LocalDateTime.now());
-
-        // Generate battleId
-        Long maxBattleId = battleDao.findMaxBattleIdByUserId(userId);
-        Long nextBattleId = (maxBattleId == null) ? 1L : maxBattleId + 1;
-        battle.setBattleId(nextBattleId);
-
-        battleDao.insert(battle);
-
-        // Generate AI Questions
         try {
+            // Retrieve user's portfolios and select the latest one
+            List<com.mayonedev.battle.domain.gamification.entity.Portfolio> portfolios = portfolioDao
+                    .findAllByUserId(userId);
+            com.mayonedev.battle.domain.gamification.entity.Portfolio portfolio;
+
+            if (portfolios != null && !portfolios.isEmpty()) {
+                portfolio = portfolios.get(0);
+            } else {
+                throw new RuntimeException("No portfolio found for user. Please create a portfolio first.");
+            }
+
+            // Retrieve Stage
+            Stage stage = stageDao.findById(stageId)
+                    .orElseThrow(() -> new RuntimeException("Stage not found with id: " + stageId));
+
+            // 2. Generate AI Questions (No Transaction, Long running)
             String jsonResponse = aiQuestionService.createInterviewQuestions(stage.getContent(),
                     portfolio.getContent());
-
             List<Map<String, String>> questions = objectMapper.readValue(jsonResponse, new TypeReference<>() {
             });
 
-            long detailIdCounter = 1;
-            for (Map<String, String> q : questions) {
-                BattleDetail detail = new BattleDetail();
-                detail.setUserId(userId);
-                detail.setBattleId(nextBattleId);
-                detail.setDetailId(detailIdCounter++);
-                detail.setQuestionText(q.get("question_text"));
-                detail.setDifficulty(q.get("difficulty"));
-                detail.setKeywordTags(q.get("tags"));
-                detail.setCreatedAt(LocalDateTime.now());
+            // 3. Save Battle & Details (New Transaction)
+            return transactionTemplate.execute(status -> {
+                Battle battle = new Battle();
+                battle.setUserId(userId);
+                battle.setPfId(portfolio.getPfId());
+                battle.setStageId(stageId);
+                battle.setStatus("READY");
+                battle.setTotalDamage(0);
+                battle.setCreatedAt(LocalDateTime.now());
+                battle.setStageTitle(stage.getTitle());
+                battle.setJobCategory(stage.getJobCategory()); // Ensure these are set if needed for lists
 
-                // Set defaults
-                detail.setDamage(0);
+                // Generate battleId
+                Long maxBattleId = battleDao.findMaxBattleIdByUserId(userId);
+                Long nextBattleId = (maxBattleId == null) ? 1L : maxBattleId + 1;
+                battle.setBattleId(nextBattleId);
 
-                battleDetailDao.insert(detail);
-            }
+                battleDao.insert(battle);
+
+                long detailIdCounter = 1;
+                for (Map<String, String> q : questions) {
+                    BattleDetail detail = new BattleDetail();
+                    detail.setUserId(userId);
+                    detail.setBattleId(nextBattleId);
+                    detail.setDetailId(detailIdCounter++);
+                    detail.setQuestionText(q.get("question_text"));
+                    detail.setDifficulty(q.get("difficulty"));
+                    detail.setKeywordTags(q.get("tags"));
+                    detail.setCreatedAt(LocalDateTime.now());
+                    detail.setDamage(0);
+
+                    battleDetailDao.insert(detail);
+                }
+                return battle;
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
-            // Decide whether to fail the whole transaction or just log.
-            // Failing is safer as a battle without questions is invalid.
-            throw new RuntimeException("Failed to generate interview questions: " + e.getMessage(), e);
+            // 4. Refund Life on Failure (New Transaction)
+            try {
+                userService.refundLife(userId);
+            } catch (Exception ex) {
+                // Critical error logging
+                System.err.println("Failed to refund life for user " + userId);
+                ex.printStackTrace();
+            }
+            throw new RuntimeException(e.getMessage(), e);
         }
-
-        return battle;
     }
 
     @Override
