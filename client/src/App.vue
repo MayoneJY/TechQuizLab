@@ -17,8 +17,10 @@ import MusicControl from './components/MusicControl.vue'
 import PixelModal from './components/PixelModal.vue'
 import MainLayout from './layouts/MainLayout.vue'
 import { useMusicStore } from './stores/music'
+import { useBattleGlobalStore } from './stores/battleGlobal'
 
 const musicStore = useMusicStore()
+const battleGlobalStore = useBattleGlobalStore()
 const route = useRoute()
 
 // 라우터 변경 감지하여 화면별 브금 재생
@@ -59,6 +61,9 @@ watch(
 )
 
 onMounted(async () => {
+  // Global Monitoring
+  battleGlobalStore.init()
+
   // 초기 로드 시 (홈 화면) 랜덤 메인 브금 재생 시도
   if (route.name !== 'game') {
     try {

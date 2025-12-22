@@ -154,10 +154,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { battleApi } from '../services/api'
+import { useAuthStore } from '../stores/auth'
+import { useModalStore } from '../stores/modal'
+import { useBattleGlobalStore } from '../stores/battleGlobal'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const modalStore = useModalStore()
+const battleGlobalStore = useBattleGlobalStore()
+
 const loading = ref(true)
 const battles = ref<any[]>([])
 
@@ -235,7 +243,38 @@ async function fetchBattles() {
         console.error(e)
     } finally {
         loading.value = false
+        syncPendingBattles()
     }
+}
+
+function syncPendingBattles() {
+    // Get pending list from global store
+    const pendingList = battleGlobalStore.pendingBattles
+
+    pendingList.forEach(p => {
+        // Check if this pending battle is already active/completed in the loaded list
+        // Note: The API response 'battles' should contain stageId.
+        const exists = battles.value.some(b => b.stageId === p.stageId && !b.isTemp)
+
+        if (!exists) {
+            // It's not in the list yet, show it as generating
+            // But don't duplicate if we already have a temp item in view
+            const viewDuplicate = battles.value.find(b => b.isTemp && b.stageId === p.stageId)
+            
+            if (!viewDuplicate) {
+                const tempBattle = {
+                    battleId: -1, 
+                    stageId: p.stageId,
+                    stageTitle: p.title,
+                    jobCategory: p.category,
+                    totalDamage: 0,
+                    createdAt: new Date(p.timestamp).toISOString(),
+                    isTemp: true
+                }
+                battles.value.unshift(tempBattle)
+            }
+        }
+    })
 }
 
 
@@ -292,13 +331,7 @@ function getPageNumbers() {
   return pages
 }
 
-import { useAuthStore } from '../stores/auth'
-import { useModalStore } from '../stores/modal'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-const authStore = useAuthStore()
-const modalStore = useModalStore()
+// Imports and consts moved to top
 
 // ... existing code ...
 
@@ -321,14 +354,22 @@ async function createBattleFromQuery() {
             createdAt: new Date().toISOString(),
             isTemp: true
         }
-        battles.value.unshift(tempBattle)
+            battles.value.unshift(tempBattle)
+        
+        // Mark as pending in Global Store immediately
+        battleGlobalStore.addPendingBattle({
+            stageId: Number(createStageId),
+            title: (title as string) || '제목 없음',
+            category: (category as string) || 'General',
+            timestamp: Date.now()
+        })
 
         try {
             await battleApi.createBattle({
                 stageId: Number(createStageId),
                 userId: authStore.user?.userId || 0
             })
-            // Refresh list to show real item
+            // Refresh list - syncPendingBattles will handle cleanup if it appears
             await fetchBattles()
             
             // Clean URL
@@ -336,6 +377,9 @@ async function createBattleFromQuery() {
         } catch (e: any) {
             console.error(e)
             battles.value.shift() // remove temp
+            
+            // Remove from pending since it failed
+            battleGlobalStore.removePendingBattle(Number(createStageId))
             
             // Handle No Portfolio Error
             if (e.response?.data?.message?.toLowerCase().includes('portfolio') || e.message?.toLowerCase().includes('portfolio')) {
