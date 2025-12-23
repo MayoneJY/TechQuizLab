@@ -59,7 +59,7 @@
           :key="battle.battleId" 
           class="battle-item"
           :class="{ 'creating-item': battle.isTemp, 'clickable-item': !battle.isTemp }"
-          @click="!battle.isTemp && router.push(`/battle-result/${battle.battleId}?from=battles`)"
+          @click="handleItemClick(battle)"
         >
           <!-- Special Case: Generating -->
           <template v-if="battle.isTemp">
@@ -420,6 +420,16 @@ async function createBattleFromQuery() {
 
 function handleStartBattle(battleId: number) {
     router.push(`/game?battleId=${battleId}`)
+}
+
+function handleItemClick(battle: any) {
+    if (battle.isTemp) return
+    
+    if (isUnplayed(battle)) {
+        handleStartBattle(battle.battleId)
+    } else {
+        router.push(`/battle-result/${battle.battleId}?from=battles`)
+    }
 }
 
 function isUnplayed(battle: any) {

@@ -230,6 +230,18 @@ onMounted(async () => {
                throw new Error('Data not found')
            }
 
+           // Check if battle is completed
+           if (battle.status !== 'COMPLETED') {
+               await modalStore.openAlert('비정상적인 접근입니다.\n로비로 이동됩니다.')
+               router.replace('/')
+               return
+           }
+           
+           if (battle.status !== 'COMPLETED') {
+               // This check is redundant but kept for clarity/safety if above changes
+               // Actually the above is sufficient.
+           }
+
            const totalScore = battle.totalDamage || details.reduce((acc: number, cur: any) => acc + (cur.damage || 0), 0)
            
            result.value = {
