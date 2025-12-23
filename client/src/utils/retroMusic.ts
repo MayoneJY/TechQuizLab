@@ -22,7 +22,7 @@ class RetroMusicPlayer {
   async init() {
     if (!this.audio) {
       try {
-        this.audio = new Audio(this.musicPath)
+        this.audio = new Audio(this.mainMusicPaths[Math.floor(Math.random() * this.mainMusicPaths.length)])
         this.audio.loop = true // 반복 재생
         this.audio.volume = this.volume
         this.audio.preload = 'auto'
