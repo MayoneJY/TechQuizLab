@@ -56,7 +56,7 @@
       <div v-else-if="battles.length > 0" class="battle-list">
         <div 
           v-for="battle in battles" 
-          :key="battle.battleId" 
+          :key="battle._uiKey || battle.battleId" 
           class="battle-item"
           :class="{ 'creating-item': battle.isTemp, 'clickable-item': !battle.isTemp }"
           @click="handleItemClick(battle)"
@@ -219,8 +219,8 @@ function getRankClass(score: number) {
   return `rank-${rank}`
 }
 
-async function fetchBattles() {
-    loading.value = true;
+async function fetchBattles(background = false) {
+    if (!background) loading.value = true;
     try {
         const res = await battleApi.getMyBattles({
             category: selectedCategory.value === 'all' ? undefined : selectedCategory.value,
@@ -231,12 +231,13 @@ async function fetchBattles() {
         })
         // Assuming response structure from pagination implementation
         if (res.data && res.data.content) {
-            battles.value = res.data.content;
+            battles.value = res.data.content.map((b: any) => ({ ...b, _uiKey: b.battleId }));
             totalPages.value = res.data.totalPages;
             currentPage.value = res.data.currentPage;
         } else {
             // Fallback if API hasn't updated yet or structure mismatch
-           battles.value = Array.isArray(res.data) ? res.data : [];
+           const list = Array.isArray(res.data) ? res.data : [];
+           battles.value = list.map((b: any) => ({ ...b, _uiKey: b.battleId }));
         }
 
     } catch (e) {
@@ -274,7 +275,8 @@ function syncPendingBattles() {
                     jobCategory: p.category,
                     totalDamage: 0,
                     createdAt: new Date(p.timestamp).toISOString(),
-                    isTemp: true
+                    isTemp: true,
+                    _uiKey: `temp-${p.stageId}-${Date.now()}`
                 }
                 battles.value.unshift(tempBattle)
             }
@@ -350,17 +352,20 @@ async function createBattleFromQuery() {
     const { createStageId, title, category } = route.query
     if (createStageId) {
         // Clear URL immediately to prevent double submission on refresh
-        await router.replace({ path: '/my-battles', query: {} })
+        // Use history.replaceState to avoid component reload/re-mount
+        window.history.replaceState(null, '', '/my-battles')
 
         isCreating.value = true
         // Add temporary item
         const tempBattle = {
             battleId: -1,
+            stageId: Number(createStageId), // Important for matching later!
             stageTitle: title || 'Loading...',
             jobCategory: category || 'General',
             totalDamage: 0,
             createdAt: new Date().toISOString(),
-            isTemp: true
+            isTemp: true,
+            _uiKey: `temp-${createStageId}-${Date.now()}`
         }
         battles.value.unshift(tempBattle)
         
@@ -373,21 +378,46 @@ async function createBattleFromQuery() {
         })
 
         try {
-            await battleApi.createBattle({
+            const response = await battleApi.createBattle({
                 stageId: Number(createStageId),
                 userId: authStore.user?.userId || 0
             })
 
             // Check if user is still on the page
             if (router.currentRoute.value.path !== '/my-battles') {
-                // User navigated away.
-                // Leave it in pending so global store picks it up and shows Toast.
                 return
             }
 
-            // If we are here, we are on the page.
-            // Refresh list - syncPendingBattles will handle cleanup if it appears
-            await fetchBattles()
+            // Locally update the temporary item to the real item
+            // The API returns the Battle object, so extract battleId
+            const createdBattleId = response.data.battleId || response.data 
+            // Also need other fields like status if available
+            const createdBattle = typeof response.data === 'object' ? response.data : { battleId: response.data } 
+
+            // Find and replace the temporary battle
+            // A safer bet is referring to the object we just unshifted if we had a reference, but unshift changes array.
+            // We can search by isTemp. Since we shift() on error, we can assume the first isTemp is ours or find by stageId matching.
+            
+            const tempIndex = battles.value.findIndex(b => b.isTemp && b.stageId === Number(createStageId))
+            
+            if (tempIndex !== -1) {
+                // Update properties to make it a 'real' battle
+                // We might not have the full object returned, but we know ID and defaults.
+                // Best would be to have the full object, but if API returns just ID:
+                battles.value[tempIndex] = {
+                    ...battles.value[tempIndex],
+                    ...createdBattle, // Merge returned properties (like id, createdAt, etc)
+                    battleId: createdBattleId,
+                    isTemp: false,
+                    status: 'READY', // Force ready status so "Challenge" button appears
+                    totalDamage: 0, // Default
+                    // Keep _uiKey stable!
+                    _uiKey: battles.value[tempIndex]._uiKey
+                }
+            } else {
+                 // Fallback if not found (unexpected)
+                 await fetchBattles(true) // Background fetch to avoid flashing skeleton
+            }
             
             // Also explicitly remove from global just in case to avoid race with poll
             battleGlobalStore.removePendingBattle(Number(createStageId))
