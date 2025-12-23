@@ -192,6 +192,11 @@ function getPageNumbers() {
   padding: 20px;
   padding-bottom: 80px;
   min-height: 100vh;
+  
+  /* Vertical Centering */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .content-wrapper {
