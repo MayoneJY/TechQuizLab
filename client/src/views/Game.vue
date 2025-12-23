@@ -17,9 +17,7 @@
         <PixelMonster type="alien" />
         <PixelMonster type="alien" />
       </div>
-      <div class="broken-heart">
-        <PixelHeart broken />
-      </div>
+
       <div class="result-card glass-panel">
         <p class="final-score pixel-text">Score: {{ gameStore.score }}</p>
       </div>
@@ -77,10 +75,7 @@
              <span>TIME: {{ timeLeft }}s</span>
           </div>
 
-          <div class="lives-display">
-             <!-- Removed Hearts for Battle Mode, or keep as visual only -->
-             <PixelHeart v-for="i in 5" :key="i" />
-          </div>
+
         </div>
 
         <div class="progress-bar-container">
@@ -167,6 +162,7 @@ import { useQuestionStore } from '../stores/question'
 import { useModalStore } from '../stores/modal'
 import { retroMusicPlayer } from '../utils/retroMusic'
 import PixelMonster from '../components/PixelMonster.vue'
+import ExplosionEffect from '../components/ExplosionEffect.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -646,10 +642,7 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
-.lives-display {
-  display: flex;
-  gap: 5px;
-}
+
 
 .progress-bar-container {
   width: 100%;
