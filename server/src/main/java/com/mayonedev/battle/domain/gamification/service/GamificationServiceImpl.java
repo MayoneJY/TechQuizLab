@@ -243,8 +243,18 @@ public class GamificationServiceImpl implements GamificationService {
         } catch (Exception e) {
             log.error("Failed to record interview history", e);
         }
+        // 2. Increment User Solved Count
+        try {
+            User user = userDao.findById(userId);
+            if (user != null) {
+                user.setSolvedCount(user.getSolvedCount() == null ? 1 : user.getSolvedCount() + 1);
+                userDao.update(user);
+            }
+        } catch (Exception e) {
+            log.error("Failed to increment user solved count", e);
+        }
 
-        // 2. Daily Mission Check
+        // 3. Daily Mission Check
         LocalDate today = LocalDate.now();
         List<UserDailyMission> missions = userDailyMissionDao.findByUserIdAndDate(userId, today);
 
