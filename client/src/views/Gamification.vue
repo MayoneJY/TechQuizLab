@@ -179,22 +179,42 @@
     <!-- Add Friend Modal -->
     <Teleport to="body">
       <div v-if="isAddFriendModalOpen" class="modal-overlay" @click.self="closeAddFriendModal">
-        <div class="modal-content glass-card">
-          <h3 class="pixel-text modal-title">친구 추가</h3>
-          <p class="modal-desc">친구의 닉네임을 입력하세요.</p>
-          
-          <input 
-            v-model="targetNickname" 
-            type="text" 
-            placeholder="닉네임 입력..." 
-            class="pixel-input"
-            @keyup.enter="submitAddFriend"
-          />
-          
-          <div class="modal-actions">
-            <button class="pixel-button secondary" @click="closeAddFriendModal">취소</button>
+        <div class="glass-panel modal-card">
+          <!-- Header -->
+          <div class="modal-header">
+            <span class="pixel-text modal-title">친구 요청</span>
+            <div class="header-decoration">
+              <div class="dot red"></div>
+              <div class="dot yellow"></div>
+              <div class="dot green"></div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="modal-content">
+            <div class="message-icon">
+              <!-- Using an icon similar to PixelModal or a specific one -->
+               <span class="pixel-emoji">🤝</span>
+            </div>
+            <p class="pixel-text modal-message">친구의 닉네임을 입력하세요.</p>
+            
+            <input 
+              v-model="targetNickname" 
+              type="text" 
+              placeholder="닉네임 입력..." 
+              class="pixel-input"
+              @keyup.enter="submitAddFriend"
+              ref="friendInput"
+            />
+          </div>
+
+          <!-- Footer -->
+          <div class="modal-buttons">
+            <button class="pixel-button ghost-btn" @click="closeAddFriendModal">
+              취소
+            </button>
             <button 
-              class="pixel-button" 
+              class="pixel-button primary" 
               @click="submitAddFriend" 
               :disabled="!targetNickname || isAddingFriend"
             >
@@ -253,7 +273,14 @@ async function submitAddFriend() {
     await modalStore.openAlert('친구가 추가되었습니다!')
     closeAddFriendModal()
   } catch (error: any) {
-    const msg = error.response?.data?.message || error.message || '실패했습니다.'
+    let msg = error.response?.data?.message || error.message || '실패했습니다.'
+    // If msg format is "Prefix: Actual Message", show only "Actual Message"
+    if (msg.includes(': ')) {
+        const parts = msg.split(': ')
+        if (parts.length > 1) {
+            msg = parts[parts.length - 1]
+        }
+    }
     await modalStore.openAlert(msg)
   } finally {
     isAddingFriend.value = false
@@ -306,36 +333,82 @@ async function claimMission(missionId: number) {
   width: 100%; 
   height: 100%;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 10000;
+  z-index: 9990; /* Lower than global modal (9999) */
   display: flex;
   justify-content: center;
   align-items: center;
   backdrop-filter: blur(2px);
 }
-.modal-content {
-  background: #1a1a1a;
-  border: 2px solid #4a9eff;
-  padding: 30px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 400px;
+.modal-card {
+  min-width: 360px;
+  max-width: 90%;
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(74, 158, 255, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
 }
+
+/* Header */
+.modal-header {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .modal-title {
-  color: #ffd43b;
-  margin: 0;
-  text-align: center;
-  font-size: 20px;
-}
-.modal-desc {
-  color: #ccc;
-  text-align: center;
+  color: #4a9eff;
   font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.header-decoration {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.dot.red { background: #ff6b6b; }
+.dot.yellow { background: #ffd43b; }
+.dot.green { background: #51cf66; }
+
+/* Content */
+.modal-content {
+  padding: 30px 20px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.message-icon {
+  margin-bottom: 0;
+}
+
+.pixel-emoji {
+    font-size: 40px;
+}
+
+.modal-message {
+  font-size: 16px;
+  color: #fff;
+  line-height: 1.6;
+  white-space: pre-wrap;
   margin: 0;
 }
+
 .pixel-input {
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid #555;
@@ -347,18 +420,31 @@ async function claimMission(missionId: number) {
   font-size: 16px;
   width: 100%;
   box-sizing: border-box;
+  text-align: center;
 }
 .pixel-input:focus {
   border-color: #4a9eff;
 }
-.modal-actions {
+
+/* Footer / Buttons */
+.modal-buttons {
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: center;
+  gap: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
 }
-.modal-actions button {
-  flex: 1;
-  min-width: auto;
+
+.ghost-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #aaa;
+}
+.ghost-btn:hover {
+  border-color: #fff;
+  color: #fff;
+  background: rgba(255,255,255,0.1);
 }
 
 /* Button Variants */
