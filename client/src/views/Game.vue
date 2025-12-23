@@ -9,6 +9,9 @@
       :color="explosionColor"
     />
     
+    <!-- Shooting Stars Effect -->
+    <ShootingStars ref="shootingStarsRef" />
+    
     <!-- Game Over Screen -->
     <div v-if="gameStore.gameStatus === 'gameOver'" class="game-over-screen">
       <h1 class="pixel-text game-over-title glitch" data-text="GAME OVER">GAME OVER</h1>
@@ -163,6 +166,7 @@ import { useModalStore } from '../stores/modal'
 import { retroMusicPlayer } from '../utils/retroMusic'
 import PixelMonster from '../components/PixelMonster.vue'
 import ExplosionEffect from '../components/ExplosionEffect.vue'
+import ShootingStars from '../components/ShootingStars.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -173,6 +177,7 @@ const showExplosion = ref(false)
 const explosionColor = ref('#ffd43b')
 const answerInput = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
+const shootingStarsRef = ref<InstanceType<typeof ShootingStars> | null>(null)
 const isTypingEffect = ref(false)
 const isShaking = ref(false)
 const isCaretVisible = ref(true)
@@ -267,6 +272,9 @@ function handleTyping() {
   if (!isEffectsOn.value) return // Skip effects if disabled
 
   retroMusicPlayer.playTypingSound()
+  
+  // Trigger shooting star
+  shootingStarsRef.value?.spawnStar()
   
   // Visual Effect: Force restart animation (Screen Kick)
   isTypingEffect.value = false
@@ -392,6 +400,8 @@ watch(() => gameStore.currentQuestionIndex, () => {
     timeLeft.value = 180 // Reset timer for new question
     startTimer() // Ensure timer restarts for the new question
     answerInput.value = ''
+    displayChars.value = [] // Clear visual effects chars
+    scrollOffset.value = 0 // Reset scroll
     setTimeout(() => {
       inputRef.value?.focus()
     }, 100)
