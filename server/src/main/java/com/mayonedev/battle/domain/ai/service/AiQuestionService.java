@@ -138,7 +138,7 @@ public class AiQuestionService {
                         		{
                         		"score": 210,
                         		 feedback":
-                        			{"good" : "좋았던점 내용",
+                        			{"good" : "좋았던 점 내용",
                         			 "bad" : "개선할 점 내용" }
                         		}
                 }
