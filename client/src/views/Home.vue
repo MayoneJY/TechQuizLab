@@ -300,6 +300,12 @@
             </template>
           </div>
 
+          <!-- Widget: AI Learning Plan -->
+          <LearningPlanWidget />
+
+          <!-- Widget: AI Stage Recommendations -->
+          <StageRecommendationWidget />
+
         </div>
       </div>
 
@@ -338,6 +344,8 @@ import { useModalStore } from '../stores/modal'
 import { battleApi } from '../services/api'
 import PixelMonster from '../components/PixelMonster.vue'
 import PixelPlanet from '../components/PixelPlanet.vue'
+import LearningPlanWidget from '../components/LearningPlanWidget.vue'
+import StageRecommendationWidget from '../components/StageRecommendationWidget.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -371,4 +371,17 @@ export const stageApi = {
     api.get('/api/stages', { params })
 }
 
+// AI Recommendation API
+export const aiRecommendationApi = {
+  // 태그 기반 키워드 추천 (학습 계획 조회)
+  getLearningPlan: (limit?: number) =>
+    api.get('/api/ai/recommendations/learning-plan', { params: { limit } }),
+
+  // 공고 추천 (스테이지 추천 조회)
+  getStageRecommendations: (limit?: number, stageLimit?: number) =>
+    api.get('/api/ai/recommendations/stage-recommendations', {
+      params: { limit, stageLimit }
+    })
+}
+
 export default api
