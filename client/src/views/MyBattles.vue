@@ -349,6 +349,9 @@ const isCreating = ref(false)
 async function createBattleFromQuery() {
     const { createStageId, title, category } = route.query
     if (createStageId) {
+        // Clear URL immediately to prevent double submission on refresh
+        await router.replace({ path: '/my-battles', query: {} })
+
         isCreating.value = true
         // Add temporary item
         const tempBattle = {
@@ -359,7 +362,7 @@ async function createBattleFromQuery() {
             createdAt: new Date().toISOString(),
             isTemp: true
         }
-            battles.value.unshift(tempBattle)
+        battles.value.unshift(tempBattle)
         
         // Mark as pending in Global Store immediately
         battleGlobalStore.addPendingBattle({
@@ -386,8 +389,6 @@ async function createBattleFromQuery() {
             // Refresh list - syncPendingBattles will handle cleanup if it appears
             await fetchBattles()
             
-            // Clean URL
-            router.replace({ path: '/my-battles', query: {} })
             // Also explicitly remove from global just in case to avoid race with poll
             battleGlobalStore.removePendingBattle(Number(createStageId))
         } catch (e: any) {

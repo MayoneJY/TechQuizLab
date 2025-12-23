@@ -106,8 +106,8 @@
           </div>
           
           <div class="card-footer">
-            <button class="pixel-button primary action-btn">
-              도전하기
+            <button class="pixel-button primary action-btn" :disabled="processingStageId === stage.stageId">
+              {{ processingStageId === stage.stageId ? '준비 중...' : '도전하기' }}
             </button>
           </div>
           
@@ -198,6 +198,7 @@ const showClosed = ref<boolean>(false)
 
 const stages = ref<Stage[]>([])
 const isLoading = ref(false)
+const processingStageId = ref<number | null>(null)
 
 onMounted(async () => {
   // 라우터 query에서 상태 복원
@@ -337,6 +338,8 @@ function getPageNumbers() {
 
 
 async function startChallenge(stage: Stage) {
+  if (processingStageId.value) return 
+
   if (!authStore.isAuthenticated) {
     if (await modalStore.openConfirm('로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하시겠습니까?')) {
       router.push('/login')
@@ -352,6 +355,8 @@ async function startChallenge(stage: Stage) {
     return
   }
   
+  processingStageId.value = stage.stageId
+
   router.push({
     path: '/my-battles',
     query: {
