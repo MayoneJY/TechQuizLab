@@ -1,5 +1,5 @@
 <template>
-  <div class="game-container">
+  <div class="game-container" :class="{ 'screen-shake': isTypingEffect }">
     
     <!-- Explosion Effect -->
     <ExplosionEffect 
@@ -53,6 +53,14 @@
     <div v-else class="quiz-screen">
       <!-- Top Controls -->
       <div class="top-controls">
+         <!-- Effects Toggle (Moved here) -->
+         <div class="effects-toggle-container">
+            <label class="pixel-checkbox-label">
+                <input type="checkbox" v-model="isEffectsOn">
+                <span class="checkbox-text">입력 효과</span>
+            </label>
+         </div>
+
          <button class="pixel-button ghost-btn small-btn" @click="handleGiveUp">
            포기
          </button>
@@ -96,17 +104,43 @@
       
       <!-- Answer Section -->
       <div v-if="gameStore.currentQuiz && !gameStore.selectedAnswer && !gameStore.isLoading" class="answer-section">
-        <div class="input-wrapper glass-panel">
-          <input
-            v-model="answerInput"
-            type="text"
-            placeholder="TYPE_YOUR_ANSWER..."
-            class="pixel-input glass-input answer-input"
-            @keyup.enter="handleSubmit"
-            :disabled="gameStore.isLoading"
-            ref="inputRef"
-            autofocus
-          />
+        <!-- REMOVED glass-panel from wrapper as per user request -->
+        <div class="input-wrapper nice-input-wrapper">
+          <div class="nice-input" :class="{'nice-input--shaked': isShaking, 'nice-input--caret': !isCaretVisible}">
+            <input
+                :value="answerInput"
+                @input="handleInput"
+                @scroll="handleScroll"
+                @click="handleCursorMove"
+                @keyup="handleCursorMove"
+                type="text"
+                :id="'input-answer'"
+                placeholder="TYPE_YOUR_ANSWER..."
+                class="pixel-input glass-input answer-input glass-panel"
+                :class="{ 'typing-active': isTypingEffect }"
+                @keyup.enter="handleSubmit"
+                :disabled="gameStore.isLoading"
+                @keydown="handleTyping"
+                ref="inputRef"
+                autofocus
+                autocomplete="off"
+            />
+            <!-- Effect Layer: Visible Overflow, Fades out after pop -->
+            <div class="effect-layer" :class="{ 'effects-off': !isEffectsOn }" :style="{ transform: `translateX(${-scrollOffset}px)` }">
+                <span class="nice-input__animate-temp" v-for="item in displayChars" :key="item.key">
+                    {{item.char === ' ' ? '&nbsp;' : item.char}}
+                </span>
+            </div>
+
+            <!-- Static Layer: Hidden Overflow, Persistent Text -->
+            <div class="text-clipper">
+                <label :for="'input-answer'" :style="{ transform: `translateX(${-scrollOffset}px)` }">
+                    <span class="static-char" v-for="item in displayChars" :key="item.key">
+                        {{item.char === ' ' ? '&nbsp;' : item.char}}
+                    </span>
+                </label>
+            </div>
+          </div>
         </div>
         
         <div class="action-buttons">
@@ -118,6 +152,7 @@
             SUBMIT
           </button>
         </div>
+        
       </div>
     </div>
     
@@ -125,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted, watch } from 'vue'
+import { onMounted, ref, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useGameStore } from '../stores/game'
 import { useQuestionStore } from '../stores/question'
@@ -142,6 +177,125 @@ const showExplosion = ref(false)
 const explosionColor = ref('#ffd43b')
 const answerInput = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
+const isTypingEffect = ref(false)
+const isShaking = ref(false)
+const isCaretVisible = ref(true)
+const scrollOffset = ref(0)
+const isEffectsOn = ref(true) // Default to ON
+
+function toggleEffects() {
+    isEffectsOn.value = !isEffectsOn.value
+}
+
+// Stable ID system for characters to prevent unwanted re-animations
+interface CharObj {
+  char: string;
+  key: number;
+}
+const displayChars = ref<CharObj[]>([])
+let nextCharKey = 0
+
+function updateDisplayChars(newValue: string) {
+    const oldChars = displayChars.value
+    const newChars: CharObj[] = []
+    
+    // 1. Find matching prefix
+    let prefixLen = 0
+    while (prefixLen < oldChars.length && prefixLen < newValue.length && oldChars[prefixLen].char === newValue[prefixLen]) {
+        prefixLen++
+    }
+
+    // 2. Find matching suffix (avoid overlap with prefix)
+    let suffixLen = 0
+    while (
+        suffixLen < (oldChars.length - prefixLen) && 
+        suffixLen < (newValue.length - prefixLen) && 
+        oldChars[oldChars.length - 1 - suffixLen].char === newValue[newValue.length - 1 - suffixLen]
+    ) {
+        suffixLen++
+    }
+
+    // 3. Construct new array
+    // Add prefix (reuse existing keys)
+    for (let i = 0; i < prefixLen; i++) {
+        newChars.push(oldChars[i])
+    }
+
+    // Add middle (new content -> new keys)
+    const middleContent = newValue.substring(prefixLen, newValue.length - suffixLen)
+    for (const char of middleContent) {
+        newChars.push({ char, key: nextCharKey++ })
+    }
+
+    // Add suffix (reuse existing keys)
+    for (let i = 0; i < suffixLen; i++) {
+        newChars.push(oldChars[oldChars.length - suffixLen + i])
+    }
+
+    displayChars.value = newChars
+}
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLInputElement
+  const newValue = target.value
+  
+  // Update logic with diffing
+  updateDisplayChars(newValue)
+  
+  answerInput.value = newValue
+  
+  // FIX: Sync scroll AFTER browser renders and updates scrollLeft (essential for punctuation/overflow)
+  nextTick(() => {
+    syncScroll(target)
+    setTimeout(() => syncScroll(target), 0) // Backup for slower layout updates
+  })
+}
+
+function syncScroll(target: HTMLInputElement) {
+    if (target) scrollOffset.value = target.scrollLeft
+}
+
+// Bind to other events that might move cursor/scroll
+function handleScroll(event: Event) {
+    const target = event.target as HTMLInputElement
+    scrollOffset.value = target.scrollLeft
+}
+
+function handleCursorMove(event: Event) {
+    const target = event.target as HTMLInputElement
+    // Delay slightly to let browser update scrollLeft after key/click
+    setTimeout(() => {
+        if (target) scrollOffset.value = target.scrollLeft
+    }, 0)
+}
+
+function handleTyping() {
+  if (!isEffectsOn.value) return // Skip effects if disabled
+
+  retroMusicPlayer.playTypingSound()
+  
+  // Visual Effect: Force restart animation (Screen Kick)
+  isTypingEffect.value = false
+  nextTick(() => {
+    isTypingEffect.value = true
+    setTimeout(() => {
+        isTypingEffect.value = false
+    }, 100)
+  })
+
+  // Advanced Input Animation Logic (from index.html)
+  isCaretVisible.value = false
+  // Trigger shake - user's original code had a delay but for responsiveness we might want it immediately or slightly delayed?
+  // Original: setTimeout -> animated=true
+  // Let's make it responsive.
+  setTimeout(() => {
+      isShaking.value = true
+      setTimeout(() => {
+          isShaking.value = false
+          isCaretVisible.value = true
+      }, 300)
+  }, 100)
+}
 
 // Timer Logic
 const timeLeft = ref(180)
@@ -437,8 +591,25 @@ onUnmounted(() => {
   align-items: center;
   min-height: 100vh;
   justify-content: center;
+  /* transition: transform 0.05s cubic-bezier(0.36, 0.07, 0.19, 0.97); Remove transition, use animation */
 }
-/* ... rest of styles assumed safe or I should have included them if I replaced the whole style block */
+
+.game-container.screen-shake {
+  animation: screenKick 0.1s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes screenKick {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.01) translateY(2px); }
+  100% { transform: scale(1); }
+}
+
+.answer-input.typing-active {
+  transform: scale(0.98);
+  border-color: #4a9eff;
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 0 15px rgba(74, 158, 255, 0.5);
+}/* ... rest of styles assumed safe or I should have included them if I replaced the whole style block */
 /* Since I'm replacing from onMounted down to end of file, I need to include all styles */
 .quiz-screen {
   width: 90%;
@@ -541,7 +712,7 @@ onUnmounted(() => {
   flex: 1;
   padding: 0; 
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible; /* Allow effect to spill */
 }
 
 .answer-input {
@@ -551,12 +722,149 @@ onUnmounted(() => {
   padding: 0 20px;
   border: none;
   background: transparent;
-  color: #fff;
+  color: transparent; /* Make text transparent so label shows */
+  caret-color: #fff; /* Keep caret visible or managed by class */
+  transition: all 0.05s ease-out;
+  box-sizing: border-box; /* Ensure padding doesn't expand box */
+  position: relative;
+  z-index: 2; /* Input on top to receive clicks */
+  font-family: monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; /* Forced Monospace */
+  letter-spacing: 1px; /* Consistent spacing */
+  font-variant-ligatures: none;
 }
+
+/* NICE INPUT STYLES ADAPTED */
+.nice-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nice-input {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.text-clipper {
+    position: absolute;
+    top: 0;
+    left: 20px; /* Offset the clip window */
+    width: calc(100% - 20px); /* Relaxed width: Only subtract left offset. Let text flow into right padding area to prevent clipping lag. */
+    height: 100%;
+    overflow: hidden; /* Clips the static text */
+    pointer-events: none;
+    z-index: 3; /* Ensure text is above the input background */
+}
+
+/* Reset label position inside clipper since clipper is already offset */
+.text-clipper label {
+    left: 0 !important; 
+}
+
+.effect-layer {
+    position: absolute;
+    top: 0;
+    left: 20px; /* Match input padding */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    overflow: visible; /* Allows pop effect to spill */
+    pointer-events: none;
+    z-index: 4; /* Ensure effect pops over everything */
+}
+
+.nice-input label {
+    position: absolute;
+    top: 0;
+    left: 20px; /* Match input padding */
+    height: 100%;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 700;
+    font-family: monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; /* Match input font */
+    letter-spacing: 1px;
+    font-variant-ligatures: none;
+    white-space: pre;
+}
+
+/* Ephemeral Pop Animation */
+.nice-input__animate-temp {
+    animation: print-ephemeral .2s 1 ease-in-out forwards; /* forwards to keep final state (hidden) */
+    display: inline-block;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 700;
+    font-family: monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; /* Match input font */
+    letter-spacing: 1px;
+    font-variant-ligatures: none;
+    white-space: pre;
+}
+
+
+.static-char {
+    display: inline-block;
+}
+
+.nice-input--shaked {
+    animation: shake .2s 1 ease-in-out;
+}
+
+.nice-input--caret .answer-input {
+    caret-color: transparent;
+}
+
+@keyframes print-ephemeral {
+    from {
+        transform: scale(5);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    to {
+        transform: scale(1);
+        opacity: 0; /* Vanish so unclipped text doesn't persist */
+    }
+}
+
+@keyframes shake {
+    0%, 100% {}
+    50% { transform: scale(0.97); }
+}
+
+/* 
+   FIX: Apply visual feedback (border/shadow) to the wrapper or input correctly. 
+   User complained blue shadow is "too far off". 
+   Let's keep the border on the wrapper or make the input fit strictly.
+   Actually, the user said "input box mouse hover blue color is too far". 
+   If we apply styles to .answer-input, which has specific dimensions, it might be weird if wrapper has different.
+   Let's ensure .answer-input and .nice-input occupy the same space and apply styles there.
+   Wait, the user said "blue color too far off". This might be the `box-shadow` spread.
+   Let's reduce spread and ensure `box-sizing` is correct.
+*/
 
 .answer-input:focus {
   outline: none;
-  background: rgba(255,255,255,0.1);
+  /* background: rgba(255,255,255,0.1); REMOVED: User said "too far", maybe bg expanding? */
+}
+
+/* Apply the active effect to the input but tighter */
+.answer-input.typing-active {
+  transform: scale(0.98);
+  border-color: #4a9eff;
+  /* background: rgba(255,255,255,0.1); REMOVED to be cleaner */
+  box-shadow: inset 0 0 10px rgba(74, 158, 255, 0.3); /* Changed to inset for tighter feel */
+}
+
+/* Ensure wrapper visual is clean */
+.nice-input-wrapper {
+    /* If wrapper has styles, ensure they don't conflict */
+    /* border: 1px solid rgba(255, 255, 255, 0.2); from glass-panel */
 }
 
 .submit-button {
@@ -594,8 +902,10 @@ onUnmounted(() => {
 
 .top-controls {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Keep aligning to right */
   width: 100%;
+  gap: 15px; /* Add gap between checkbox and button */
+  align-items: center;
 }
 
 .result-message-container {
@@ -610,6 +920,17 @@ onUnmounted(() => {
   width: 100%;
   padding: 20px;
   text-align: center;
+}
+
+/* ... existing code ... */
+
+/* Checkbox Styles */
+.effects-toggle-container {
+    display: flex;
+    justify-content: center; /* Neutral alignment as it's now in a flex row */
+    align-items: center;
+    margin-top: 0; /* Remove margin as it's invalid in this row context */
+    padding-left: 0;
 }
 
 .message-panel.correct {
@@ -856,6 +1177,45 @@ onUnmounted(() => {
   .small-btn {
       padding: 5px 12px;
   }
+}
+
+/* Checkbox Styles */
+.effects-toggle-container {
+    display: flex;
+    justify-content: flex-start; /* Align to left as requested (implicit "move it") */
+    margin-top: 5px;
+    padding-left: 5px;
+}
+
+.pixel-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px; /* Slightly easier to read */
+    color: rgba(255, 255, 255, 0.6);
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.pixel-checkbox-label:hover {
+    color: #fff;
+}
+
+.checkbox-text {
+    font-weight: 500;
+}
+
+.pixel-checkbox-label input[type="checkbox"] {
+    accent-color: #4a9eff;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+}
+
+/* Visibility Control for Effects Layer */
+.effect-layer.effects-off {
+    visibility: hidden; /* Hides the layer but keeps DOM/Animation state running invisibly */
 }
 </style>
 

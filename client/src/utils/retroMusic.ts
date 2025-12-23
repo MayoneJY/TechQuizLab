@@ -9,7 +9,7 @@ class RetroMusicPlayer {
   private gameMusicPath = '/game-music.mp3' // 게임 화면용 브금 (public 폴더에 game-music.mp3 파일을 넣어주세요)
   private gameAudio: HTMLAudioElement | null = null
   private isGameMusicPlaying = false
-  
+
   // 랜덤 메인 브금 파일 경로 배열 (5개)
   private mainMusicPaths = [
     '/main-music1.mp3',
@@ -26,17 +26,17 @@ class RetroMusicPlayer {
         this.audio.loop = true // 반복 재생
         this.audio.volume = this.volume
         this.audio.preload = 'auto'
-        
+
         // 에러 핸들링
         this.audio.addEventListener('error', (e) => {
           console.error('❌ Audio load error:', e)
           console.error('❌ Make sure music.mp3 file exists in public folder')
         })
-        
+
         this.audio.addEventListener('loadeddata', () => {
           console.log('✅ Music file loaded successfully')
         })
-        
+
         console.log('✅ Audio element initialized, path:', this.musicPath)
       } catch (error) {
         console.error('❌ Failed to initialize Audio:', error)
@@ -53,7 +53,7 @@ class RetroMusicPlayer {
 
     try {
       await this.init()
-      
+
       if (!this.audio) {
         console.error('❌ Audio element is null')
         return
@@ -61,15 +61,15 @@ class RetroMusicPlayer {
 
       this.isPlaying = true
       this.audio.volume = this.volume
-      
+
       try {
         // 자동 재생을 위한 추가 시도
         const playPromise = this.audio.play()
-        
+
         if (playPromise !== undefined) {
           await playPromise
         }
-        
+
         console.log('🎵 Music started playing')
         console.log('🎵 File path:', this.musicPath)
         console.log('🎵 Volume:', this.volume)
@@ -95,7 +95,7 @@ class RetroMusicPlayer {
   stop() {
     console.log('🛑 Stopping music')
     this.isPlaying = false
-    
+
     if (this.audio) {
       this.audio.pause()
       this.audio.currentTime = 0
@@ -134,16 +134,16 @@ class RetroMusicPlayer {
         this.gameAudio.loop = true
         this.gameAudio.volume = this.volume
         this.gameAudio.preload = 'auto'
-        
+
         this.gameAudio.addEventListener('error', (e) => {
           console.error('❌ Game music load error:', e)
           console.error('❌ Make sure game-music.mp3 file exists in public folder')
         })
-        
+
         this.gameAudio.addEventListener('loadeddata', () => {
           console.log('✅ Game music file loaded successfully')
         })
-        
+
         console.log('✅ Game audio element initialized, path:', this.gameMusicPath)
       } catch (error) {
         console.error('❌ Failed to initialize game audio:', error)
@@ -167,7 +167,7 @@ class RetroMusicPlayer {
       }
 
       await this.initGameMusic()
-      
+
       if (!this.gameAudio) {
         console.error('❌ Game audio element is null')
         return
@@ -175,7 +175,7 @@ class RetroMusicPlayer {
 
       this.isGameMusicPlaying = true
       this.gameAudio.volume = this.volume
-      
+
       try {
         const playPromise = this.gameAudio.play()
         if (playPromise !== undefined) {
@@ -203,7 +203,7 @@ class RetroMusicPlayer {
   stopGameMusic() {
     console.log('🛑 Stopping game music')
     this.isGameMusicPlaying = false
-    
+
     if (this.gameAudio) {
       this.gameAudio.pause()
       this.gameAudio.currentTime = 0
@@ -228,20 +228,20 @@ class RetroMusicPlayer {
     // 랜덤으로 메인 브금 선택
     const randomIndex = Math.floor(Math.random() * this.mainMusicPaths.length)
     const selectedPath = this.mainMusicPaths[randomIndex]
-    
+
     console.log(`🎲 Random main music selected: ${selectedPath} (${randomIndex + 1}/5)`)
-    
+
     // 기존 오디오가 있으면 정지하고 새로 초기화
     if (this.audio) {
       this.audio.pause()
       this.audio.currentTime = 0
       this.isPlaying = false
     }
-    
+
     // 새로운 경로로 설정
     this.musicPath = selectedPath
     this.audio = null // 기존 오디오 제거하여 새로 초기화
-    
+
     // 재생
     await this.play()
   }
@@ -250,6 +250,37 @@ class RetroMusicPlayer {
   setMainMusicPaths(paths: string[]) {
     if (paths.length > 0) {
       this.mainMusicPaths = paths
+    }
+  }
+
+  // 타이핑 효과음 (pop.mp3)
+  private typingAudio: HTMLAudioElement | null = null
+
+  async playTypingSound() {
+    if (this.volume <= 0) return // 음소거 상태면 재생 안함
+
+    try {
+      if (!this.typingAudio) {
+        this.typingAudio = new Audio('/pop.mp3')
+        this.typingAudio.volume = this.volume
+      }
+
+      // 볼륨 동기화
+      this.typingAudio.volume = this.volume
+
+      // 빠른 입력을 위해 클론하여 재생 (Polyphonic)
+      // cloneNode(true) creates a fresh audio element to allow overlapping sounds
+      const clone = this.typingAudio.cloneNode(true) as HTMLAudioElement
+      clone.volume = this.volume
+
+      const playPromise = clone.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Ignore auto-play blocks
+        })
+      }
+    } catch (e) {
+      // Ignore play errors
     }
   }
 }
