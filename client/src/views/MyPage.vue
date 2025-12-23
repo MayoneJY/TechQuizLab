@@ -153,7 +153,7 @@ async function saveProfile() {
   if (!user.value) return
 
   if (editForm.value.password && editForm.value.password !== editForm.value.confirmPassword) {
-    await modalStore.openAlert('Passwords do not match!')
+    await modalStore.openAlert('비밀번호가 일치하지 않습니다!')
     return
   }
 
@@ -171,18 +171,18 @@ async function saveProfile() {
     // Update store with new data
     authStore.user = { ...authStore.user, ...response.data }
     
-    await modalStore.openSuccess('Profile updated successfully!')
+    await modalStore.openSuccess('프로필이 성공적으로 수정되었습니다!')
     isEditing.value = false
   } catch (error: any) {
     console.error('Failed to update profile:', error)
-    await modalStore.openAlert(error.response?.data?.message || 'Failed to update profile.')
+    await modalStore.openAlert(error.response?.data?.message || '프로필 수정에 실패했습니다.')
   } finally {
     isLoading.value = false
   }
 }
 
 async function handleDeleteAccount() {
-  if (!await modalStore.openConfirm('Are you sure you want to delete your account? This action cannot be undone.')) return
+  if (!await modalStore.openConfirm('정말 회원 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
   if (!user.value) return
 
   isLoading.value = true
@@ -190,10 +190,10 @@ async function handleDeleteAccount() {
     await userApi.deleteUser(user.value.userId)
     authStore.logout()
     router.push('/login')
-    await modalStore.openAlert('Account deleted successfully.')
+    await modalStore.openAlert('회원 탈퇴가 완료되었습니다.')
   } catch (error: any) {
     console.error('Failed to delete account:', error)
-    await modalStore.openAlert('Failed to delete account.')
+    await modalStore.openAlert('회원 탈퇴에 실패했습니다.')
   } finally {
     isLoading.value = false
   }

@@ -20,34 +20,36 @@
         <result property="lastLoginAt" column="last_login_at"/>
         <result property="remainingLives" column="remaining_lives"/>
         <result property="lastLivesResetAt" column="last_lives_reset_at"/>
+        <result property="deletedAt" column="deleted_at"/>
     </resultMap>
 
     <select id="findAll" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at, deleted_at
         FROM user
+        WHERE deleted_at IS NULL
         ORDER BY created_at DESC
     </select>
 
     <select id="findById" parameterType="long" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at, deleted_at
         FROM user
-        WHERE user_id = #{id}
+        WHERE user_id = #{id} AND deleted_at IS NULL
     </select>
 
     <select id="findByEmail" parameterType="string" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at, deleted_at
         FROM user
-        WHERE email = #{email}
+        WHERE email = #{email} AND deleted_at IS NULL
     </select>
 
     <select id="findByNickname" parameterType="string" resultMap="userResultMap">
         SELECT user_id, email, password, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at
+               solved_count, current_streak, max_streak, last_login_at, remaining_lives, last_lives_reset_at, deleted_at
         FROM user
-        WHERE nickname = #{nickname}
+        WHERE nickname = #{nickname} AND deleted_at IS NULL
     </select>
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.user.entity.User" 
@@ -70,7 +72,8 @@
             max_streak = #{maxStreak},
             last_login_at = #{lastLoginAt},
             remaining_lives = #{remainingLives},
-            last_lives_reset_at = #{lastLivesResetAt}
+            last_lives_reset_at = #{lastLivesResetAt},
+            deleted_at = #{deletedAt}
         WHERE user_id = #{userId}
     </update>
 
@@ -82,25 +85,27 @@
     <select id="existsByEmail" parameterType="string" resultType="boolean">
         SELECT COUNT(*) > 0 
         FROM user 
-        WHERE email = #{email}
+        WHERE email = #{email} AND deleted_at IS NULL
     </select>
 
     <select id="existsByNickname" parameterType="string" resultType="boolean">
         SELECT COUNT(*) > 0 
         FROM user 
-        WHERE nickname = #{nickname}
+        WHERE nickname = #{nickname} AND deleted_at IS NULL
     </select>
 
     <select id="count" resultType="int">
         SELECT COUNT(*) 
         FROM user
+        WHERE deleted_at IS NULL
     </select>
 
     <!-- 랭킹 조회 (Top 10) -->
     <select id="findRankings" resultMap="userResultMap">
         SELECT user_id, email, nickname, level, exp, created_at, role, enabled,
-               solved_count, current_streak, max_streak, last_login_at
+               solved_count, current_streak, max_streak, last_login_at, deleted_at
         FROM user
+        WHERE deleted_at IS NULL
         ORDER BY exp DESC, level DESC, user_id ASC
         LIMIT 10
     </select>

@@ -97,8 +97,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public boolean deleteUser(Long userId) {
-        log.info("사용자 삭제 - ID: {}", userId);
-        return userDao.deleteById(userId) > 0;
+        log.info("사용자 탈퇴 처리 (Soft Delete) - ID: {}", userId);
+        User user = userDao.findById(userId);
+        if (user == null) {
+            return false;
+        }
+
+        user.setEnabled(false);
+        user.setDeletedAt(LocalDateTime.now());
+        userDao.update(user);
+
+        return true;
     }
 
     @Override

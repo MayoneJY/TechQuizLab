@@ -29,4 +29,5 @@ public class User {
     // Life System
     private Integer remainingLives; // 남은 목숨
     private LocalDateTime lastLivesResetAt; // 마지막 목숨 초기화 시간
+    private LocalDateTime deletedAt; // 탈퇴일 (Soft Delete)
 }
