@@ -183,9 +183,7 @@ const isCaretVisible = ref(true)
 const scrollOffset = ref(0)
 const isEffectsOn = ref(true) // Default to ON
 
-function toggleEffects() {
-    isEffectsOn.value = !isEffectsOn.value
-}
+
 
 // Stable ID system for characters to prevent unwanted re-animations
 interface CharObj {

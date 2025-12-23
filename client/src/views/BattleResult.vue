@@ -96,8 +96,8 @@
             <div v-for="(detail, index) in result.details" :key="detail.detailId" class="grading-card">
                 <div class="grading-header">
                     <div class="header-left">
-                        <span class="question-number">Q.{{ index + 1 }}</span>
-                        <span class="grading-score" :class="getScoreClass(detail.damage)">
+                        <span class="question-number">Q.{{ Number(index) + 1 }}</span>
+                        <span class="grading-score" :class="getScoreClass(Number(detail.damage))">
                             {{ detail.damage }}<span class="sub-score">/1000</span>
                         </span>
                     </div>
@@ -155,14 +155,11 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { battleApi } from '../services/api'
-import { useGameStore } from '../stores/game'
 import { useModalStore } from '../stores/modal'
 
 const router = useRouter()
 const route = useRoute()
-const gameStore = useGameStore()
 const modalStore = useModalStore()
-
 const loading = ref(true)
 const result = ref<any>(null)
 
@@ -242,7 +239,7 @@ onMounted(async () => {
                // Actually the above is sufficient.
            }
 
-           const totalScore = battle.totalDamage || details.reduce((acc: number, cur: any) => acc + (cur.damage || 0), 0)
+           const totalScore = battle.totalDamage || details.reduce((acc: number, cur: any) => acc + Number(cur.damage || 0), 0)
            
            result.value = {
                battle,
@@ -575,9 +572,7 @@ onMounted(async () => {
     animation: loading 1.5s infinite;
 }
 
-.skeleton-card {
-    /* reuse grading-card styles but maybe simpler */
-}
+
 
 @keyframes loading {
   0% { background-position: 200% 0; }

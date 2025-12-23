@@ -99,7 +99,7 @@
             
             <!-- Start Button if unplayed -->
             <div v-if="isUnplayed(battle)" class="action-area" @click.stop>
-                <button class="pixel-button primary small-btn" @click="handleStartBattle(battle.battleId)">
+                <button class="pixel-button challenge-btn" @click="handleStartBattle(battle.battleId)">
                     도전하기
                 </button>
             </div>
@@ -1000,6 +1000,34 @@ onMounted(async () => {
       height: 32px;
       font-size: 13px;
   }
+}
+
+
+/* Challenge Button Style */
+/* Challenge Button Style */
+.challenge-btn {
+    background: rgba(74, 158, 255, 0.1);
+    color: #74c0fc;
+    font-weight: 700;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 6px 14px;
+    font-size: 13px;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.challenge-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(74, 158, 255, 0.2);
+    border-color: rgba(74, 158, 255, 0.6);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(74, 158, 255, 0.2);
+}
+
+.challenge-btn:active {
+    transform: translateY(1px);
+    box-shadow: none;
+    background: rgba(74, 158, 255, 0.15);
 }
 
 </style>
