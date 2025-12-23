@@ -16,7 +16,6 @@ public class BattleDetail {
     private String keywordTags;
     private String difficulty;
     private String userAnswer;
-    private String aiFeedback;
     private String aiFeedbackGood;
     private String aiFeedbackBad;
     private Integer damage;

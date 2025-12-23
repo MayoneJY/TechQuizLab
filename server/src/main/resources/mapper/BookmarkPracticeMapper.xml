@@ -9,7 +9,6 @@
         <id property="bookmarkId" column="bookmark_id"/>
         <id property="practiceId" column="practice_id"/>
         <result property="userAnswer" column="user_answer"/>
-        <result property="aiFeedback" column="ai_feedback"/>
         <result property="aiFeedbackGood" column="ai_feedback_good"/>
         <result property="aiFeedbackBad" column="ai_feedback_bad"/>
         <result property="damage" column="damage"/>
@@ -21,10 +20,10 @@
 
     <insert id="insert" parameterType="com.mayonedev.battle.domain.battle.entity.BookmarkPractice">
         INSERT INTO bookmark_practice (
-            user_id, bookmark_id, practice_id, user_answer, ai_feedback, ai_feedback_good, ai_feedback_bad, damage, created_at
+            user_id, bookmark_id, practice_id, user_answer, ai_feedback_good, ai_feedback_bad, damage, created_at
         )
         VALUES (
-            #{userId}, #{bookmarkId}, #{practiceId}, #{userAnswer}, #{aiFeedback}, #{aiFeedbackGood}, #{aiFeedbackBad}, #{damage}, #{createdAt}
+            #{userId}, #{bookmarkId}, #{practiceId}, #{userAnswer}, #{aiFeedbackGood}, #{aiFeedbackBad}, #{damage}, #{createdAt}
         )
     </insert>
 
@@ -46,7 +45,6 @@
     <update id="updateResult" parameterType="com.mayonedev.battle.domain.battle.entity.BookmarkPractice">
         UPDATE bookmark_practice
         SET user_answer = #{userAnswer},
-            ai_feedback = #{aiFeedback},
             ai_feedback_good = #{aiFeedbackGood},
             ai_feedback_bad = #{aiFeedbackBad},
             damage = #{damage}

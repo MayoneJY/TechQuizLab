@@ -142,7 +142,6 @@ public class BattleServiceImpl implements BattleService {
                 d.setDifficulty(p.getDifficulty());
                 d.setKeywordTags(p.getKeywordTags());
                 d.setUserAnswer(p.getUserAnswer());
-                d.setAiFeedback(p.getAiFeedback());
                 d.setAiFeedbackGood(p.getAiFeedbackGood());
                 d.setAiFeedbackBad(p.getAiFeedbackBad());
                 d.setDamage(p.getDamage());
@@ -220,7 +219,6 @@ public class BattleServiceImpl implements BattleService {
                                 // 무의미한 답변이면 0점 확정
                                 if (isGibberishOrTooShort(cleanedAnswer)) {
                                     p.setDamage(0);
-                                    String all = "답변이 너무 짧거나 의미 없는 문자로 구성되어 0점 처리되었습니다.";
                                     String bad = (String) ((Map) evaluation.get("feedback")).get("bad");
 
                                     // bad에서 이미 "개선할 점:"이 포함되어 있을 수 있으므로 제거
@@ -231,11 +229,11 @@ public class BattleServiceImpl implements BattleService {
 
                                     p.setAiFeedbackGood("없음");
                                     p.setAiFeedbackBad(bad);
-                                    p.setAiFeedback(all + "\n" + "좋았던 점: 없음" + "\n" + "개선할 점: " + bad);
 
                                 } else {// 아닌 경우 정상적으로 점수
 
                                     int score = clampScore1000(evaluation.get("score"));
+                                    p.setDamage(score);
                                     Map fb = (Map) evaluation.get("feedback");
 
                                     String feedbackGood = (fb == null || fb.get("good") == null) ? "없음"
@@ -255,14 +253,14 @@ public class BattleServiceImpl implements BattleService {
 
                                     p.setAiFeedbackGood(feedbackGood);
                                     p.setAiFeedbackBad(feedbackBad);
-                                    p.setAiFeedback("좋았던 점: " + feedbackGood + "\n" + "개선할 점: " + feedbackBad);
 
                                 }
 
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 p.setDamage(0);
-                                p.setAiFeedback("채점 중 오류가 발생했습니다.");
+                                p.setAiFeedbackGood("채점 중 오류가 발생했습니다.");
+                                p.setAiFeedbackBad("없음");
                             }
                         }
                         return p;
@@ -292,7 +290,6 @@ public class BattleServiceImpl implements BattleService {
                 d.setDifficulty(p.getDifficulty());
                 d.setKeywordTags(p.getKeywordTags());
                 d.setUserAnswer(p.getUserAnswer());
-                d.setAiFeedback(p.getAiFeedback());
                 d.setAiFeedbackGood(p.getAiFeedbackGood());
                 d.setAiFeedbackBad(p.getAiFeedbackBad());
                 d.setDamage(p.getDamage());
@@ -345,10 +342,7 @@ public class BattleServiceImpl implements BattleService {
                                 feedbackBad = feedbackBad.substring("개선할 점:".length()).trim();
                             }
 
-                            String feedbackAll = "좋았던 점: " + feedbackGood + "\n" + "개선할 점: " + feedbackBad;
-
                             detail.setDamage(score);
-                            detail.setAiFeedback(feedbackAll);
                             detail.setAiFeedbackGood(feedbackGood);
                             detail.setAiFeedbackBad(feedbackBad);
 
@@ -356,7 +350,8 @@ public class BattleServiceImpl implements BattleService {
                             e.printStackTrace();
                             // Fallback or log error
                             detail.setDamage(0);
-                            detail.setAiFeedback("채점 중 오류가 발생했습니다.");
+                            detail.setAiFeedbackGood("채점 중 오류가 발생했습니다.");
+                            detail.setAiFeedbackBad("없음");
                         }
                     }
                     return detail;
