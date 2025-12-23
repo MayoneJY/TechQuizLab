@@ -202,7 +202,7 @@
           <!-- Widget: Recent Battles -->
           <div class="dashboard-widget glass-panel">
             <div class="widget-header-row">
-              <h3 class="widget-title pixel-text">최근 전투 기록</h3>
+              <h3 class="widget-title pixel-text">최근 면접 기록</h3>
               <span class="view-all-btn" @click="router.push('/my-battles')">전체보기 ›</span>
             </div>
             
@@ -248,7 +248,7 @@
                  </div>
                </div>
                <div v-else class="empty-widget-text">
-                  아직 전투 기록이 없습니다.
+                  아직 면접 기록이 없습니다.
                </div>
             </template>
           </div>

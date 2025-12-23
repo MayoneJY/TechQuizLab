@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="content-wrapper glass-panel">
       <div class="page-header">
-        <h2 class="page-title pixel-text">전투 기록</h2>
+        <h2 class="page-title pixel-text">면접 기록</h2>
         <button class="back-btn pixel-button" @click="router.push('/')">뒤로가기</button>
       </div>
 
@@ -110,10 +110,10 @@
 
       <div v-else class="empty-state">
         <div class="empty-icon">⚔️</div>
-        <p class="empty-text">아직 진행한 전투가 없습니다.</p>
+        <p class="empty-text">아직 진행한 면접이 없습니다.</p>
         <p class="empty-subtext">지금 바로 모의 면접에 도전해보세요!</p>
         <button class="pixel-button primary big-btn" @click="router.push('/stages')">
-            새로운 전투 시작하기
+            새로운 면접 시작하기
         </button>
       </div>
 
@@ -410,7 +410,7 @@ async function createBattleFromQuery() {
                  }
             }
             else {
-                await modalStore.openAlert(e.response?.data?.message || '전투 생성에 실패했습니다.')
+                await modalStore.openAlert(e.response?.data?.message || '면접 생성에 실패했습니다.')
             }
         } finally {
             isCreating.value = false

@@ -71,7 +71,7 @@
       </div>
       
       <div v-else-if="result" class="result-content">
-        <h1 class="pixel-text victory-title glitch" data-text="미션 성공">미션 성공</h1>
+        <h1 class="pixel-text victory-title glitch" data-text="미션 완료">미션 완료</h1>
         
         <!-- Metadata Header -->
         <div class="meta-header">
