@@ -5,32 +5,60 @@
       <!-- Skeleton Loading State -->
       <div v-if="loading" class="result-content skeleton-content">
         <h1 class="pixel-text victory-title">결과 분석 중...</h1>
-        <h2 class="final-score pixel-text skeleton-title">
-            <div class="skeleton-text short"></div>
-        </h2>
+        
+        <!-- Updated Meta Header Skeleton -->
+        <div class="meta-header">
+             <div class="meta-left-col">
+                 <div class="meta-main-row">
+                     <div class="skeleton-text badge-size"></div>
+                     <span class="meta-separator">|</span>
+                     <div class="skeleton-text stage-size"></div>
+                 </div>
+                 <div class="skeleton-text date-size"></div>
+             </div>
+
+             <div class="score-display">
+                <span class="score-label">FINAL SCORE</span>
+                <div class="score-value pixel-text" style="display: flex; align-items: baseline; gap: 4px;">
+                     <div class="skeleton-text score-size" style="width: 60px; margin: 0;"></div>
+                     <span class="sub-score" style="opacity: 0.5;">/ 10000</span>
+                </div>
+             </div>
+        </div>
         
         <div class="grading-results-scroll">
             <div v-for="i in 3" :key="i" class="grading-card skeleton-card">
                 <div class="grading-header">
                      <div class="header-left">
-                        <div class="skeleton-text mini"></div>
+                        <span class="question-number">Q.{{ i }}</span>
                         <div class="skeleton-text small"></div>
                      </div>
-                     <div class="skeleton-text button-shape"></div>
+                     <div class="skeleton-text button-shape bookmark-size"></div>
                 </div>
                 
-                <div class="skeleton-text medium"></div>
+                <div class="skeleton-text medium grading-question-text" style="display:block; margin-top: 0;"></div>
                 
                 <div class="grading-body">
                     <div class="answer-box">
-                        <div class="skeleton-text label-size"></div>
+                        <span class="label">나의 답변:</span>
                         <div class="skeleton-text long"></div>
+                        <div class="skeleton-text long" style="width: 80%"></div>
                     </div>
                     
                     <div class="feedback-box">
-                        <div class="skeleton-text label-size"></div>
-                        <div class="skeleton-text long"></div>
-                        <div class="skeleton-text long"></div>
+                        <span class="label">AI 피드백:</span>
+                        <div class="feedback-sections">
+                            <div class="feedback-section feedback-good">
+                                <div class="feedback-title">좋았던 점</div>
+                                <div class="skeleton-text long"></div>
+                                <div class="skeleton-text long" style="width: 90%"></div>
+                            </div>
+                            <div class="feedback-section feedback-bad">
+                                <div class="feedback-title">개선할 점</div>
+                                <div class="skeleton-text long"></div>
+                                <div class="skeleton-text long" style="width: 85%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -519,6 +547,13 @@ onMounted(async () => {
 .skeleton-text.long { width: 100%; height: 16px; margin-bottom: 8px; }
 .skeleton-text.label-size { width: 60px; height: 12px; margin-bottom: 8px; }
 .skeleton-text.button-shape { width: 60px; height: 24px; border-radius: 12px; }
+.skeleton-text.bookmark-size { width: 80px; height: 24px; } /* Added bookmark size */
+
+/* New Skeleton Sizes for Meta Header */
+.skeleton-text.badge-size { width: 60px; height: 22px; border-radius: 4px; }
+.skeleton-text.stage-size { width: 150px; height: 20px; }
+.skeleton-text.date-size { width: 120px; height: 14px; margin-top: 4px; }
+.skeleton-text.score-size { width: 80px; height: 28px; }
 
 .skeleton-button {
     width: 200px;
