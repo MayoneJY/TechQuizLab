@@ -76,7 +76,7 @@
         </div>
 
         <div class="progress-bar-container">
-          <div class="progress-bar" :style="{ width: `${(timeLeft / 300) * 100}%` }"></div>
+          <div class="progress-bar" :style="{ width: `${(timeLeft / 180) * 100}%` }"></div>
         </div>
       </div>
       
@@ -144,7 +144,7 @@ const answerInput = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
 // Timer Logic
-const timeLeft = ref(300)
+const timeLeft = ref(180)
 const timerInterval = ref<number | null>(null)
 
 function startTimer() {
@@ -157,6 +157,7 @@ function startTimer() {
   // Let's make it 300s TOTAL for the game.
   
   if (timerInterval.value === null) {
+      if (timeLeft.value <= 0) timeLeft.value = 180 // Ensure reset if retrying
       timerInterval.value = window.setInterval(() => {
         if (gameStore.gameStatus !== 'playing') {
              stopTimer()
@@ -181,8 +182,8 @@ function stopTimer() {
 }
 
 async function handleTimeout() {
-  // Time over -> Finish Game
-  await gameStore.finishGame()
+  // Time over -> Auto Submit and Next Question
+  await submitAnswer(true)
 }
 
 async function handleSubmit() {
@@ -193,10 +194,14 @@ async function handleSubmit() {
 // function bookmarkQuestion() ... removed
 
 async function submitAnswer(isTimeout = false) {
+  // Guard against race conditions
+  if (gameStore.isLoading) return
+
   if (!answerInput.value && gameStore.selectedAnswer === null && !isTimeout) return
   if (!gameStore.currentQuiz) return
   
-  // stopTimer() // Don't stop timer, it's total time
+  // Stop timer to prevent race with timeout while submitting
+  stopTimer()
   
   const answer = answerInput.value || gameStore.selectedAnswer || ''
   if (!gameStore.selectedAnswer) {
@@ -236,6 +241,8 @@ async function handleGiveUp() {
 // Watch for question change
 watch(() => gameStore.currentQuestionIndex, () => {
   if (gameStore.gameStatus === 'playing') {
+    timeLeft.value = 180 // Reset timer for new question
+    startTimer() // Ensure timer restarts for the new question
     answerInput.value = ''
     setTimeout(() => {
       inputRef.value?.focus()
