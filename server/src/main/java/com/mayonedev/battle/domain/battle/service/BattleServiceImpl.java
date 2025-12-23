@@ -459,64 +459,73 @@ public class BattleServiceImpl implements BattleService {
     }
 
     @Override
-    @Transactional
     public Battle createPracticeBattle(Long userId) {
         List<BattleBookmark> bookmarks = battleBookmarkDao.findBookmarks(userId, null, null, null, null, null);
         if (bookmarks == null || bookmarks.isEmpty()) {
             throw new RuntimeException("북마크된 문제가 없습니다. 오답노트를 먼저 추가해주세요.");
         }
 
-        // Shuffle and pick up to 10
-        java.util.Collections.shuffle(bookmarks);
-        List<BattleBookmark> selected = bookmarks.stream()
-                .limit(10)
-                .collect(java.util.stream.Collectors.toList());
+        // 1. Consume Life
+        userService.consumeLife(userId);
 
-        Battle battle = new Battle();
-        battle.setUserId(userId);
+        try {
+            // Shuffle and pick up to 10
+            java.util.Collections.shuffle(bookmarks);
+            List<BattleBookmark> selected = bookmarks.stream()
+                    .limit(10)
+                    .collect(java.util.stream.Collectors.toList());
 
-        // Retrieve user's portfolios and select the latest one
-        List<com.mayonedev.battle.domain.gamification.entity.Portfolio> portfolios = portfolioDao
-                .findAllByUserId(userId);
-        if (portfolios != null && !portfolios.isEmpty()) {
-            battle.setPfId(portfolios.get(0).getPfId());
-        } else {
-            // For practice, if they have no portfolio but have bookmarks (unlikely but
-            // possible if portfolio deleted?),
-            // we might need a fallback or fail.
-            // Given bookmarks exist, they probably had a portfolio.
-            // If portfolio is missing, maybe set 0 or fail. Let's fail for consistency.
-            throw new RuntimeException("Portfolio not found. Please create a portfolio first.");
+            Battle battle = new Battle();
+            battle.setUserId(userId);
+
+            // Retrieve user's portfolios and select the latest one
+            List<com.mayonedev.battle.domain.gamification.entity.Portfolio> portfolios = portfolioDao
+                    .findAllByUserId(userId);
+            if (portfolios != null && !portfolios.isEmpty()) {
+                battle.setPfId(portfolios.get(0).getPfId());
+            } else {
+                throw new RuntimeException("Portfolio not found. Please create a portfolio first.");
+            }
+
+            battle.setStageId(0L); // Practice mode uses 0
+            battle.setStatus("IN_PROGRESS");
+            battle.setTotalDamage(0);
+            battle.setCreatedAt(LocalDateTime.now());
+            battle.setStageTitle("오답 복습 (Practice)");
+
+            // Generate battleId
+            Long maxBattleId = battleDao.findMaxBattleIdByUserId(userId);
+            Long nextBattleId = (maxBattleId == null) ? 1L : maxBattleId + 1;
+            battle.setBattleId(nextBattleId);
+
+            battleDao.insert(battle);
+
+            // Clean up any orphaned practice rows for this ID (safeguard)
+            bookmarkPracticeDao.deleteByPracticeId(userId, nextBattleId);
+
+            for (BattleBookmark b : selected) {
+                com.mayonedev.battle.domain.battle.entity.BookmarkPractice practice = new com.mayonedev.battle.domain.battle.entity.BookmarkPractice();
+                practice.setUserId(userId);
+                practice.setBookmarkId(b.getBookmarkId());
+                practice.setPracticeId(nextBattleId); // Use BattleId as PracticeId
+                practice.setCreatedAt(LocalDateTime.now());
+                practice.setDamage(0);
+
+                bookmarkPracticeDao.insert(practice);
+            }
+
+            return battle;
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Refund Life on Failure
+            try {
+                userService.refundLife(userId);
+            } catch (Exception ex) {
+                System.err.println("Failed to refund life for user " + userId);
+                ex.printStackTrace();
+            }
+            throw new RuntimeException(e.getMessage(), e);
         }
-
-        battle.setStageId(0L); // Practice mode uses 0
-        battle.setStatus("IN_PROGRESS");
-        battle.setTotalDamage(0);
-        battle.setCreatedAt(LocalDateTime.now());
-        battle.setStageTitle("오답 복습 (Practice)");
-
-        // Generate battleId
-        Long maxBattleId = battleDao.findMaxBattleIdByUserId(userId);
-        Long nextBattleId = (maxBattleId == null) ? 1L : maxBattleId + 1;
-        battle.setBattleId(nextBattleId);
-
-        battleDao.insert(battle);
-
-        // Clean up any orphaned practice rows for this ID (safeguard)
-        bookmarkPracticeDao.deleteByPracticeId(userId, nextBattleId);
-
-        for (BattleBookmark b : selected) {
-            com.mayonedev.battle.domain.battle.entity.BookmarkPractice practice = new com.mayonedev.battle.domain.battle.entity.BookmarkPractice();
-            practice.setUserId(userId);
-            practice.setBookmarkId(b.getBookmarkId());
-            practice.setPracticeId(nextBattleId); // Use BattleId as PracticeId
-            practice.setCreatedAt(LocalDateTime.now());
-            practice.setDamage(0);
-
-            bookmarkPracticeDao.insert(practice);
-        }
-
-        return battle;
     }
 
     @Override

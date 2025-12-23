@@ -448,17 +448,29 @@ function goToBoard() { router.push('/board') }
 function goToMyPage() { router.push('/mypage') }
 
 async function startPractice() {
-  if (await modalStore.openConfirm('오답노트에 저장된 문제로 연습 게임을 시작하시겠습니까?')) {
+  if ((authStore.user?.remainingLives ?? 0) <= 0) {
+    modalStore.openConfirm('오늘의 도전 횟수를 모두 소진했습니다.\n충전 페이지로 이동하시겠습니까?').then(confirmed => {
+      if (confirmed) {
+        router.push('/charge');
+      }
+    });
+    return;
+  }
+
+  if (await modalStore.openConfirm('오답노트에 저장된 문제로 연습 게임을 시작하시겠습니까?\n(하트 1개가 소모됩니다)')) {
     try {
       const response = await battleApi.createPracticeBattle()
+      // Decrease life locally for immediate feedback (optional, but good UX)
+      if (authStore.user) {
+          const currentLives = authStore.user.remainingLives ?? 0;
+          authStore.user.remainingLives = Math.max(0, currentLives - 1);
+      }
       router.push(`/game?battleId=${response.data.battleId}`)
     } catch (e: any) {
       console.error(e)
       
       // Handle Portfolio Error (Practice Mode)
       if (e.response?.data?.message?.toLowerCase().includes('portfolio') || e.message?.toLowerCase().includes('portfolio')) {
-           // Different message might be needed? "Practice requires a portfolio too?"
-           // Or just the same "Create portfolio first?"
            if (await modalStore.openConfirm('연습 게임을 위해서도 포트폴리오가 필요합니다. 생성하시겠습니까?')) {
                 router.push('/portfolio')
            }
@@ -485,6 +497,8 @@ async function startPractice() {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: min(5vh, 40px);
 }
 
 /* Skeleton Effect */
