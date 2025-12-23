@@ -35,6 +35,7 @@
         FROM user_daily_mission udm
         JOIN daily_mission dm ON udm.mission_id = dm.mission_id
         WHERE udm.user_id = #{userId} AND udm.mission_date = #{date}
+        ORDER BY udm.is_completed ASC, dm.mission_id ASC
     </select>
     
     <select id="findByCompositeKey" resultMap="userDailyMissionResultMap">

@@ -148,7 +148,10 @@
 
           <!-- Widget: Daily Mission Status -->
           <div class="dashboard-widget glass-panel">
-            <h3 class="widget-title pixel-text">오늘의 미션</h3>
+            <div class="widget-header-row">
+                <h3 class="widget-title pixel-text">오늘의 미션</h3>
+                <span class="view-all-btn" @click="goToGamification">전체보기 ›</span>
+            </div>
             
             <template v-if="isDashboardLoading">
               <div class="mini-mission-list">
@@ -159,9 +162,9 @@
               </div>
             </template>
             <template v-else>
-              <div v-if="dailyMissions.length > 0" class="mini-mission-list">
+              <div v-if="widgetMissions.length > 0" class="mini-mission-list">
                 <div 
-                  v-for="mission in dailyMissions" 
+                  v-for="mission in widgetMissions" 
                   :key="mission.missionId"
                   class="mini-mission-item"
                   :class="{ completed: mission.isCompleted }"
@@ -186,6 +189,8 @@
               </div>
             </template>
           </div>
+
+
 
           <!-- Widget: Rival Status -->
           <div v-if="rival" class="dashboard-widget glass-panel rival-widget">
@@ -368,6 +373,17 @@ const recentBattles = ref<DashboardBattle[]>([])
 const recentBookmarks = ref<DashboardBookmark[]>([])
 
 const dailyMissions = computed(() => gamificationStore.dailyMissions)
+const widgetMissions = computed(() => {
+    // 1. Clone array to sort
+    const missions = [...dailyMissions.value];
+    // 2. Sort: Uncompleted first
+    missions.sort((a, b) => {
+        if (a.isCompleted === b.isCompleted) return 0;
+        return a.isCompleted ? 1 : -1;
+    });
+    // 3. Take top 3
+    return missions.slice(0, 3);
+})
 const rival = computed(() => gamificationStore.friends.find(f => f.isRival))
 
 // Mock max exp logic (could be from store config)
@@ -1306,6 +1322,7 @@ async function startPractice() {
     transform: scale(0.5);
   }
 }
+
 
 
 </style>

@@ -13,6 +13,7 @@ import com.mayonedev.battle.domain.board.dao.BoardPostDao;
 import com.mayonedev.battle.domain.board.dao.BoardPostlikeDao;
 import com.mayonedev.battle.domain.board.dto.BoardPostDto;
 import com.mayonedev.battle.domain.board.entity.Post;
+import com.mayonedev.battle.domain.gamification.service.GamificationService;
 
 @Service("BoardServiceImplMapper")
 public class BoardServiceImplMapper implements BoardService {
@@ -25,6 +26,9 @@ public class BoardServiceImplMapper implements BoardService {
 
 	@Autowired
 	public BoardPostlikeDao likeDao;
+
+	@Autowired
+	private GamificationService gamificationService;
 
 	@Override
 	public List<BoardPostDto> selectPostAll() throws Exception {
@@ -168,6 +172,11 @@ public class BoardServiceImplMapper implements BoardService {
 	@Override
 	public void insertPost(Post Post) throws Exception {
 		bDao.insertPost(Post);
+		try {
+			gamificationService.completeMission(Post.getUserId(), "POST_WRITE");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

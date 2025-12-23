@@ -32,6 +32,7 @@ export interface UserDailyMission {
   mission?: {
     missionId: number
     title: string
+    content?: string
     missionType: string
     goalCount: number
     rewardExp: number

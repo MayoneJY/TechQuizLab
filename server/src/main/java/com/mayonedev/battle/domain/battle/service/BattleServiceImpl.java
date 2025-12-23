@@ -20,6 +20,7 @@ import com.mayonedev.battle.domain.battle.entity.BattleBookmark;
 import com.mayonedev.battle.domain.battle.entity.BattleDetail;
 import com.mayonedev.battle.domain.stage.dao.StageDao;
 import com.mayonedev.battle.domain.stage.entity.Stage;
+import com.mayonedev.battle.domain.gamification.service.GamificationService;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,7 @@ public class BattleServiceImpl implements BattleService {
     private final ObjectMapper objectMapper;
     private final com.mayonedev.battle.domain.user.service.UserService userService;
     private final org.springframework.transaction.support.TransactionTemplate transactionTemplate;
+    private final GamificationService gamificationService;
 
     @Override
     // Removed @Transactional to handle transactions manually
@@ -370,6 +372,16 @@ public class BattleServiceImpl implements BattleService {
         battle.setStatus("COMPLETED");
         battleDao.updateStatus(battle);
         battleDao.updateTotalDamage(battle);
+
+        try {
+             if (battle.getStageId() != null && battle.getStageId() > 0) {
+                 gamificationService.completeMockInterview(userId, battle.getStageId());
+             }
+        } catch (Exception e) {
+             // Log error but don't fail the battle finish
+             System.err.println("Failed to update gamification: " + e.getMessage());
+             e.printStackTrace();
+        }
 
         return Map.of(
                 "totalScore", totalDamage,

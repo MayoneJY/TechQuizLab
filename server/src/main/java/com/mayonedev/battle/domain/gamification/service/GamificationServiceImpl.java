@@ -4,12 +4,16 @@ import com.mayonedev.battle.domain.gamification.dao.AchievementDao;
 import com.mayonedev.battle.domain.gamification.dao.DailyMissionDao;
 import com.mayonedev.battle.domain.gamification.dao.UserAchievementDao;
 import com.mayonedev.battle.domain.gamification.dao.UserDailyMissionDao;
+import com.mayonedev.battle.domain.gamification.dao.DailyLogDao;
+import com.mayonedev.battle.domain.gamification.dao.InterviewHistoryDao;
 import com.mayonedev.battle.domain.user.dao.UserDao;
 import com.mayonedev.battle.domain.user.dao.FriendDao;
 import com.mayonedev.battle.domain.gamification.dto.FriendDTO;
 import com.mayonedev.battle.domain.gamification.dto.RankingDTO;
 import com.mayonedev.battle.domain.gamification.entity.Achievement;
 import com.mayonedev.battle.domain.gamification.entity.DailyMission;
+import com.mayonedev.battle.domain.gamification.entity.DailyLog;
+import com.mayonedev.battle.domain.gamification.entity.InterviewHistory;
 import com.mayonedev.battle.domain.user.entity.User;
 import com.mayonedev.battle.domain.user.entity.Friend;
 import com.mayonedev.battle.domain.gamification.entity.UserAchievement;
@@ -36,6 +40,8 @@ public class GamificationServiceImpl implements GamificationService {
     private final UserDailyMissionDao userDailyMissionDao;
     private final UserDao userDao;
     private final FriendDao friendDao;
+    private final DailyLogDao dailyLogDao;
+    private final InterviewHistoryDao interviewHistoryDao;
 
     @Override
     public List<Achievement> getAllAchievements() {
@@ -56,19 +62,30 @@ public class GamificationServiceImpl implements GamificationService {
     @Transactional
     public List<UserDailyMission> getDailyMissions(Long userId) {
         LocalDate today = LocalDate.now();
-        List<UserDailyMission> missions = userDailyMissionDao.findByUserIdAndDate(userId, today);
+        List<UserDailyMission> userMissions = userDailyMissionDao.findByUserIdAndDate(userId, today);
+        List<DailyMission> allActiveMissions = dailyMissionDao.findAll();
 
-        if (missions.isEmpty()) {
-            System.out.println("SERVICE: No existing missions. Creating new ones for userId=" + userId);
-            // Assign missions
-            List<DailyMission> allMissions = dailyMissionDao.findAll();
-            // Randomly pick 3
-            for (int i = 0; i < Math.min(3, allMissions.size()); i++) {
-                DailyMission dm = allMissions.get(i);
+        // Create a set of already assigned mission IDs
+        List<Integer> assignedMissionIds = userMissions.stream()
+                .map(UserDailyMission::getMissionId)
+                .collect(Collectors.toList());
+
+        boolean isUpdated = false;
+
+        for (DailyMission dm : allActiveMissions) {
+            if (!assignedMissionIds.contains(dm.getMissionId())) {
+                // Determine if this is a new assignment or synchronization
+                if (userMissions.isEmpty()) {
+                    System.out.println("SERVICE: New day mission assignment for userId=" + userId);
+                } else {
+                    System.out.println("SERVICE: Syncing missing mission " + dm.getTitle() + " for userId=" + userId);
+                }
+
                 UserDailyMission udm = new UserDailyMission();
                 udm.setUserId(userId);
                 udm.setMissionDate(today);
                 udm.setMissionId(dm.getMissionId());
+
                 // Auto-complete if type is LOGIN or ATTENDANCE
                 if ("LOGIN".equalsIgnoreCase(dm.getMissionType())
                         || "ATTENDANCE".equalsIgnoreCase(dm.getMissionType())) {
@@ -80,17 +97,10 @@ public class GamificationServiceImpl implements GamificationService {
                     try {
                         User user = userDao.findById(userId);
                         if (user != null) {
-                            System.out.println("SERVICE: Auto-rewarding mission " + dm.getTitle());
                             grantExpAndLevelUp(user, Long.valueOf(dm.getRewardExp()));
-                            log.info("Auto-rewarded mission: {} for user: {}", dm.getTitle(), userId);
-                        } else {
-                            log.error("User not found for auto-reward: {}", userId);
                         }
                     } catch (Exception e) {
-                        System.err.println("SERVICE ERROR: Auto-reward failed: " + e.getMessage());
-                        e.printStackTrace();
                         log.error("Failed to auto-reward mission", e);
-                        // Do not fail the whole request, just log
                     }
                 } else {
                     udm.setCurrentCount(0);
@@ -101,12 +111,31 @@ public class GamificationServiceImpl implements GamificationService {
                 udm.setCreatedAt(LocalDateTime.now());
 
                 userDailyMissionDao.insert(udm);
-                // Also set the mission object for return if needed
+                // Also set the mission object for return
                 udm.setMission(dm);
-                missions.add(udm);
+                userMissions.add(udm);
+                isUpdated = true;
             }
         }
-        return missions;
+
+        // If we updated the list, we might want to re-sort it based on completion
+        // status to match the DB order
+        // But since the frontend uses the list returned here, and we just appended to
+        // it...
+        // The DB query has ORDER BY, but our local list 'userMissions' is now mixed (DB
+        // part sorted + new part appended).
+        // It's better to sort it here to ensure consistency with the user's expectation
+        // (uncompleted first).
+        if (isUpdated) {
+            userMissions.sort((a, b) -> {
+                if (a.getIsCompleted() == b.getIsCompleted()) {
+                    return Integer.compare(a.getMissionId(), b.getMissionId());
+                }
+                return Boolean.compare(a.getIsCompleted(), b.getIsCompleted());
+            });
+        }
+
+        return userMissions;
     }
 
     private void grantExpAndLevelUp(User user, Long expAmount) {
@@ -198,6 +227,111 @@ public class GamificationServiceImpl implements GamificationService {
             friendDao.insert(friend);
         } catch (Exception e) {
             throw new RuntimeException("이미 등록된 친구이거나 친구 추가에 실패했습니다.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void completeMockInterview(Long userId, Long stageId) {
+        // 1. Record History
+        try {
+            InterviewHistory history = new InterviewHistory();
+            history.setUserId(userId);
+            history.setStageId(stageId);
+            history.setCompletedAt(LocalDateTime.now());
+            interviewHistoryDao.insert(history);
+        } catch (Exception e) {
+            log.error("Failed to record interview history", e);
+        }
+
+        // 2. Daily Mission Check
+        LocalDate today = LocalDate.now();
+        List<UserDailyMission> missions = userDailyMissionDao.findByUserIdAndDate(userId, today);
+
+        if (missions.isEmpty()) {
+            missions = getDailyMissions(userId);
+        }
+
+        for (UserDailyMission udm : missions) {
+            DailyMission dm = udm.getMission();
+            // Assuming Mission ID 2 "모의면접 3회 완료" is BATTLE_PLAY
+            if ("BATTLE_PLAY".equalsIgnoreCase(dm.getMissionType()) && !udm.getIsCompleted()) {
+                int newCount = udm.getCurrentCount() + 1;
+                udm.setCurrentCount(newCount);
+
+                boolean completed = newCount >= dm.getGoalCount();
+                udm.setIsCompleted(completed);
+
+                if (completed) {
+                    udm.setIsRewarded(true); // Auto-reward
+
+                    // Grant User Exp
+                    int reward = dm.getRewardExp();
+                    User user = userDao.findById(userId);
+                    grantExpAndLevelUp(user, Long.valueOf(reward));
+
+                    // Update Daily Log
+                    DailyLog dailyLog = dailyLogDao.findByUserAndDate(userId, today);
+                    if (dailyLog == null) {
+                        dailyLog = new DailyLog(userId, today, true, reward);
+                        dailyLogDao.insert(dailyLog);
+                    } else {
+                        dailyLog.setDailyExp(dailyLog.getDailyExp() + reward);
+                        dailyLogDao.update(dailyLog);
+                    }
+
+                    userDailyMissionDao.updateRewardStatus(userId, today, udm.getMissionId(), true);
+                }
+
+                // Update Progress always (IsCompleted will be updated here too)
+                userDailyMissionDao.updateProgress(udm);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void completeMission(Long userId, String missionType) {
+        LocalDate today = LocalDate.now();
+        List<UserDailyMission> missions = userDailyMissionDao.findByUserIdAndDate(userId, today);
+
+        if (missions.isEmpty()) {
+            missions = getDailyMissions(userId);
+        }
+
+        for (UserDailyMission udm : missions) {
+            DailyMission dm = udm.getMission();
+            if (missionType.equalsIgnoreCase(dm.getMissionType()) && !udm.getIsCompleted()) {
+                int newCount = udm.getCurrentCount() + 1;
+                udm.setCurrentCount(newCount);
+
+                boolean completed = newCount >= dm.getGoalCount();
+                udm.setIsCompleted(completed);
+
+                if (completed) {
+                    udm.setIsRewarded(true); // Auto-reward
+
+                    // Grant User Exp
+                    int reward = dm.getRewardExp();
+                    User user = userDao.findById(userId);
+                    grantExpAndLevelUp(user, Long.valueOf(reward));
+
+                    // Update Daily Log
+                    DailyLog dailyLog = dailyLogDao.findByUserAndDate(userId, today);
+                    if (dailyLog == null) {
+                        dailyLog = new DailyLog(userId, today, true, reward);
+                        dailyLogDao.insert(dailyLog);
+                    } else {
+                        dailyLog.setDailyExp(dailyLog.getDailyExp() + reward);
+                        dailyLogDao.update(dailyLog);
+                    }
+
+                    userDailyMissionDao.updateRewardStatus(userId, today, udm.getMissionId(), true);
+                }
+
+                // Update Progress
+                userDailyMissionDao.updateProgress(udm);
+            }
         }
     }
 }

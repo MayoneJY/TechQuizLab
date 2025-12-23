@@ -9,12 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mayonedev.battle.domain.board.dao.BoardCommentDao;
 import com.mayonedev.battle.domain.board.dto.CommentDto;
 import com.mayonedev.battle.domain.board.entity.Comment;
+import com.mayonedev.battle.domain.gamification.service.GamificationService;
 
 @Service
 public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private BoardCommentDao boardCommentDao;
+
+    @Autowired
+    private GamificationService gamificationService;
 
     @Override
     @Transactional
@@ -24,6 +28,12 @@ public class CommentServiceImpl implements CommentService {
         }
 
         boardCommentDao.insertComment(comment);
+
+        try {
+            gamificationService.completeMission(comment.getUserId(), "COMMENT_WRITE");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

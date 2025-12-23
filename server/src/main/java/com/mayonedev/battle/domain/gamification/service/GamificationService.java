@@ -23,4 +23,8 @@ public interface GamificationService {
     List<FriendDTO> getFriends(Long userId);
 
     void addFriend(Long userId, String nickname);
+
+    void completeMockInterview(Long userId, Long stageId);
+
+    void completeMission(Long userId, String missionType);
 }

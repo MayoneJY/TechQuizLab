@@ -811,7 +811,7 @@ onUnmounted(() => {
 
 @keyframes print-ephemeral {
     from {
-        transform: scale(5);
+        transform: scale(2);
         opacity: 0;
     }
     50% {
