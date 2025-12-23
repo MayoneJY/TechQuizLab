@@ -208,6 +208,9 @@ onMounted(async () => {
   if (query.page) {
     page.value = parseInt(query.page as string, 10) || 0
   }
+  if (query.keyword) {
+    searchKeyword.value = query.keyword as string
+  }
   
   await fetchStages()
 })
@@ -219,6 +222,9 @@ function updateQuery() {
   }
   if (page.value > 0) {
     query.page = page.value.toString()
+  }
+  if (searchKeyword.value.trim() !== '') {
+    query.keyword = searchKeyword.value.trim()
   }
   
   router.replace({ query })
