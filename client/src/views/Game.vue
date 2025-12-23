@@ -265,8 +265,19 @@ watch(() => gameStore.gameStatus, (newStatus) => {
 onMounted(async () => {
   const battleId = route.query.battleId
   if (battleId) {
-      await gameStore.loadBattleQuestions(Number(battleId))
-      startTimer()
+      try {
+        await gameStore.loadBattleQuestions(Number(battleId))
+        startTimer()
+      } catch (e: any) {
+        if (e.message === 'ALREADY_COMPLETED') {
+             await modalStore.openAlert('이미 종료된 배틀입니다.\n비정상적인 접근입니다.')
+             router.replace('/')
+        } else {
+             console.error(e)
+             await modalStore.openAlert('배틀을 불러올 수 없습니다.')
+             router.replace('/')
+        }
+      }
   }
   
   if (gameStore.gameStatus === 'playing') {

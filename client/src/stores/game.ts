@@ -145,6 +145,12 @@ export const useGameStore = defineStore('game', () => {
     battleId.value = id
     isLoading.value = true
     try {
+      // Check battle status first
+      const battleRes = await battleApi.getBattle(id)
+      if (battleRes.data && battleRes.data.status === 'COMPLETED') {
+        throw new Error('ALREADY_COMPLETED')
+      }
+
       const response = await battleApi.getBattleDetails(id)
       const questions = response.data.map((detail: any) => ({
         id: detail.detailId,
@@ -156,8 +162,9 @@ export const useGameStore = defineStore('game', () => {
 
       questionStore.questions = questions
       // totalQuestions is computed, so no need to set.
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
+      throw e
     } finally {
       isLoading.value = false
     }
