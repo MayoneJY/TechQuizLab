@@ -232,7 +232,7 @@ public class GamificationServiceImpl implements GamificationService {
 
     @Override
     @Transactional
-    public void completeMockInterview(Long userId, Long stageId) {
+    public void completeMockInterview(Long userId, Long stageId, Integer totalScore) {
         // 1. Record History
         try {
             InterviewHistory history = new InterviewHistory();
@@ -243,15 +243,28 @@ public class GamificationServiceImpl implements GamificationService {
         } catch (Exception e) {
             log.error("Failed to record interview history", e);
         }
-        // 2. Increment User Solved Count
+
+        // 2. Increment User Solved Count & Reward EXP from Score
         try {
             User user = userDao.findById(userId);
             if (user != null) {
+                // Increment solved count
                 user.setSolvedCount(user.getSolvedCount() == null ? 1 : user.getSolvedCount() + 1);
-                userDao.update(user);
+
+                // Reward EXP from Score (Score / 100)
+                if (totalScore != null && totalScore > 0) {
+                    long expReward = totalScore / 100;
+                    if (expReward > 0) {
+                        grantExpAndLevelUp(user, expReward);
+                    } else {
+                        userDao.update(user); // Just update solved count if exp is 0
+                    }
+                } else {
+                    userDao.update(user);
+                }
             }
         } catch (Exception e) {
-            log.error("Failed to increment user solved count", e);
+            log.error("Failed to update user stats (solved/exp)", e);
         }
 
         // 3. Daily Mission Check

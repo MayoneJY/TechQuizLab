@@ -24,7 +24,7 @@ public interface GamificationService {
 
     void addFriend(Long userId, String nickname);
 
-    void completeMockInterview(Long userId, Long stageId);
+    void completeMockInterview(Long userId, Long stageId, Integer totalScore);
 
     void completeMission(Long userId, String missionType);
 }

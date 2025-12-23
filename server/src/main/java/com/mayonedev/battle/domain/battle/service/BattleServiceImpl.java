@@ -374,13 +374,13 @@ public class BattleServiceImpl implements BattleService {
         battleDao.updateTotalDamage(battle);
 
         try {
-             if (battle.getStageId() != null && battle.getStageId() > 0) {
-                 gamificationService.completeMockInterview(userId, battle.getStageId());
-             }
+            if (battle.getStageId() != null && battle.getStageId() > 0) {
+                gamificationService.completeMockInterview(userId, battle.getStageId(), totalDamage);
+            }
         } catch (Exception e) {
-             // Log error but don't fail the battle finish
-             System.err.println("Failed to update gamification: " + e.getMessage());
-             e.printStackTrace();
+            // Log error but don't fail the battle finish
+            System.err.println("Failed to update gamification: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return Map.of(
