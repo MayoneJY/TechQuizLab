@@ -143,6 +143,8 @@ public class BattleServiceImpl implements BattleService {
                 d.setKeywordTags(p.getKeywordTags());
                 d.setUserAnswer(p.getUserAnswer());
                 d.setAiFeedback(p.getAiFeedback());
+                d.setAiFeedbackGood(p.getAiFeedbackGood());
+                d.setAiFeedbackBad(p.getAiFeedbackBad());
                 d.setDamage(p.getDamage());
                 d.setCreatedAt(p.getCreatedAt());
                 return d;
@@ -225,6 +227,7 @@ public class BattleServiceImpl implements BattleService {
                                     if (bad != null && bad.startsWith("개선할 점:")) {
                                         bad = bad.substring("개선할 점:".length()).trim();
                                     }p.setDamage(0);
+                                    
                                     p.setAiFeedbackGood("없음");
                                     p.setAiFeedbackBad(bad);
                                     p.setAiFeedback(all + "\n" + "좋았던 점: 없음" + "\n" + "개선할 점: " + bad);
@@ -244,6 +247,11 @@ public class BattleServiceImpl implements BattleService {
                                     if (feedbackBad != null && feedbackBad.startsWith("개선할 점:")) {
                                         feedbackBad = feedbackBad.substring("개선할 점:".length()).trim();
                                     }
+                                    
+                                    p.setAiFeedbackGood(feedbackGood);
+                                    p.setAiFeedbackBad(feedbackBad);
+                                    p.setAiFeedback("좋았던 점: "+feedbackGood+ "\n" + "개선할 점: " + feedbackBad);
+                                   
                                     }
 
                             	    
@@ -282,6 +290,8 @@ public class BattleServiceImpl implements BattleService {
                 d.setKeywordTags(p.getKeywordTags());
                 d.setUserAnswer(p.getUserAnswer());
                 d.setAiFeedback(p.getAiFeedback());
+                d.setAiFeedbackGood(p.getAiFeedbackGood());
+                d.setAiFeedbackBad(p.getAiFeedbackBad());
                 d.setDamage(p.getDamage());
                 d.setCreatedAt(p.getCreatedAt());
                 return d;
@@ -578,7 +588,7 @@ public class BattleServiceImpl implements BattleService {
         return s;
     }
     
-    // 대안 1) AI 피드백으로 5단계로 나눔 -> 점수 범위안에서 랜덤 데미지
+    // 제안 1) AI 피드백으로 5단계로 나눔 -> 점수 범위안에서 랜덤 데미지
     private int scoreByLabel(String label) {
         return switch (label) {
             case "EXCELLENT" -> randomBetween(800, 1000);
