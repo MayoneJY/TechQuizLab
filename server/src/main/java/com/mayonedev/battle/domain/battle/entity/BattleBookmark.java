@@ -19,7 +19,8 @@ public class BattleBookmark {
     // Display fields
     private String questionText;
     private String userAnswer;
-    private String aiFeedback;
+    private String aiFeedbackGood;
+    private String aiFeedbackBad;
     private Integer damage;
     private String difficulty;
     private String keywordTags;

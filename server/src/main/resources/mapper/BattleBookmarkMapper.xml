@@ -13,7 +13,8 @@
         <result property="createdAt" column="created_at"/>
         <result property="questionText" column="question_text"/>
         <result property="userAnswer" column="user_answer"/>
-        <result property="aiFeedback" column="ai_assessment"/>
+        <result property="aiFeedbackGood" column="ai_feedback_good"/>
+        <result property="aiFeedbackBad" column="ai_feedback_bad"/>
         <result property="damage" column="damage"/>
         <result property="difficulty" column="difficulty"/>
         <result property="keywordTags" column="keyword_tags"/>
@@ -42,7 +43,8 @@
     </delete>
 
     <select id="findBookmarks" resultMap="battleBookmarkResultMap">
-        SELECT b.*, bd.question_text, bd.user_answer, bd.ai_feedback as ai_assessment,
+        SELECT b.*, bd.question_text, bd.user_answer, 
+               bd.ai_feedback_good, bd.ai_feedback_bad,
                bd.damage, bd.difficulty, bd.keyword_tags,
                s.title as stage_title, s.job_category
         FROM battle_bookmark b
@@ -98,7 +100,8 @@
     </select>
 
     <select id="findBookmarkById" resultMap="battleBookmarkResultMap">
-        SELECT b.*, bd.question_text, bd.user_answer, bd.ai_feedback as ai_assessment,
+        SELECT b.*, bd.question_text, bd.user_answer, 
+               bd.ai_feedback_good, bd.ai_feedback_bad,
                bd.damage, bd.difficulty, bd.keyword_tags,
                s.title as stage_title, s.job_category
         FROM battle_bookmark b

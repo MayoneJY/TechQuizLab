@@ -7,9 +7,65 @@
         <button class="back-btn pixel-button" @click="router.back()">뒤로가기</button>
       </div>
 
-      <div v-if="loading" class="loading-state">
-        <div class="skeleton skeleton-text" style="width: 50%; height: 32px; margin-bottom: 20px;"></div>
-        <div class="skeleton skeleton-box" style="width: 100%; height: 200px; border-radius: 12px;"></div>
+      <div v-if="loading" class="loading-state skeleton-content">
+         <!-- Skeleton Header -->
+         <div class="meta-header">
+             <div class="meta-left-col">
+                 <div class="meta-main-row">
+                     <div class="skeleton-text badge-size"></div>
+                     <span class="meta-separator">|</span>
+                     <div class="skeleton-text stage-size"></div>
+                     <span class="meta-separator">|</span>
+                     <div class="skeleton-text badge-size"></div>
+                 </div>
+                 <div class="skeleton-text date-size"></div>
+             </div>
+             
+             <div class="score-display">
+                <span class="score-label">SCORE</span>
+                <div class="score-value pixel-text" style="display: flex; align-items: baseline; gap: 4px;">
+                     <div class="skeleton-text score-size" style="width: 60px; margin: 0;"></div>
+                     <span class="sub-score" style="opacity: 0.5;">/ 1000</span>
+                </div>
+             </div>
+        </div>
+
+        <!-- Question Skeleton -->
+        <div class="section-card question-card">
+          <div class="card-header-row">
+             <div class="section-label pixel-text">QUESTION</div>
+             <div class="tags-container">
+                <div class="skeleton-text badge-size" style="width: 50px; border-radius: 10px;"></div>
+                <div class="skeleton-text badge-size" style="width: 60px; border-radius: 10px;"></div>
+             </div>
+          </div>
+          <div class="skeleton-text medium" style="margin-top: 10px;"></div>
+          <div class="skeleton-text long"></div>
+        </div>
+
+        <!-- Answer Skeleton -->
+        <div class="section-card user-answer">
+          <div class="section-label pixel-text">MY ANSWER</div>
+          <div class="skeleton-text long"></div>
+          <div class="skeleton-text long" style="width: 80%;"></div>
+        </div>
+
+        <!-- Feedback Skeleton -->
+        <div class="section-card feedback-card">
+          <div class="section-label pixel-text">AI UPDATE</div>
+          <div class="feedback-sections">
+             <div class="feedback-section feedback-good">
+                 <div class="feedback-title">좋았던 점</div>
+                 <div class="skeleton-text long"></div>
+                 <div class="skeleton-text long" style="width: 90%;"></div>
+             </div>
+             <div class="feedback-section feedback-bad">
+                 <div class="feedback-title">개선할 점</div>
+                 <div class="skeleton-text long"></div>
+                 <div class="skeleton-text long" style="width: 85%;"></div>
+             </div>
+          </div>
+        </div>
       </div>
 
       <div v-else-if="bookmark" class="detail-content">
@@ -57,7 +113,16 @@
         <!-- AI Feedback Section -->
         <div class="section-card feedback-card">
           <div class="section-label pixel-text">AI UPDATE</div>
-          <div class="feedback-text">{{ bookmark.aiFeedback || 'AI 피드백이 없습니다.' }}</div>
+          <div class="feedback-sections">
+             <div class="feedback-section feedback-good">
+                 <div class="feedback-title">좋았던 점</div>
+                 <div class="feedback-content">{{ bookmark.aiFeedbackGood || '(없음)' }}</div>
+             </div>
+             <div class="feedback-section feedback-bad">
+                 <div class="feedback-title">개선할 점</div>
+                 <div class="feedback-content">{{ bookmark.aiFeedbackBad || '(없음)' }}</div>
+             </div>
+          </div>
         </div>
 
         <!-- Memo Section -->
@@ -484,5 +549,64 @@ function getDifficultyClass(diff: string) {
     color: #666;
     margin-left: 2px;
     font-weight: 500;
+}
+
+/* Feedback Styles */
+.feedback-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feedback-section {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid;
+}
+
+.feedback-good {
+    border-left-color: #51cf66;
+}
+
+.feedback-bad {
+    border-left-color: #ff6b6b;
+}
+
+.feedback-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #aaa;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.feedback-content {
+    color: #fff;
+    line-height: 1.6;
+    white-space: pre-line;
+    word-wrap: break-word;
+}
+
+/* Skeleton Styles */
+.skeleton-text {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    height: 1em;
+}
+
+.skeleton-text.medium { width: 80%; height: 20px; margin-bottom: 15px; }
+.skeleton-text.long { width: 100%; height: 16px; margin-bottom: 8px; }
+.skeleton-text.badge-size { width: 60px; height: 22px; border-radius: 4px; }
+.skeleton-text.stage-size { width: 150px; height: 20px; }
+.skeleton-text.date-size { width: 120px; height: 14px; margin-top: 4px; }
+.skeleton-text.score-size { width: 80px; height: 28px; }
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>
