@@ -52,7 +52,7 @@
           <button class="pixel-button cancel-button" @click="goBack">
             취소
           </button>
-          <button class="pixel-button primary submit-button" @click="handleSubmit">
+          <button class="pixel-button primary submit-button" @click="handleSubmit" :disabled="isSubmitting">
             {{ isEdit ? '수정 완료' : '작성 완료' }}
           </button>
         </div>
@@ -99,6 +99,8 @@ const form = ref({
   content: ''
 })
 
+const isSubmitting = ref(false)
+
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
     await modalStore.openAlert('로그인이 필요합니다.')
@@ -119,7 +121,7 @@ onMounted(async () => {
            if (boardStore.posts.length === 0) {
                await boardStore.fetchAllPosts();
            }
-           post = boardStore.posts.find(p => p.postId === postId.value);
+           post = boardStore.posts.find(p => p.postId === postId.value) || null;
            if (post) {
                await boardStore.fetchPostById(post.boardId, post.postId);
                post = boardStore.currentPost;
@@ -180,6 +182,9 @@ async function handleSubmit() {
     return
   }
 
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
   try {
     if (isEdit.value && postId.value) {
       const post = boardStore.currentPost
@@ -210,6 +215,8 @@ async function handleSubmit() {
     }
   } catch (error: any) {
     await modalStore.openAlert(error.message || '작성에 실패했습니다.')
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>

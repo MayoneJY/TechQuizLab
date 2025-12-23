@@ -191,6 +191,22 @@ body::-webkit-scrollbar-thumb:hover {
     0 0 30px rgba(74, 158, 255, 0.6);
 }
 
+.pixel-button:disabled {
+  background: #555;
+  color: #aaa;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow:
+    0 0 0 2px #888,
+    0 0 0 4px #000,
+    4px 4px 0 0 #000;
+  animation: none;
+}
+
+.pixel-button:disabled::before {
+  display: none;
+}
+
 .pixel-button:hover::before {
   left: 100%;
 }

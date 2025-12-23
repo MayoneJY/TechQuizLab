@@ -115,7 +115,7 @@
                       placeholder="댓글을 입력하세요..."
                       rows="3"
                     ></textarea>
-                    <button class="pixel-button small comment-submit-btn" @click="handleAddComment">
+                    <button class="pixel-button small comment-submit-btn" @click="handleAddComment" :disabled="isSubmitting">
                       등록
                     </button>
                 </div>
@@ -177,7 +177,7 @@
                                     rows="2"
                                 ></textarea>
                                 <div class="reply-form-actions">
-                                    <button class="pixel-button small primary" @click="handleAddReply(comment.commentId)">등록</button>
+                                    <button class="pixel-button small primary" @click="handleAddReply(comment.commentId)" :disabled="isSubmitting">등록</button>
                                     <button class="pixel-button small warning" @click="cancelReply">취소</button>
                                 </div>
                             </div>
@@ -304,6 +304,7 @@ const replyContent = ref('')
 const isLiked = ref(false)
 const likeCount = ref(0)
 const isLoadingLike = ref(false)
+const isSubmitting = ref(false)
 
 // 댓글 수 계산 (삭제되지 않은 댓글만 카운트)
 const commentCount = computed(() => {
@@ -451,12 +452,17 @@ async function handleAddComment() {
     return
   }
 
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
   try {
     await commentStore.createComment(post.value.boardId, post.value.postId, newComment.value)
     newComment.value = ''
   } catch (error: any) {
     const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '댓글 작성에 실패했습니다.'
     alert(errorMsg)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -497,6 +503,9 @@ async function handleAddReply(parentCommentId: number) {
     return
   }
 
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
   try {
     await commentStore.createReply(post.value.boardId, post.value.postId, parentCommentId, replyContent.value)
     replyingTo.value = null
@@ -504,6 +513,8 @@ async function handleAddReply(parentCommentId: number) {
   } catch (error: any) {
     const errorMsg = error.response?.data?.resvalue || error.response?.data?.resmsg || error.message || '대댓글 작성에 실패했습니다.'
     alert(errorMsg)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
